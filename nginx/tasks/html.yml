@@ -13,4 +13,4 @@
   with_items:
     - index.html
   tags: [nginx]
-
+...

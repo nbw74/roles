@@ -1,5 +1,4 @@
 ---
-
 - name: "Copy awstats.pl.patch"
   copy:
     src: "awstats.pl.patch"
@@ -38,5 +37,4 @@
     mode: 0644
     force: yes
   tags: [awstats,templates]
-
-
+...

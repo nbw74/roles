@@ -1,9 +1,8 @@
 ---
-
 - name: "logrotate nginx site logs"
   copy:
-    src: nginx_sites
-    dest: /etc/logrotate.d/
+    src: "nginx_sites"
+    dest: "/etc/logrotate.d/"
     force: no
     owner: root
     group: root
@@ -12,16 +11,17 @@
 
 - name: Ensures nginx-prerotate dir exists
   file:
-    path: /etc/logrotate.d/nginx-prerotate
+    path: "/etc/logrotate.d/nginx-prerotate"
     state: directory
   tags: [logrotate]
 
 - name: "logrotate nginx site logs (prerotate)"
   copy:
-    src: awstats.prerotate
-    dest: /etc/logrotate.d/nginx-prerotate/awstats
+    src: "awstats.prerotate"
+    dest: "/etc/logrotate.d/nginx-prerotate/awstats"
     force: no
     owner: root
     group: root
     mode: 0754
   tags: [logrotate]
+...

@@ -16,4 +16,4 @@
     - patch                     # Required by awstats tag
   when: ansible_distribution == "Fedora"
   tags: [packages]
-
+...

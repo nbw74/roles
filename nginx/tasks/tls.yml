@@ -2,7 +2,7 @@
 - name: "Copy MAIN certificate for dummy host"
   copy:
     src: "MAIN.crt"
-    dest: "/etc/pki/tls/certs/{{ nginx_main_cert_name }}"
+    dest: "/etc/pki/tls/certs/{{ nginx_main_cert }}"
     force: yes
     owner: root
     group: root
@@ -13,7 +13,7 @@
 - name: "Copy MAIN certificate key for dummy host"
   copy:
     src: "MAIN.key"
-    dest: "/etc/pki/tls/private/{{ nginx_main_key_name }}"
+    dest: "/etc/pki/tls/private/{{ nginx_main_key }}"
     force: yes
     owner: root
     group: root
@@ -24,7 +24,7 @@
 - name: "Copy EXAMPLE certificate for dummy host"
   copy:
     src: "EXAMPLE.crt"
-    dest: "/etc/pki/tls/certs/{{ nginx_example_cert_name }}"
+    dest: "/etc/pki/tls/certs/{{ nginx_example_cert }}"
     force: yes
     owner: root
     group: root
@@ -35,7 +35,7 @@
 - name: "Copy EXAMPLE certificate key for dummy host"
   copy:
     src: "EXAMPLE.key"
-    dest: "/etc/pki/tls/private/{{ nginx_example_key_name }}"
+    dest: "/etc/pki/tls/private/{{ nginx_example_key }}"
     force: yes
     owner: root
     group: root

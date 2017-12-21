@@ -34,10 +34,8 @@
   when: ansible_virtualization_type == "virtualbox" and
         ansible_eno1 is defined
 
-# - debug: msg="private_ip is {{ private_ip }}"
-#
 - name: "Swap IPs if needed"
   set_fact:
     public_ip: "{{ private_ip }}"
   when: public_ip is undefined
-
+...

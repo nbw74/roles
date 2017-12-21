@@ -16,9 +16,9 @@
 - name: Copy nginx.conf
   copy:
     backup: yes
-    dest: /etc/nginx/nginx.conf
+    dest: "/etc/nginx/nginx.conf"
     force: yes
-    src: nginx.conf
+    src: "nginx.conf"
     validate: 'nginx -tc %s'
   notify: config restart nginx
   tags: [nginx]
@@ -32,7 +32,7 @@
 - name: "Copy scripts"
   copy:
     src: "{{ item }}"
-    dest: /usr/local/bin/
+    dest: "/usr/local/bin/"
     owner: root
     group: root
     mode: 0744
@@ -49,6 +49,5 @@
     force: no
   with_items:
     - "vhostinit"
-    - "dbinit"
   tags: [scripts]
 ...

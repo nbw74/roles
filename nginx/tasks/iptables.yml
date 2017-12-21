@@ -2,9 +2,10 @@
 - name: "Copy IPTables config"
   copy:
     src: "{{ item }}"
-    dest: /etc/sysconfig
+    dest: "/etc/sysconfig/"
     force: no
   with_items:
     - iptables
   notify: config restart iptables
   tags: [iptables]
+...

@@ -34,11 +34,11 @@ server {
     root            /var/www/html;
 
 {% if ansible_fqdn|search({{ nginx_main_domain }}) %}
-    ssl_certificate /etc/pki/tls/certs/{{ nginx_main_domain }};
-    ssl_certificate_key /etc/pki/tls/private/{{ nginx_main_domain }};
+    ssl_certificate /etc/pki/tls/certs/{{ nginx_main_cert }};
+    ssl_certificate_key /etc/pki/tls/private/{{ nginx_main_key }};
 {% else %}
-    ssl_certificate /etc/pki/tls/certs/{{ nginx_example_cert_name }};
-    ssl_certificate_key /etc/pki/tls/private/{{ nginx_example_key_name }};
+    ssl_certificate /etc/pki/tls/certs/{{ nginx_example_cert }};
+    ssl_certificate_key /etc/pki/tls/private/{{ nginx_example_key }};
 {% endif %}
     include         /etc/nginx/include.d/ssl_common.conf;
 
