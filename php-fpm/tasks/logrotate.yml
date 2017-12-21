@@ -1,11 +1,11 @@
 ---
-
 - name: "logrotate php-fpm site logs"
   copy:
-    src: php-fpm_sites
-    dest: /etc/logrotate.d/
+    src: "php-fpm_sites"
+    dest: "/etc/logrotate.d/"
     force: no
     owner: root
     group: root
     mode: 0644
   tags: [logrotate]
+...

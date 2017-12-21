@@ -15,12 +15,12 @@ slowlog = /var/log/php-fpm/www-slow.log
 request_slowlog_timeout = 10s
 php_admin_value[error_log] = log/[SUBDOMAIN]fpm-error.log
 php_admin_flag[log_errors] = on
-{% if php_fpm_memcached_client %}
+{% if php_fpm_memcached_client and php_fpm_memcached_default %}
 php_value[session.save_handler] = memcached
-{% if php_fpm_memcached_nubmer_of_replicas == 0 %}
-php_value[session.save_path]    = {{ php_fpm_memcached_server_1|default('localhost') }}:{{ php_fpm_memcached_port_1|default('11211') }}
+{% if php_fpm_memcached_nubmer_of_replicas == 1 and php_fpm_memcached_server_2 is defined %}
+php_value[session.save_path]    = {{ php_fpm_memcached_server_1|default('localhost4') }}:{{ php_fpm_memcached_port_1|default('11211') }},{{ php_fpm_memcached_server_2 }}:{{ php_fpm_memcached_port_2|default('11211') }}
 {% else %}
-php_value[session.save_path]    = {{ php_fpm_memcached_server_1|default('localhost') }}:{{ php_fpm_memcached_port_1|default('11211') }},{{ php_fpm_memcached_server_2|default('localhost') }}:{{ php_fpm_memcached_port_2|default('11211') }}
+php_value[session.save_path]    = {{ php_fpm_memcached_server_1|default('localhost4') }}:{{ php_fpm_memcached_port_1|default('11211') }}
 {% endif %}
 {% else %}
 php_value[session.save_handler] = files

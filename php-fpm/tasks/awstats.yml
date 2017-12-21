@@ -1,5 +1,4 @@
 ---
-
 - name: "Copy cgi-bin.php"
   copy:
     src: cgi-bin.php
@@ -17,3 +16,4 @@
     mode: 0644
     force: yes
   tags: [awstats]
+...
