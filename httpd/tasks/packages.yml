@@ -35,3 +35,4 @@
     - libsemanage-python        # this packages required by selinux.xml
     - policycoreutils-python    #
   tags: [packages,selinux]
+...

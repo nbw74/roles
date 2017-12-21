@@ -55,32 +55,23 @@
   register: php_ini
   tags: [ php ]
 
-- name: "Set timezone in php.ini [rh-based] (I)"
+- name: "Set timezone in php.ini [rh-based]"
   lineinfile:
     dest: "/etc/php.ini"
-    regexp: '(^date.timezone\s*=\s*(?!{{ php_timezone_region|default(''Europe'') }}\/{{ php_timezone_name_1|default(''Moscow'') }})|;date.timezone\s*=\s*)'
-    line: 'date.timezone = {{ php_timezone_region|default(''Europe'') }}/{{ php_timezone_name_1|default(''Moscow'') }}'
-  when: ( php_ini.stat.exists == True and ansible_domain == php_timezone_domain_1 )
-    or not ( ansible_fqdn | search(php_timezone_domain_excluded) )
-  tags: [ php ]
-
-- name: "Set timezone in php.ini [rh-based] (II)"
-  lineinfile:
-    dest: "/etc/php.ini"
-    regexp: '(^date.timezone\s*=\s*(?!{{ php_timezone_region|default(''Europe'') }}\/{{ php_timezone_name_2|default(''Astrakhan'') }})|;date.timezone\s*=\s*)'
-    line: 'date.timezone = {{ php_timezone_region|default(''Europe'') }}/{{ php_timezone_name_2|default(''Astrakhan'') }}'
-  when: php_ini.stat.exists == True and ansible_domain == php_timezone_domain_2
-  tags: [ php ]
+    regexp: '(^date.timezone\s*=\s*(?!{{ timezone|default(''Europe/Moscow'') }})|;date.timezone\s*=\s*)'
+    line: 'date.timezone = {{ timezone|default(''Europe/Moscow'') }}'
+  when: php_ini.stat.exists
+  tags: [ php, timezone ]
 
 # UMASK
 - name: "Set umask for httpd service (sysconfig)"
   lineinfile:
-    dest: /etc/sysconfig/httpd
-    line: "umask 002"
+    dest: "/etc/sysconfig/httpd"
+    line: 'umask 002'
   notify: config restart httpd
   tags: [services]
 
-# - name: "Set umask for httpd servicei (systemd)"
+# - name: "Set umask for httpd service (systemd)"
 #   blockinfile:
 #     dest: /etc/systemd/system/httpd.service.d/httpd.conf
 #     create: yes

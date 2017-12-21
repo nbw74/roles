@@ -76,4 +76,4 @@
   command: restorecon -R /var/www
   when: selinux_state != "disabled"
   tags: [selinux]
-
+...

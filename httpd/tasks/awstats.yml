@@ -1,5 +1,4 @@
 ---
-
 - name: "Template 91-awstats.j2"
   template:
     dest: "{{ confd }}/91-awstats.conf"
@@ -8,3 +7,4 @@
     mode: 0644
     force: no
   tags: [awstats]
+...
