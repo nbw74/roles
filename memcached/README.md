@@ -15,3 +15,5 @@ memcached_config: # default: empty: "" :Конфигурация в /etc/sysconf
   cachesize: int # units: mb, default: 5% from total RAM size
 ```
 ## Tags
+`packages` `sasl` `services`
+
