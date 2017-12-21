@@ -1,0 +1,25 @@
+#####
+#
+upstream fpm[PORT] {
+    server 127.0.0.1:[PORT];
+}
+
+server {
+    include         /etc/nginx/include.d/listen.conf;
+    server_name     [DOMAIN]
+                    www.[DOMAIN];
+
+    # Load configuration files for the default server block.
+    include         /etc/nginx/default.d/*.conf;
+    # Log files
+    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
+    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
+    
+    set $root_path  '[BASEDIR]/[USER]/[WEBROOT]';
+    set $fpmport    [PORT];
+
+    root            $root_path;
+    index           index.php;
+
+    include         /etc/nginx/include.d/fpm.conf;
+}

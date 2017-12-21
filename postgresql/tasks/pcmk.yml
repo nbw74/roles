@@ -1,0 +1,58 @@
+---
+- name: PostgreSQL service masked
+  systemd:
+    name: "postgresql-{{ postgresql_version_raw }}"
+    enabled: no
+    masked: yes
+
+- name: "Template custom config (pcmk)"
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  template:
+    src: "{{ postgresql_custom_config_pcmk }}.j2"
+    dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config_pcmk }}"
+    mode: 0600
+
+- name: Archive and tmp dirs
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  file:
+    path: "{{ postgresql_basedir }}/{{ item }}"
+    state: directory
+    mode: 0700
+  with_items:
+    - "pg_archive"
+    - "tmp"
+
+- name: "Directory for custom resource agent"
+  file:
+    path: "{{ postgresql_pcmk_ra_dir }}"
+    state: directory
+
+- name: "Custom resource agent"
+  copy:
+    src: "pgsql_resource_agent"
+    dest: "{{ postgresql_pcmk_ra_dir }}/pgsql"
+    owner: root
+    group: root
+    mode: 0755
+    force: "{{ postgresql_pcmk_force_ra_update|ternary('yes','no') }}"
+
+- name: "pcs init script"
+  template:
+    src: "pgsql.pcs"
+    dest: "{{ postgresql_pcmk_scripts_dir }}/"
+    owner: root
+    group: root
+    mode: 0755
+    force: "{{ postgresql_pcmk_force_pcs_update|ternary('yes','no') }}"
+
+- name: "slave copy script"
+  template:
+    src: "pgsql-pcmk-slave-copy.sh"
+    dest: "{{ postgresql_pcmk_bin_dir }}/"
+    owner: root
+    group: root
+    mode: 0755
+    force: yes
+...

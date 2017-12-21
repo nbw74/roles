@@ -1,0 +1,91 @@
+---
+- name: "Stop and disable some services"
+  service: name={{ item }} enabled=no state=stopped
+  with_items:
+    - NetworkManager
+    - firewalld
+    - chronyd
+  when: (( ansible_distribution == "Fedora" ) or
+        ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 ))
+  ignore_errors: yes
+  tags: [services]
+
+- name: "Reconfigure Journald"
+  ini_file:
+    dest: /etc/systemd/journald.conf
+    section: Journal
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: 'Storage', value: 'persistent' }
+    - { option: 'Compress', value: 'yes' }
+  notify: config restart journald
+  when: (( ansible_distribution == "Fedora" ) or
+        ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 ))
+  tags: [services,journald]
+
+- name: "Reconfigure logrotate"
+  replace:
+    dest: /etc/logrotate.conf
+    regexp: '^#\s*compress'
+    replace: 'compress'
+  tags: [logrotate]
+
+- name: "Reconfigure sudo"
+  replace:
+    dest: /etc/sudoers
+    regexp: '^(Defaults\s+always_set_home)'
+    replace: '# \1'
+    validate: 'visudo -cf %s'
+  tags: [sudo]
+
+- include_tasks: ipset.yml
+
+- include_tasks: xt_recent.yml
+
+- include_tasks: iptables.yml
+
+- name: "Enable and start network service"
+  service: name=network enabled=yes state=started
+  ignore_errors: yes
+  tags: [services]
+
+- name: "Qemu-GA enabled and started (6)"
+  service:
+    name: "qemu-ga"
+    state: started
+    enabled: yes
+  when:
+    - 'ansible_virtualization_type == "kvm"'
+    - 'ansible_virtualization_role == "guest"'
+    - 'ansible_distribution_major_version == "6"'
+    - not alien
+  tags: [services,kvm]
+
+- name: "Qemu-GA enabled and started (7)"
+  service:
+    name: "qemu-guest-agent"
+    state: started
+    enabled: yes
+  when:
+    - 'ansible_virtualization_type == "kvm"'
+    - 'ansible_virtualization_role == "guest"'
+    - 'ansible_distribution_major_version == "7"'
+    - not alien
+  ignore_errors: yes
+  tags: [services,kvm]
+
+- name: "Enable and start vmtoolsd service"
+  service: name=vmtoolsd enabled=yes state=started
+  when: ansible_product_name == "VMware Virtual Platform"
+  tags: [services,vmware]
+
+- name: "Enable and start other services"
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+    - ntpd
+    - iptables
+    - snmpd
+    - rsyslog
+  tags: [services]
+...

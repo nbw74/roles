@@ -1,0 +1,54 @@
+---
+- include_tasks: packages.yml
+
+- include_tasks: html.yml
+
+- include_tasks: set_if.yml
+
+- include_tasks: default.d.yml
+
+- include_tasks: include.d.yml
+
+- include_tasks: conf.d.yml
+
+- include_tasks: tls.yml
+
+- name: Copy nginx.conf
+  copy:
+    backup: yes
+    dest: /etc/nginx/nginx.conf
+    force: yes
+    src: nginx.conf
+    validate: 'nginx -tc %s'
+  notify: config restart nginx
+  tags: [nginx]
+
+- include_tasks: iptables.yml
+
+- include_tasks: logrotate.yml
+
+- include_tasks: awstats.yml
+
+- name: "Copy scripts"
+  copy:
+    src: "{{ item }}"
+    dest: /usr/local/bin/
+    owner: root
+    group: root
+    mode: 0744
+    force: yes
+  with_items:
+    - "{{ vhostinit_sh }}"
+  tags: [scripts]
+
+- name: "Create symlinks in /usr/bin/"
+  file:
+    src: "/usr/local/bin/{{ item }}.sh"
+    dest: "/usr/bin/{{ item }}"
+    state: link
+    force: no
+  with_items:
+    - "vhostinit"
+    - "dbinit"
+  tags: [scripts]
+...

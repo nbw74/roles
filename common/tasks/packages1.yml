@@ -1,0 +1,98 @@
+---
+- name: "Fix DNF config"
+  ini_file:
+    dest: /etc/dnf/dnf.conf
+    section: main
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: 'fastestmirror', value: 'True' }
+    - { option: 'timeout', value: '4' }
+  when: ansible_distribution == "Fedora"
+  tags: [packages]
+
+- name: "Update all packages (YUM)"
+  yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+  when:
+    - 'ansible_distribution == "CentOS"'
+    - pkgupdate is defined
+    - pkgupdate
+  tags: [ packages, update ]
+
+- name: "Update all packages (DNF)"
+  dnf:
+    name: "*"
+    state: latest
+  when:
+    - 'ansible_distribution == "Fedora"'
+    - pkgupdate is defined
+    - pkgupdate
+  tags: [packages,update]
+
+- name: "Install required packages (YUM)"
+  yum:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - '{{ common_required_base_packages }}'
+    - '{{ common_centos_specific_packages }}'
+  when: ansible_distribution == "CentOS"
+  tags: [packages]
+
+- name: "Install required packages (DNF)"
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - '{{ common_required_base_packages }}'
+    - '{{ common_required_epel_packages }}' 
+    - '{{ common_fedora_specific_packages }}'
+  when: ansible_distribution == "Fedora"
+  tags: [packages]
+
+- name: "Install EPEL packages (YUM)"
+  yum:
+    state: present
+    name: "{{ item }}"
+  with_items: '{{ common_required_epel_packages }}'
+  when: ansible_distribution == "CentOS"
+  tags: [packages]
+
+- name: "Install open-vm-tools"
+  action: '{{ ansible_pkg_mgr }} name="open-vm-tools" state=latest'
+  when: 'ansible_virtualization_type == "VMware"'
+  tags: [packages,vmware]
+
+- name: "Install qemu-guest-agent"
+  action: '{{ ansible_pkg_mgr }} name="qemu-guest-agent" state=latest'
+  when:
+    - 'ansible_virtualization_type == "kvm"'
+    - 'ansible_virtualization_role == "guest"'
+    - not alien
+  tags: [packages,kvm]
+
+- name: "Install iptables-services package (YUM)"
+  yum:
+    name: "iptables-services"
+    state: present
+  when:
+    - 'ansible_distribution == "CentOS"'
+    - ansible_distribution_major_version|int >= 7
+  tags: [packages,iptables]
+
+- name: "Remove unnecessary packages"
+  action: '{{ ansible_pkg_mgr }} name="{{ item }}" state=absent'
+  with_items: "{{ common_virt_unnecessary_packages }}"
+  when: 'ansible_virtualization_role == "guest"'
+  tags: [packages]
+
+- name: "Install tuned"
+  action: '{{ ansible_pkg_mgr }} name="tuned" state=latest'
+  notify: config tuned
+  tags: [packages,tuned]
+
+- meta: flush_handlers
+...

@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+# Скриптег для добавления сайта на ВМ с "Битрикс"
+# ("многосайтовость")
+#
+
+set -o nounset
+set -o errtrace
+
+readonly bitrixhome="/home/bitrix"
+
+readonly bn=$(basename $0)
+readonly newdomain=${1:-NOP}
+
+main() {
+    trap except ERR
+
+    local FN=$FUNCNAME
+
+    # Create new site catalog with symlinks
+    [[ ! -d "$bitrixhome/$newdomain" ]] && sudo -u bitrix mkdir -m 0770 $bitrixhome/$newdomain
+    cd $bitrixhome/$newdomain
+    [[ ! -e "bitrix" ]] && sudo -u bitrix ln -s ../www/bitrix ./
+    [[ ! -e "upload" ]] && sudo -u bitrix ln -s ../www/upload ./
+
+    # Add next nginx config
+    cd /etc/nginx/bx/site_avaliable
+
+    local -i i=1
+    while true; do
+        (( i++ ))
+        if [[ ! -f "s${i}.conf" ]]; then
+            local newconf="s${i}.conf"
+            break
+        fi
+    done
+
+    if hostname -f | fgrep -q ".dev"
+    then
+        local newservername="${newdomain}.dev"
+    else
+        local newservername="$newdomain"
+    fi
+
+    cp s1.conf $newconf
+    sed -i -r -e "s/Default website/Additional website/" \
+        -e "s/80 default_server/80/" \
+        -e "s/server_name _/server_name ${newservername}/" \
+        -e "s|(${bitrixhome}/)www|\1${newdomain}|g" \
+        $newconf
+    cd /etc/nginx/bx/site_enabled
+    ln -s ../site_avaliable/$newconf ./
+
+    # Add httpd config
+    cd /etc/httpd/bx/conf
+    cp default.conf $newconf
+    sed -i -r -e "/^Listen/d" \
+        -e "/DocumentRoot/a \\\tServerName $newservername" \
+        -e "s|(ServerAdmin) .*|\1 {{ bx_mail_alias }}|" \
+        -e "s|(${bitrixhome}/)www|\1${newdomain}|g" \
+        $newconf
+
+    # Configuration test
+    nginx -t
+    apachectl configtest
+    # Web-servers restart
+    if fgrep -q 'release 6' /etc/centos-release
+    then
+        service nginx restart
+    elif fgrep -q 'release 7' /etc/centos-release
+    then
+        systemctl restart nginx.service
+        systemctl restart httpd.service
+    else
+        echo "Unsupported operating system, restart web-server manually" 1>&2
+        false
+    fi
+}
+
+usage() {
+    echo -e "\n\tUsage:\n\n$bn <new_domain>\n\n\tnew_domain: full domain name without '.dev' suffix"
+}
+
+except() {
+    local RET=$?
+
+    echo "Error in function ${FN:-UNKNOWN}, exit code $RET" 1>&2
+    exit $RET
+}
+
+if [[ "$newdomain" == "NOP" || "$newdomain" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+main

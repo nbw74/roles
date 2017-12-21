@@ -1,0 +1,37 @@
+---
+- name: Install Remi repo
+  yum:
+    name: "http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+    state: present
+  notify: enable remi repo
+  tags: [packages,remi]
+
+- meta: flush_handlers
+
+- name: Install packages
+  yum:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - httpd
+    - httpd-itk
+    - php
+    - php-cli
+    - php-pdo
+    - php-gd
+    - php-intl
+    - php-pgsql
+    - php-mbstring
+    - php-mysqlnd
+    - php-pecl-crypto
+    - php-nette-tokenizer
+    - php-xml
+    - php-xmlrpc
+  tags: [packages]
+
+- name: Install packages (SELinux)
+  yum: state=present name={{ item }}
+  with_items:
+    - libsemanage-python        # this packages required by selinux.xml
+    - policycoreutils-python    #
+  tags: [packages,selinux]

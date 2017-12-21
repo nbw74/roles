@@ -1,0 +1,11 @@
+---
+
+- name: "logrotate httpd site logs"
+  copy:
+    src: httpd_sites
+    dest: /etc/logrotate.d/
+    force: no
+    owner: root
+    group: root
+    mode: 0644
+  tags: [logrotate]

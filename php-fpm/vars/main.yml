@@ -1,0 +1,5 @@
+---
+included: /etc/nginx/include.d
+confd: /etc/nginx/conf.d
+fpmd: /etc/php-fpm.d
+

@@ -1,0 +1,13 @@
+---
+- name: "Remove unnecessary packages (YUM)"
+  yum: state=absent name={{ item }}
+  with_items: "{{ common_unnecessary_packages }}"
+  when: ansible_distribution == "CentOS"
+  tags: [packages]
+
+- name: "Remove unnecessary packages (DNF)"
+  dnf: state=absent name={{ item }}
+  with_items: "{{ common_unnecessary_packages }}"
+  when: ansible_distribution == "Fedora"
+  tags: [packages]
+

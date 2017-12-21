@@ -1,0 +1,19 @@
+---
+- name: MySQLd disabled
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - mariadb
+    - mysqld
+    - mysql
+  ignore_errors: true
+
+- name: MySQLd service masked
+  command: "systemctl mask {{ item }}.service"
+  with_items:
+    - mariadb
+    - mysqld
+    - mysql
+  ignore_errors: true

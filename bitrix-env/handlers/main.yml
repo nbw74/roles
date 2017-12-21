@@ -1,0 +1,32 @@
+---
+- name: config restart iptables
+  service: name=iptables state=restarted
+  tags: [iptables]
+
+- name: config restart nginx
+  service: name=nginx state=restarted
+  tags: [nginx_status]
+
+- name: set bitrix password
+  shell: echo "$(date) Rainy Weather" | sha1sum | passwd bitrix --stdin
+  tags: [passwd]
+
+- name: selinux autorelabel
+  file: path=/.autorelabel state=touch
+  tags: [selinux]
+
+- name: pdo_dblib chattr
+  command: chattr +i /etc/php.d/pdo_dblib.ini
+  ignore_errors: true
+  tags: [php]
+
+- name: config newaliases
+  command: newaliases
+  tags: [mail]
+
+- name: config mysqld reboot
+  command: shutdown -r +1
+  ignore_errors: true
+  async: 0
+  poll: 0
+...

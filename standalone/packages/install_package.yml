@@ -1,0 +1,17 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    package: bc
+
+  tasks:
+    - name: Update cache (apt)
+      apt:
+        update_cache: yes
+      when: ( ansible_distribution == "Debian" )
+
+    - name: Install package {{ package }}
+      action: "{{ ansible_pkg_mgr }} name={{ package }} state=latest"
+      environment: "{{ proxy_env }}"
+

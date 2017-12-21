@@ -1,0 +1,25 @@
+---
+- name: "Comment existing servers in ntp.conf"
+  replace:
+    dest: /etc/ntp.conf
+    regexp: '(^server\s(?!{{ common_ntp_servers_list }}).*)'
+    replace: '# \1'
+  when: not alien
+  tags: [ ntp ]
+
+- name: "Adding NTP servers in ntp.conf"
+  lineinfile:
+    dest: /etc/ntp.conf
+    line: "server {{ item.1 }} iburst"
+    insertafter: EOF
+  with_subelements:
+    - "{{ common_ntp_domains }}"
+    - servers
+  when:
+    - ansible_domain == item.0.domain
+    - not alien
+  notify: config restart ntpd
+  tags: [ ntp ]
+
+- meta: flush_handlers
+...

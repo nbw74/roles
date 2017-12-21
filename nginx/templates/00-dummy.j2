@@ -1,0 +1,59 @@
+# {{ ansible_managed }}
+#
+server {
+    include         /etc/nginx/include.d/listen_default.conf;
+
+    root            /var/www/html;
+
+    # Load configuration files for the default server block.
+    include         /etc/nginx/default.d/*.conf;
+
+    location / {
+        index       index.html index.htm;
+    }
+
+    location /nginx_status {
+        stub_status     on;
+        access_log      off;
+        include         /etc/nginx/include.d/allow_status.conf;
+        deny            all;
+    }
+
+    error_page 404 /404.html;
+        location    = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location    = /50x.html {
+    }
+}
+
+server {
+    include         /etc/nginx/include.d/listen_default_ssl.conf;
+
+    root            /var/www/html;
+
+{% if ansible_fqdn|search({{ nginx_main_domain }}) %}
+    ssl_certificate /etc/pki/tls/certs/{{ nginx_main_domain }};
+    ssl_certificate_key /etc/pki/tls/private/{{ nginx_main_domain }};
+{% else %}
+    ssl_certificate /etc/pki/tls/certs/{{ nginx_example_cert_name }};
+    ssl_certificate_key /etc/pki/tls/private/{{ nginx_example_key_name }};
+{% endif %}
+    include         /etc/nginx/include.d/ssl_common.conf;
+
+    # Load configuration files for the default server block.
+    include         /etc/nginx/default.d/*.conf;
+
+    location / {
+        index       index.html index.htm;
+    }
+
+    error_page 404 /404.html;
+        location    = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location    = /50x.html {
+    }
+}

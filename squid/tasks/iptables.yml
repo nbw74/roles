@@ -1,0 +1,23 @@
+---
+- name: "ipset configuration"
+  copy:
+    src: ipset
+    dest: /etc/sysconfig/
+    force: yes
+  notify: config restart ipset
+  tags: [iptables,ipset]
+
+- meta: flush_handlers
+
+- name: "iptables configuration"
+  copy:
+    src: "{{ item }}"
+    dest: /etc/sysconfig/
+    force: yes
+  with_items:
+    - iptables
+    - ip6tables
+  notify: config restart iptables
+  tags: [iptables]
+
+- meta: flush_handlers

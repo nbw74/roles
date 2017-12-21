@@ -1,0 +1,8 @@
+create SSH-DIRECT hash:net
+{% for address in common_ssh_direct_list %}
+add SSH-DIRECT {{ address|ipv4|ternary(line,'# ' ~ line) }}
+{% endfor %}
+create PERMIT-SQUID hash:net
+{% for address in squid_permit_list %}
+add PERMIT-SQUID {{ address|ipv4|ternary(line,'# ' ~ line) }}
+{% endfor %}

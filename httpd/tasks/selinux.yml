@@ -1,0 +1,79 @@
+---
+- name: Set SELinux state
+  selinux:
+    policy: targeted
+    state: "{{ selinux_state }}"
+
+- name: "Toggle booleans"
+  seboolean: name={{ item }} state=yes persistent=yes
+  with_items:
+    - httpd_can_network_connect_db
+    - httpd_can_sendmail
+    - httpd_setrlimit
+  when: selinux_state != "disabled"
+  tags: [selinux]
+
+- name: "Add SELinux ports"
+  seport:
+    ports: "{{ item.port }}"
+    proto : tcp
+    setype: "{{ item.type }}"
+    state: present
+  with_items:
+    - { port: '8888', type: 'http_port_t' }
+    - { port: '6432', type: 'postgresql_port_t' }
+  when: selinux_state != "disabled"
+  tags: [selinux,selinux_ports]
+
+- name: "Add fcontext httpd_log_t"
+  command: "semanage fcontext -a -t httpd_log_t {{ item }}"
+  with_items:
+    - '/var/www/[-a-zA-Z0-9\.]+/log(/.*)?'
+  when: selinux_state != "disabled"
+  tags: [selinux]
+
+- name: "Add fcontext httpd_sys_rw_content_t"
+  command: "semanage fcontext -a -t httpd_sys_rw_content_t {{ item }}"
+  with_items:
+    - '/var/www/[-a-zA-Z0-9\.]+/www/uploads(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/storage(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/web/assets(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/assets(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/runtime/logs(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/runtime/debug(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/runtime/cache(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/protected/runtime(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/userfiles(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/templates/compile(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/templates/compile_admin(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/_synchro/templates_c(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/bootstrap/cache(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/public/photos(/.*)?'
+  when: selinux_state != "disabled"
+  tags: [selinux]
+
+- name: "Add fcontext httpd_cache_t"
+  command: "semanage fcontext -a -t httpd_cache_t {{ item }}"
+  with_items:
+    - '/var/www/[-a-zA-Z0-9\.]+/www/cache(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/[-a-zA-Z0-9\.]+/www/cache(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/[-a-zA-Z0-9\.]+/www/application/cache(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/www/engine/cache(/.*)?'
+    - '/var/www/[-a-zA-Z0-9\.]+/tmp(/.*)?'
+    - '/var/cache/nginx(/.*)?'
+  when: selinux_state != "disabled"
+  tags: [selinux]
+
+- name: "Add fcontext ssh_home_t"
+  command: "semanage fcontext -a -t ssh_home_t {{ item }}"
+  with_items:
+    - '/var/www/[-a-zA-Z0-9\.]+/\.ssh(/.*)?'
+  when: selinux_state != "disabled"
+  tags: [selinux]
+
+- name: "restorecon /var/www"
+  command: restorecon -R /var/www
+  when: selinux_state != "disabled"
+  tags: [selinux]
+

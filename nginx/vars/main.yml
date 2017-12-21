@@ -1,0 +1,7 @@
+---
+defaultd: "/etc/nginx/default.d"
+included: "/etc/nginx/include.d"
+confd: "/etc/nginx/conf.d"
+html: "/var/www/html"
+vhostinit_sh: "vhostinit.sh"
+...

@@ -1,0 +1,72 @@
+---
+- name: "ttyS0 enabled (6)"
+  copy:
+    src: "{{ common_file_ttyS0_6 }}"
+    dest: "{{ common_dir_ttyS0_6 }}/{{ common_file_ttyS0_6 }}"
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - ansible_virtualization_type == "kvm"
+    - ansible_distribution_major_version == "6"
+  notify: initctl
+  tags: [console]
+
+- name: "Check {{ common_dir_ttyS0_7|basename }} directory"
+  file:
+    path: "{{ common_dir_ttyS0_7 }}"
+    state: directory
+  when:
+    - ansible_virtualization_type == "kvm"
+    - ansible_distribution_major_version == "7"
+  tags: [console]
+
+- name: "Check {{ common_dir_tty1_7|basename }} directory"
+  file:
+    path: "{{ common_dir_tty1_7 }}"
+    state: directory
+  when:
+    - ansible_virtualization_type == "VMware"
+    - ansible_distribution_major_version == "7"
+  tags: [console]
+
+- name: "ttyS0 service enabled"
+  systemd:
+    name: "getty@ttyS0.service"
+    enabled: yes
+  when:
+    - ansible_virtualization_type == "kvm"
+    - ansible_distribution_major_version == "7"
+  tags: [console]
+
+- name: "Check getty@ttyS0.service override file"
+  copy:
+    src: "{{ common_file_tty_7 }}"
+    dest: "{{ common_dir_ttyS0_7 }}/{{ common_file_tty_7 }}"
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - ansible_virtualization_type == "kvm"
+    - ansible_distribution_major_version == "7"
+  notify: systemd ttyS0 restart
+  tags: [console]
+
+- name: "Check getty@tty1.service override file"
+  copy:
+    src: "{{ common_file_tty_7 }}"
+    dest: "{{ common_dir_tty1_7 }}/{{ common_file_tty_7 }}"
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - ansible_virtualization_type == "VMware"
+    - ansible_distribution_major_version == "7"
+  notify: systemd tty1 restart
+  tags: [console]
+
+- meta: flush_handlers
+...

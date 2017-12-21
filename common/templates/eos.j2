@@ -1,0 +1,288 @@
+#!/bin/bash
+#
+# SNMP extender
+# v.0.4.1
+#
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
+bn=$(basename $0)
+hn=$(hostname -f)
+
+FTPSERVER={{ common_sha_store_addr }}
+FTPUSER={{ common_sha_store_user }}
+WARN_THR=64
+CRIT_THR=86
+
+LANG=C
+LC_ALL=C
+LC_MESSAGES=C
+
+typeset MODE="" MSG="" OS=""
+typeset -i CHECK=0 UPLOAD=0 CODE=666 LOCK=0 PERFDATA=0
+
+set -o nounset
+set -o errtrace
+
+main() {
+
+    trap except ERR
+    trap myexit EXIT
+
+    case $MODE in
+        conntrack) modeConntrack
+            ;;
+        passwd) modePasswd
+            ;;
+        *) false
+    esac
+
+}
+
+modeConntrack() {
+    FN=$FUNCNAME
+
+    local -i msg_tf_count=0 ct_size=0 ct_count=0
+    local ct_perc="" conntrack_proc="" conntrack_sys=""
+
+    if [[ -f /proc/net/nf_conntrack ]]; then
+        conntrack_proc="/proc/net/nf_conntrack"
+        conntrack_sys="net.nf_conntrack_max"
+    elif [[ -f /proc/net/ip_conntrack ]]; then
+        conntrack_proc="/proc/net/ip_conntrack"
+        conntrack_sys="net.ipv4.ip_conntrack_max"
+    else
+        MSG="It seems that conntrack is not involved"
+        CODE=0; PERFDATA=0; exit
+    fi
+
+    msg_tf_count=$(dmesg | fgrep 'table full' | wc -l)
+    ct_size=$(sysctl $conntrack_sys | awk '{ print $3 }')
+    ct_count=$(cat $conntrack_proc | wc -l)
+    ct_perc=$(echo "x = $ct_count/($ct_size/100); scale=2; print (x+0.005)/1"|bc -l|awk '{printf "%.2f\n", $0}')
+
+    if (( msg_tf_count > 0 )); then
+        MSG="Conntrack table full"
+        CODE=2; exit
+    else
+        if (( $(echo "$ct_perc > $CRIT_THR"| bc -l) )); then
+            MSG="Conntrack table fill ${ct_count}/${ct_size} (${ct_perc}%)"
+            CODE=2; exit
+        elif (( $(echo "$ct_perc > $WARN_THR"| bc -l) )); then
+            MSG="Conntrack table fill ${ct_count}/${ct_size} (${ct_perc}%)"
+            CODE=1; exit
+        else
+            MSG="Conntrack table fill ${ct_count}/${ct_size} (${ct_perc}%)"
+            CODE=0; exit
+        fi
+    fi
+
+}
+
+modePasswd() {
+    FN=$FUNCNAME
+
+    local -a F=("")
+
+    F[0]=/etc/passwd
+    F[${#F[@]}]=/etc/shadow
+    F[${#F[@]}]=/etc/group
+    if egrep -qi "debian.*6" /etc/issue
+    then
+        true
+    else
+        F[${#F[@]}]=/etc/sudoers
+    fi
+    F[${#F[@]}]=/etc/nsswitch.conf
+    F[${#F[@]}]=/etc/ssh/sshd_config
+    F[${#F[@]}]=/etc/ssh/ssh_config
+    F[${#F[@]}]=/bin/login
+    F[${#F[@]}]=/bin/bash
+    F[${#F[@]}]=/usr/bin/sha256sum
+    F[${#F[@]}]=/usr/sbin/sshd
+    F[${#F[@]}]=/usr/sbin/snmpd
+    [[ -f "/sbin/httpd" ]] && F[${#F[@]}]=/sbin/httpd
+    [[ -f "/sbin/nginx" ]] && F[${#F[@]}]=/sbin/nginx
+    [[ -f "/usr/sbin/apache2" ]] && F[${#F[@]}]=/usr/sbin/apache2
+    [[ -f "/usr/sbin/nginx" ]] && F[${#F[@]}]=/usr/sbin/nginx
+
+    # OS determination
+    if fgrep -qi debian /etc/issue 2>/dev/null
+    then
+        OS=debian
+    elif fgrep -q 'release 5' /etc/redhat-release 2>/dev/null
+    then
+        OS=rh5
+    else
+        OS=other
+    fi
+
+    if [[ $OS == "debian" ]]; then
+        SNMPD_BASEDIR=/var/lib/snmp
+    elif [[ $OS == "rh5" ]]; then
+        SNMPD_BASEDIR=/tmp
+    elif [[ $OS == "other" ]]; then
+        SNMPD_BASEDIR=/var/lib/net-snmp
+    fi
+
+    HASHFILE=$SNMPD_BASEDIR/sha256-${hn}.sum
+    LOCKFILE=$SNMPD_BASEDIR/${bn}.lock
+
+    if [[ $OS == "rh5" ]]; then
+        OUTFILE=$(mktemp -p $SNMPD_BASEDIR -t snmpd_extend.XXXX)
+    else
+        OUTFILE=$(mktemp --tmpdir=$SNMPD_BASEDIR -t snmpd_extend.XXXX)
+    fi
+
+    if [[ -f "$LOCKFILE" ]]; then
+        local lock_time=$(stat --format="%Y" $LOCKFILE)
+        local curr_time=$(date '+%s')
+
+        if (( ((curr_time - lock_time)) < 280 )); then
+            writeLg "Lock file found, exiting..."
+            MSG="Lock file found"
+            CODE=3; LOCK=1; exit
+        fi
+    else
+        touch $LOCKFILE >$OUTFILE 2>&1
+    fi
+
+    if (( UPLOAD == 1 )); then
+        CreateSums;
+    elif (( CHECK == 1 )); then
+        CheckSums;
+    else
+        false
+    fi
+
+    CODE=3; exit
+}
+
+CreateSums() {
+    cat /dev/null > $HASHFILE
+    
+    for (( i=0; i<${#F[@]}; i++ )); do
+        sha256sum ${F[$i]} >> $HASHFILE 2> $OUTFILE
+    done
+
+    scp -oStrictHostKeyChecking=no $HASHFILE ${FTPUSER}@${FTPSERVER}:/usr/share/nginx/html/256/ > $OUTFILE 2>&1
+    rm -v "$HASHFILE" > $OUTFILE 2>&1
+    CODE=0; exit
+}
+
+CheckSums() {
+
+    Match() {
+        MSG="All sums is OK (${#F[@]})"
+        CODE=0; exit
+    }
+
+    Mismatch() {
+        MSG="$(cat $OUTFILE)"
+        CODE=2; exit
+    }
+
+    if [[ -f "$HASHFILE" ]]; then
+        rm "$HASHFILE" > $OUTFILE 2>&1
+    fi
+
+    curl -s -m 10 -o ${HASHFILE} http://${FTPSERVER}/256/${HASHFILE##*\/} > $OUTFILE 2>&1
+
+    for (( i=0; i<${#F[@]}; i++ )); do
+        if fgrep -q "${F[$i]}" $HASHFILE
+        then
+            continue
+        else
+            MSG="Corrupted hashfile"
+            CODE=2; exit
+        fi
+    done
+
+    if [[ $OS == "rh5" ]]; then
+        if sha256sum -c $HASHFILE >/dev/null 2> $OUTFILE
+        then
+            Match;
+        else
+            Mismatch;
+        fi
+    else
+        if sha256sum --quiet -c $HASHFILE > $OUTFILE 2>&1
+        then
+            Match;
+        else
+            Mismatch;
+        fi
+    fi
+}
+
+usage() {
+    echo -e "Usage: $(basename $0) option (REQUIRED)
+        Options:
+        -c          check PASSWD checksums
+        -f          add performance data output
+        -m <MODE>   set check mode (conntrack|passwd)
+        -u          upload PASSWD checksums to remote server
+        "
+}
+
+except() {
+    local -i RET=$?
+    
+    MSG="Error occured, exit code $RET. Program output: \"$(cat ${OUTFILE:-/dev/null})\""
+    writeLg "$MSG"
+
+    CODE=3; exit
+}
+
+myexit() {
+
+    [[ -f "${OUTFILE:-NOFILE}" ]] && rm "$OUTFILE"
+    [[ -f "${HASHFILE:-NOFILE}" ]] && rm "$HASHFILE"
+
+    if (( PERFDATA == 1 )); then
+        if [[ $MODE == "conntrack" ]]; then
+            MSG="${MSG}|$(printf "%s" "nf_conntrack=${ct_count};$(echo "x = ${ct_size}/100*$WARN_THR; scale=0; print (x+0.5)/1"|bc -l);$(echo "x = ${ct_size}/100*$CRIT_THR; scale=0; print (x+0.5)/1"|bc -l)")"
+        fi
+    fi
+
+    case $CODE in
+        0) echo "OK: $MSG" ;;
+        1) echo "WARNING: $MSG" ;;
+        2) echo "CRITICAL: $MSG" ;;
+        3) echo "UNKNOWN: $MSG" ;;
+        *) echo "UNKNOWN: <Bad exit code: ${CODE}>; $MSG";
+            CODE=3
+    esac
+
+    if (( LOCK == 0 )); then
+        [[ -f "${LOCKFILE:-NOFILE}" ]] && rm "$LOCKFILE"
+    fi
+    
+    exit $CODE
+}
+
+writeLg() {
+    logger -t "$bn" "$*"
+}
+
+while getopts "chfm:u" OPTION; do
+    case $OPTION in
+        c) CHECK=1
+            ;;
+        h) usage
+            exit 0
+            ;;
+        f) PERFDATA=1
+            ;;
+        m) MODE=$OPTARG
+            ;;
+        u) UPLOAD=1
+            ;;
+        *) usage
+            exit 1
+    esac
+done
+
+main
+
+### EOF ###

@@ -1,0 +1,6 @@
+---
+se_bitrix: "bitrix_main"
+bitrix_sh: "bitrix-env.sh"
+bxinit_sh: "bxinit.sh"
+bxmult_sh: "bxmultisite.sh"
+...

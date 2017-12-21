@@ -1,0 +1,95 @@
+---
+- name: Check if role assigned to host
+  fail:
+    msg: "Role 'php-fpm' is not assigned to this host"
+  when: "'php-fpm' not in roles"
+
+- name: "Check required parameter"
+  fail:
+    msg: "Please add PHP version parameter (-e remi_php_version=56|70|71)"
+  when: remi_php_version is not defined
+
+- include_tasks: packages.yml
+
+- include_tasks: selinux.yml
+
+- name: "Copy fpm.conf"
+  copy:
+    dest: "{{ included }}"
+    src: fpm.conf
+    force: yes
+  tags: [conf]
+
+- name: "Copy TEMPLATE_NG_FP(_SSL)"
+  copy:
+    dest: "{{ confd }}"
+    src: "{{ item }}"
+    force: yes
+  with_items:
+    - TEMPLATE_NG_FP
+    - TEMPLATE_NG_FP_SSL
+  tags: [templates]
+
+- name: "Template 10-cgi-bin.j2"
+  template:
+    dest: "{{ confd }}/10-cgi-bin.conf"
+    src: 10-cgi-bin.j2
+    force: yes
+  tags: [conf]
+
+- name: "TEMPLATE_FPM"
+  template:
+    src: "TEMPLATE_FPM.j2"
+    dest: "{{ fpmd }}/TEMPLATE_FPM"
+    force: "{{ php_fpm_force_templates|ternary('yes','no') }}"
+  tags: [templates,memcached]
+
+- name: "Copy index.php"
+  copy:
+    dest: /var/www
+    src: index.php
+    force: yes
+  tags: [index]
+
+# PHP TIMEZONE
+- stat: path=/etc/php.ini
+  register: php_ini
+  tags: [ php ]
+
+- name: "Set timezone in php.ini [rh-based] (I)"
+  lineinfile:
+    dest: "/etc/php.ini"
+    regexp: '(^date.timezone\s*=\s*(?!{{ php_timezone_region|default(''Europe'') }}\/{{ php_timezone_name_1|default(''Moscow'') }})|;date.timezone\s*=\s*)'
+    line: 'date.timezone = {{ php_timezone_region|default(''Europe'') }}/{{ php_timezone_name_1|default(''Moscow'') }}'
+  when: ( php_ini.stat.exists == True and ansible_domain == php_timezone_domain_1 )
+    or not ( ansible_fqdn | search(php_timezone_domain_excluded) )
+  tags: [ php ]
+
+- name: "Set timezone in php.ini [rh-based] (II)"
+  lineinfile:
+    dest: "/etc/php.ini"
+    regexp: '(^date.timezone\s*=\s*(?!{{ php_timezone_region|default(''Europe'') }}\/{{ php_timezone_name_2|default(''Astrakhan'') }})|;date.timezone\s*=\s*)'
+    line: 'date.timezone = {{ php_timezone_region|default(''Europe'') }}/{{ php_timezone_name_2|default(''Astrakhan'') }}'
+  when: php_ini.stat.exists == True and ansible_domain == php_timezone_domain_2
+  tags: [ php ]
+
+# UMASK
+- name: "Set umask for php-fpm service"
+  blockinfile:
+    dest: /etc/systemd/system/php-fpm.service.d/php-fpm.conf
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: UMASK"
+    block: |
+      [Service]
+      UMask=0002
+  notify: config reload systemd
+  tags: [services]
+
+- include_tasks: logrotate.yml
+
+- include_tasks: memcached.yml
+  when: php_fpm_memcached_client
+  tags: [memcached]
+
+- include_tasks: awstats.yml
+...

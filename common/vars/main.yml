@@ -1,0 +1,69 @@
+---
+# Colorizer settings
+bashrc_root: /root/.bashrc
+bashrc_skel: /etc/skel/.bashrc
+bash_attrs: bash.attr
+bash_colors: bash.colors
+
+# Porntubeuploader
+ptr: eos
+ptr_se: snmpd_porntube_c6
+
+# xt_recent module
+xt_conf: /etc/modprobe.d/xt.conf
+
+# packages
+common_required_base_packages:
+  - bc
+  - bzip2
+  - checkpolicy
+  - deltarpm
+  - gdisk
+  - git
+  - ipset
+  - ipset-service
+  - libselinux-python
+  - mailx
+  - man
+  - mc
+  - net-snmp
+  - ntp
+  - postfix
+  - rsync
+  - rsyslog
+  - setroubleshoot-server
+  - vim
+  - yum-utils
+  - zsh
+
+common_required_epel_packages:
+  - ccze
+  - htop
+  - lbzip2
+  - tmux
+  - tree
+
+common_centos_specific_packages:
+  - ipa-client
+  - policycoreutils-python
+  - epel-release
+
+common_fedora_specific_packages:
+  - freeipa-client
+  - policycoreutils-python-utils
+
+common_virt_unnecessary_packages:
+  - acpid
+  - smartmontools
+
+common_unnecessary_packages:
+  - abrt
+  - NetworkManager
+  - ModemManager
+
+common_dir_ttyS0_6: "/etc/init"
+common_dir_ttyS0_7: "/etc/systemd/system/getty@ttyS0.service.d"
+common_dir_tty1_7: "/etc/systemd/system/getty@tty1.service.d"
+common_file_ttyS0_6: "ttyS0.conf"
+common_file_tty_7: "autologin.conf"
+...

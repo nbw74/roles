@@ -1,0 +1,7 @@
+---
+memcached_service_enable: true
+memcached_sasl_enable: false
+
+memcached_config:
+  empty: ""
+...

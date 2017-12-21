@@ -1,0 +1,37 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  vars:
+    ptr_path: ../../../../common/files/
+    ptr_se: snmpd_porntube_c6
+
+  tasks:
+  - name: copy ptr_se
+    copy: "src={{ ptr_path }}{{ ptr_se }}.te dest=/var/local/{{ ptr_se }}.te"
+    notify: checkmodule ptr_se
+
+
+  handlers:
+  - name: checkmodule ptr_se
+    command: checkmodule -M -m -o /var/local/{{ ptr_se }}.mod /var/local/{{ ptr_se }}.te
+    notify: package ptr_se
+
+  - name: package ptr_se
+    command: semodule_package -o /var/local/{{ ptr_se }}.pp -m /var/local/{{ ptr_se }}.mod
+    notify: install ptr_se
+
+  - name: install ptr_se
+    command: semodule -i /var/local/{{ ptr_se }}.pp
+    notify: rm ptr_se
+
+  - name: rm ptr_se
+    file:
+      path: /var/local/{{ ptr_se }}.{{ item }}
+      state: absent
+    with_items:
+      - mod
+      - pp
+
+### EOF

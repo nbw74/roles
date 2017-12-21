@@ -1,0 +1,14 @@
+---
+- name: "Template {{ ptr }}"
+  template:
+    src: "{{ ptr }}"
+    dest: "/usr/local/bin/{{ ptr }}"
+    owner: root
+    mode: 0755
+    force: yes
+  notify: restorecon ptr_se
+  tags: [ porntube ]
+  when: not alien
+
+- meta: flush_handlers
+

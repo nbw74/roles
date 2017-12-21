@@ -1,0 +1,7 @@
+#####
+# IPTables restart
+#
+- name: config restart iptables
+  service: name=iptables state=restarted
+  tags: [iptables]
+

@@ -1,0 +1,23 @@
+---
+- hosts: bacula-fd
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Ensure CA
+      copy:
+        src: /etc/bacula/cacert.pem
+        dest: /etc/bacula/cacert.pem
+        owner: root
+        group: root
+        mode: 0644
+        force: yes
+      notify: restart bacula-fd
+
+  handlers:
+    - name: restart bacula-fd
+      service:
+        name: bacula-fd
+        state: restarted
+
+# vim:ft=ansible:

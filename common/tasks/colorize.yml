@@ -1,0 +1,20 @@
+---
+- name: "Line for prompt colorization"
+  lineinfile:
+    dest: "{{ item }}"
+    line: '[[ -f /etc/bash.colors ]] && . /etc/bash.colors'
+  with_items:
+    - "{{ bashrc_root }}"
+    - "{{ bashrc_skel }}"
+  tags: [colorize]
+
+- name: "Colorizing files"
+  copy:
+    src: "{{ item }}"
+    dest: "/etc"
+    force: no
+  with_items:
+    - "{{ bash_attrs }}"
+    - "{{ bash_colors }}"
+  tags: [colorize]
+...

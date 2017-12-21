@@ -1,0 +1,91 @@
+---
+- name: Check OS version
+  fail:
+    msg: "This role is intended for RHEL (CentOS) version 6 or above"
+  when: ansible_distribution_major_version|int < 6
+
+- include: "packages.yml"
+
+- name: DB cluster initialization
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  command: "/usr/pgsql-{{ postgresql_version_raw }}/bin/initdb \
+          --pgdata={{ postgresql_datadir | quote }}
+          --encoding={{ postgresql_encoding }} \
+          --locale={{ postgresql_locale }}  \
+          --lc-collate={{ postgresql_lc_collate|default(postgresql_locale) }} \
+          --lc-messages={{ postgresql_lc_messages }}"
+  args:
+    creates: "{{ postgresql_datadir }}/PG_VERSION"
+
+- name: postgres homedir access mode
+  file:
+    path: "{{ postgresql_homedir }}"
+    state: directory
+    mode: 0750
+
+- name: Custom config directory
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  file:
+    path: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}"
+    state: directory
+    mode: 0700
+
+- name: Include in postgresql.conf
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  blockinfile:
+    path: "{{ postgresql_datadir }}/postgresql.conf"
+    insertafter: EOF
+    block: |
+      include_dir {{ postgresql_include_dir }}
+
+- name: Template custom config
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  template:
+    src: "{{ postgresql_custom_config }}.j2"
+    dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config }}"
+    mode: 0600
+
+- name: PG_IDENT configuration file
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  blockinfile:
+    path: "{{ postgresql_datadir }}/pg_ident.conf"
+    insertafter: EOF
+    block: |
+      supervisor      postgres                postgres
+      supervisor      zabbix                  postgres
+      supervisor      root                    postgres
+      {% if postgresql_ident_local is defined %}
+      {% for item in postgresql_ident_local %}
+      {{ item.map }} {{ item.sysuser}} {{ item.pguser }}
+      {% endfor %}
+      {% endif %}
+
+- name: PG_HBA configuration file
+  become: yes
+  become_user: "{{ postgresql_user }}"
+  template:
+    src: "pg_hba.conf"
+    dest: "{{ postgresql_datadir }}"
+    mode: 0600
+
+- name: PostgreSQL service enabled and started
+  service:
+    name: "postgresql-{{ postgresql_version_raw }}"
+    state: started
+    enabled: yes
+  when: not postgresql_pcmk_enable
+
+- include: "walbackup.yml"
+  when: postgresql_wal_backup_enable
+
+- include: "iptables.yml"
+  when: postgresql_iptables_enable
+
+- include: "pcmk.yml"
+  when: postgresql_pcmk_enable
+...

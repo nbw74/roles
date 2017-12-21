@@ -1,0 +1,16 @@
+---
+- include: packages.yml
+
+- include: iptables.yml
+
+- name: Template squid.conf
+  template:
+    src: "squid.conf.inet.j2"
+    dest: "/etc/squid/squid.conf"
+    backup: yes
+    force: yes
+    validate: 'squid -k parse -f %s'
+  notify: config restart squid
+  tags: [squid]
+
+- meta: flush_handlers

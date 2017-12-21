@@ -1,0 +1,7 @@
+Include "/etc/awstats/awstats.conf"
+
+LogFile="[BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log"
+SiteDomain="[DOMAIN]"
+HostAliases="www.[DOMAIN] m.[DOMAIN]"
+DirData="/var/lib/awstats/[DOMAIN]"
+CreateDirDataIfNotExists=1

@@ -1,0 +1,22 @@
+---
+- name: SELinux disabled
+  selinux:
+    state: disabled
+  register: selinux_disable
+
+- name: Reboot
+  shell: nohup bash -c "sleep 2s && reboot" &
+  when: selinux_disable.changed
+  async: 0
+  poll: 0
+  ignore_errors: true
+  register: reboot 
+
+- name: Restart waiting
+  local_action: wait_for host={{ inventory_hostname }} \
+    port=22 \
+    delay=10 \
+    timeout=300 \
+    state=started
+  when: reboot.changed
+...

@@ -1,0 +1,4 @@
+---
+memcached_sysconfig: "/etc/sysconfig/memcached"
+memcached_sasl_flag: "/root/.saslpasswd"
+...

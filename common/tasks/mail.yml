@@ -1,0 +1,24 @@
+---
+- name: "Set SELinux alert recipient"
+  lineinfile:
+    dest: /var/lib/setroubleshoot/email_alert_recipients
+    line: "{{ common_selinux_alert_recipients }}"
+    create: yes
+    mode: 0600
+  tags: [ mail ]
+
+- name: "Set inet_protocols in main.cf"
+  replace:
+    dest: /etc/postfix/main.cf
+    regexp: 'inet_protocols = all'
+    replace: 'inet_protocols = ipv4'
+  tags: [ mail ]
+
+- name: "Adding root alias in /etc/aliases"
+  lineinfile:
+    dest: /etc/aliases
+    line: "root:\t\t{{ common_aliases_root }}"
+  notify: config newaliases
+  when: common_aliases_root is defined
+  tags: [ mail ]
+...

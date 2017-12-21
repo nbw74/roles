@@ -1,0 +1,19 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: "Edit snmpd.conf (rh)"
+    lineinfile:
+      dest: "/etc/snmp/snmpd.conf"
+      regexp: 'extend porntube_uploader /usr/local/bin/porntubeupldr'
+      line: 'extend passwd /usr/local/bin/eos -m sysfiles -c'
+    notify:
+        - restart snmpd
+
+  handlers:
+    - name: restart snmpd
+      service: name=snmpd state=restarted
+
+### EOF

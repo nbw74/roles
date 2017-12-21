@@ -1,0 +1,10 @@
+--- .bashrc.old	2016-03-29 01:04:57.704913336 +0300
++++ .bashrc	2016-03-29 01:06:57.098100631 +0300
+@@ -11,6 +11,4 @@
+ 	. /etc/bashrc
+ fi
+ 
+-if [ -f /etc/bash.colors ]; then
+-	. /etc/bash.colors
+-fi
++[[ -f /etc/bash.colors ]] && . /etc/bash.colors

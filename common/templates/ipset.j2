@@ -1,0 +1,4 @@
+create SSH-DIRECT hash:net
+{% for address in common_ssh_direct_list %}
+{{ address|ipv4|ternary('add SSH-DIRECT ' ~ address,'# ' ~ address) }}
+{% endfor %}

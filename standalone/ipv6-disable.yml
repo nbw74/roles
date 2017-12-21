@@ -1,0 +1,14 @@
+---
+- hosts: bx.prod
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: installing required packages
+      yum: name=libselinux-python state=present
+    - name: disabling ipv6 all
+      sysctl: name=net.ipv6.conf.all.disable_ipv6 value=1 state=present
+    - name: disabling ipv6 default
+      sysctl: name=net.ipv6.conf.default.disable_ipv6 value=1 state=present
+
+# vim:ft=ansible:

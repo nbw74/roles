@@ -1,0 +1,18 @@
+---
+- name: "Check SSH-DIRECT in iptables config"
+  shell: "cat /etc/sysconfig/iptables"
+  changed_when: false
+  register: common_check_iptables
+
+- name: "Copy IPTables config"
+  copy:
+    src: "{{ item }}"
+    dest: /etc/sysconfig
+    force: yes
+  with_items:
+    - iptables
+    - ip6tables
+  when: common_check_iptables.stdout.find('SSH-DIRECT') == -1
+  notify: config restart iptables
+  tags: [iptables]
+...

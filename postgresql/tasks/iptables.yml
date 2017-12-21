@@ -1,0 +1,29 @@
+---
+- name: Check required dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ postgresql_sb_check }}"
+    - "{{ postgresql_sb_libexec }}"
+    - "{{ postgresql_sb_etc }}"
+
+- name: Iptables whitelist
+  template:
+    src: "{{ postgresql_iptables_config }}"
+    dest: "{{ postgresql_sb_etc }}"
+    mode: 0644
+  register: postgresql_whitelist
+
+- include: "iptables-sysvinit.yml"
+  when: ansible_distribution_major_version|int <= 6
+
+- include: "iptables-systemd.yml"
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Iptables service check script
+  template:
+    src: "_sb_iptables.postgresql"
+    dest: "{{ postgresql_sb_check }}"
+    mode: 0755
+...

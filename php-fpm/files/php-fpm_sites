@@ -1,0 +1,13 @@
+/var/www/*/log/*fpm-*.log {
+    create 0644 apache adm
+    daily
+    compress
+    missingok
+    notifempty
+    delaycompress
+    sharedscripts
+    postrotate
+        /bin/kill -SIGUSR1 `cat /run/php-fpm/php-fpm.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+    su root apache
+}

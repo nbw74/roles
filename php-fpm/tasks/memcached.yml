@@ -1,0 +1,20 @@
+---
+- name: Memcached client package
+  yum:
+    name: php-pecl-memcached
+  when: php_fpm_memcached_client
+  tags: [ packages, memcached ]
+
+- name: Memcached PHP module settings
+  lineinfile:
+    path: "/etc/php.d/50-memcached.ini"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backrefs: yes
+  with_items:
+    - { regexp: '^(memcached.sess_prefix\s+=\s+")\w+(\.\w+\.\w+\.")', line: '\1{{ ansible_hostname }}\2' }
+    - { regexp: '^(memcached.sess_consistent_hash\s+=\s+)[Oo]ff', line: '\1On' }
+    - { regexp: '^(memcached.sess_binary.*\s+=\s+)[Oo]ff', line: '\1On' }
+    - { regexp: '^(memcached.sess_number_of_replicas\s+=\s+)\d+', line: '\g<1>{{ php_fpm_memcached_nubmer_of_replicas }}' }
+  tags: [ memcached ]
+...

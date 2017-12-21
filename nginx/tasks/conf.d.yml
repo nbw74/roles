@@ -1,0 +1,30 @@
+---
+- name: "Ensure conf.d"
+  file:
+    path: "{{ confd }}"
+    state: directory
+    mode: 0755
+  tags: [nginx]
+
+- name: SSL cache settings
+  copy:
+    src: "10-ssl-cache.conf"
+    dest: "{{ confd }}"
+    mode: 0644
+  tags: [nginx]
+
+- name: "Template dummy host config"
+  template:
+    src: "00-dummy.j2"
+    dest: "{{ confd }}/00-dummy.conf"
+
+- name: Template vhost configs
+  copy:
+    src: "{{ item }}"
+    dest: "{{ confd }}"
+    force: yes
+  with_items:
+    - "TEMPLATE_NG_NG"
+    - "TEMPLATE_NG_NG_SSL"
+  tags: [templates]
+...

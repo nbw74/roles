@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+
+# smtp account configuration for default
+# (https://dev.1c-bitrix.ru/learning/course/?COURSE_ID=37&LESSON_ID=6689)
+account default
+logfile /var/log/msmtp.log
+host {{ bx_msmtp_host }}
+port {{ bx_msmtp_port }}
+from no_reply@{{ ansible_fqdn }}
+keepbcc on
+auth on
+user {{ bx_msmtp_user }}
+password {{ bx_msmtp_pass }}
+tls on
+tls_certcheck off

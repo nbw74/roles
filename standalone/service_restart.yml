@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: restart NTPd
+      service: name=ntpd state=restarted
+
+### EOF
+# vim:ft=ansible:

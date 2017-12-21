@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+{% for address in nginx_allow_status_list %}
+allow {{ address|ipv4|ternary(line,'# ' ~ line) }};
+{% endfor %}

@@ -1,0 +1,59 @@
+---
+- name: "Template rsyslog config"
+  template:
+    src: "12-remote.conf.j2"
+    dest: "/etc/rsyslog.d/12-remote.conf"
+    force: no
+  when: not alien
+  tags: [ rsyslog ]
+
+- name: "Add log2syslog in bashrc"
+  blockinfile:
+    dest: /etc/bashrc
+    block: |
+      HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
+
+      function log2syslog
+      {
+          typeset -i stat=$?
+          local d=$(/bin/pwd)
+          local CMD
+          local PREVCMD
+          local CMDFILE="$HOME/.slog-$UID" 
+
+          CMD=$(history 1)
+          [ -r "$CMDFILE" ] && PREVCMD=$(cat $CMDFILE)
+
+          if [[ "$CMD" != "$PREVCMD" ]]
+          then
+              echo "$CMD" > $CMDFILE
+              logger -p local2.notice -t bash -i -- ${USER}:${stat}:${d}: \($CMD\)
+          fi
+      }
+
+      trap log2syslog DEBUG
+  tags: [ rsyslog ]
+
+- name: "Add precmd in zshrc"
+  blockinfile:
+    dest: /etc/zshrc
+    block: |
+      precmd() {
+          typeset -i stat=$?
+          local d=$(/bin/pwd)
+          local PREVCMD
+          local CMDFILE="$HOME/.slog-$UID" 
+
+          local CMD
+          CMD=$(fc -iln -1)
+
+          [ -r "$CMDFILE" ] && PREVCMD=$(cat $CMDFILE)
+
+          if [[ "$CMD" != "$PREVCMD" ]]
+          then
+              echo "$CMD" > $CMDFILE
+              logger -p local2.notice -t zsh -i -- ${LOGNAME}:${stat}:${d}: \($CMD\)
+          fi
+      }
+  tags: [ rsyslog ]
+

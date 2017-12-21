@@ -1,0 +1,10 @@
+- hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    pornpath: /usr/local/bin
+    pornname: porntubeupldr
+
+  tasks:
+    - name: "upload {{ pornname }}"
+      shell: "{{ pornpath }}/{{ pornname }} -c"

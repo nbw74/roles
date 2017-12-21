@@ -1,0 +1,22 @@
+---
+- name: Patching .bashrc
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    broot: /root/.bashrc
+    bskel: /etc/skel/.bashrc
+
+  tasks:
+    - name: Patching {{ broot }}
+      patch:
+        dest: "{{ broot }}"
+        src: ".bashrc.patch"
+      ignore_errors: yes
+
+    - name: Patching {{ bskel }}
+      patch:
+        dest: "{{ bskel }}"
+        src: ".bashrc.patch"
+      ignore_errors: yes
+# vim:ft=ansible:

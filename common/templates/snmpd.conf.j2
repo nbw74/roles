@@ -1,0 +1,10 @@
+com2sec {{ common_snmp_secname }}       default     {{ common_snmp_community }}
+group   rog         v2c         {{ common_snmp_secname }}
+view    all         included    .1   80
+access  rog         ""          any noauth exact all all all
+syslocation {{ common_snmp_syslocation|default('Earth') }}
+syscontact {{ common_snmp_syscontact }}
+dontLogTCPWrappersConnects yes
+includeAllDisks 86%
+extend passwd /usr/local/bin/eos -m passwd -c
+extend conntrack /usr/local/bin/eos -m conntrack -f

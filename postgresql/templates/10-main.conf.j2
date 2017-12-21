@@ -1,0 +1,63 @@
+# THIS FILE IS ANSIBLE MANAGED.
+# HANDS OFF!
+
+# - Connection Settings -
+
+listen_addresses		= '{{ postgresql_conf['listen_addresses']|default('*') }}'
+port				= {{ postgresql_conf['port']|default('5432') }}
+max_connections			= {{ postgresql_conf['max_connections']|default('100') }}
+
+# - Memory -
+
+{% set auto_shared_buffers = ansible_memtotal_mb / 100 * 20 %}
+shared_buffers			= {{ postgresql_conf['shared_buffers']|default(auto_shared_buffers|int ~ 'MB') }}
+temp_buffers			= {{ postgresql_conf['temp_buffers']|default('8MB') }}
+{% set auto_work_mem = ansible_memtotal_mb / 100 * 1 %}
+work_mem			= {{ postgresql_conf['work_mem']|default(auto_work_mem|int ~ 'MB') }}
+{% set auto_maintenance_work_mem = ansible_memtotal_mb / 100 * 4 %}
+maintenance_work_mem		= {{ postgresql_conf['maintenance_work_mem']|default(auto_maintenance_work_mem|int ~ 'MB') }}
+{% if postgresql_conf['max_stack_depth'] is defined %}
+max_stack_depth			= {{ postgresql_conf['max_stack_depth'] }}
+{% endif %}
+
+# - Asynchronous Behavior -
+
+effective_io_concurrency	= {{ postgresql_conf['effective_io_concurrency']|default('2') }}
+
+# - Checkpoints -
+
+{% if postgresql_conf['max_wal_size'] is defined %}
+max_wal_size			= {{ postgresql_conf['max_wal_size'] }}
+{% endif %}
+
+# - Planner Cost Constants -
+
+{% if postgresql_conf['random_page_cost'] is defined %}
+random_page_cost		= {{ postgresql_conf['random_page_cost'] }}
+{% endif %}
+{% set auto_effective_cache_size = ansible_memtotal_mb / 100 * 50 %}
+effective_cache_size		= {{ postgresql_conf['effective_cache_size']|default(auto_effective_cache_size|int ~ 'MB') }}
+
+# - What to Log -
+
+log_timezone			= '{{ postgresql_conf['log_timezone']|default('W-SU') }}'
+
+# - Autovacuum Parameters -
+
+autovacuum			= on
+autovacuum_max_workers		= {{ postgresql_conf['autovacuum_max_workers']|default('3') }}
+autovacuum_vacuum_threshold	= {{ postgresql_conf['autovacuum_vacuum_threshold']|default('50') }}
+autovacuum_analyze_threshold	= {{ postgresql_conf['autovacuum_analyze_threshold']|default('50') }}
+autovacuum_vacuum_scale_factor	= {{ postgresql_conf['autovacuum_vacuum_scale_factor']|default('0.2') }}
+autovacuum_analyze_scale_factor	= {{ postgresql_conf['autovacuum_analyze_scale_factor']|default('0.1') }}
+
+# - Locale and Formatting -
+
+timezone			= '{{ postgresql_conf['timezone']|default('W-SU') }}'
+lc_messages			= '{{ postgresql_lc_messages }}'
+lc_monetary			= '{{ postgresql_lc_monetary|default(postgresql_locale) }}'
+lc_numeric			= '{{ postgresql_lc_numeric|default(postgresql_locale) }}'
+lc_time				= '{{ postgresql_lc_time|default(postgresql_locale) }}'
+default_text_search_config	= '{{ postgresql_conf['default_text_search_config']|default('pg_catalog.russian') }}'
+
+# - The End -

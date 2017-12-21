@@ -1,0 +1,23 @@
+---
+- name: "Check hostname in /etc/sysconfig/network"
+  lineinfile:
+    dest: "/etc/sysconfig/network"
+    regexp: '^HOSTNAME='
+    line: 'HOSTNAME={{ ansible_fqdn }}'
+  when: ansible_distribution_major_version|int <= 6
+  notify: hostname 6
+  tags: [ hostname ]
+
+- name: "Check hostname (7)"
+  shell: "hostnamectl --static status"
+  register: common_check_hostname
+  changed_when: false
+  when: ansible_distribution_major_version|int >= 7
+
+- name: "Run hostnamectl"
+  command: "hostnamectl set-hostname {{ ansible_fqdn }}"
+  when: ansible_fqdn not in common_check_hostname.stdout
+  tags: [ hostname ]
+
+- meta: flush_handlers
+...

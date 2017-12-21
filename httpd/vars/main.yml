@@ -1,0 +1,5 @@
+---
+included: /etc/nginx/include.d
+confd: /etc/nginx/conf.d
+a2d: /etc//httpd/conf.d
+

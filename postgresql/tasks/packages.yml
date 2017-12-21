@@ -1,0 +1,37 @@
+---
+- name: PostgreSQL repo
+  yum_repository:
+    name: "pgdg{{ postgresql_version_norm }}"
+    description: "PostgreSQL {{postgresql_version_raw}} $releasever - $basearch"
+    baseurl: "https://download.postgresql.org/pub/repos/yum/{{ postgresql_version_raw }}/redhat/rhel-$releasever-$basearch"
+    file: "pgdg-{{ postgresql_version_norm }}-centos"
+    gpgcheck: yes
+    enabled: yes
+    gpgkey: "http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ postgresql_version_norm }}"
+
+- name: PostgreSQL packages
+  yum:
+    name: "postgresql{{ postgresql_version_norm }}{{ item }}"
+    state: present
+  with_items:
+    - ""
+    - "-server"
+    - "-contrib"
+
+- name: Pacemaker packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "pacemaker"
+    - "pcs"
+    - "resource-agents"
+  when: postgresql_pcmk_enable
+
+- name: Additional packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ postgresql_additional_packages }}"
+  when: postgresql_additional_packages is defined
+...

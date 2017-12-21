@@ -1,0 +1,28 @@
+---
+postgresql_version: 9.6  # Not yet(19-05-2017) EOL'd: 9.3, 9.4, 9.5, 9.6
+postgresql_version_raw: "{{ postgresql_version|string }}"
+postgresql_version_norm: "{{ postgresql_version_raw|regex_replace('\\.', '') }}"
+
+postgresql_homedir: "/var/lib/pgsql"
+postgresql_basedir: "{{ postgresql_homedir }}/{{ postgresql_version_raw }}"
+postgresql_datadir: "{{ postgresql_basedir }}/data"
+
+postgresql_encoding: "utf8"
+postgresql_locale: "ru_RU.UTF-8"
+postgresql_lc_messages: "en_US.UTF-8"
+
+postgresql_iptables_enable: true
+postgresql_pcmk_enable: false
+postgresql_pcmk_ra_org: "custom"
+postgresql_pcmk_force_ra_update: false
+postgresql_pcmk_force_pcs_update: false
+
+postgresql_backup_enable: true
+postgresql_wal_backup_enable: false
+postgresql_wal_backup_server: ''
+postgresql_wal_backup_user: "walbackup"
+postgresql_wal_backup_dir: ''
+
+postgresql_conf:
+  empty: ""
+...

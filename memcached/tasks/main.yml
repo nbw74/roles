@@ -1,0 +1,42 @@
+---
+- name: Check if role assigned to host
+  fail:
+    msg: "Role 'memcached' is not assigned to this host"
+  when: "'memcached' not in roles"
+
+- name: Remi repo is installed
+  yum:
+    name: "http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+    state: present
+  tags: [ packages ]
+
+- name: Memcached is installed
+  yum:
+    enablerepo: remi
+    name: memcached
+    state: present
+  tags: [ packages ]
+
+- name: Memcached configuration template
+  template:
+    src: "memcached.j2"
+    dest: "{{ memcached_sysconfig }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart memcached
+
+- name: Create SASL user
+  shell: "echo ''{{ memcached_sasl_password|default('Clock4bake4aspect') }}'' | saslpasswd2 -a memcached -c {{ memcached_sasl_user|default('cacheuser') }} && echo ''{{ memcached_sasl_user|default('cacheuser') }}:{{ memcached_sasl_password|default('Clock4bake4aspect') }}'' > {{ memcached_sasl_flag }}"
+  args:
+    creates: "{{ memcached_sasl_flag }}"
+  when: memcached_sasl_enable
+  tags: [ sasl ]
+
+- name: Manage memcached service
+  service:
+    name: memcached
+    state: "{{ memcached_service_enable|ternary('started','stopped') }}"
+    enabled: "{{ memcached_service_enable|ternary('yes','no') }}"
+  tags: [ services ]
+...

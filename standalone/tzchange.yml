@@ -1,0 +1,56 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - shell: date
+    register: date_contents
+
+  - name: Update tzdata (yum)
+    yum: name=tzdata state=latest
+    when: (( ansible_distribution == "CentOS" ) or
+          ( ansible_distribution == "Fedora" and ansible_distribution_major_version < 22 )) and
+          ( date_contents.stdout.find('+04') == -1 )
+
+  - name: Update tzdata (dnf)
+    dnf: name=tzdata state=latest
+    when: ( ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 22 ) and
+          ( date_contents.stdout.find('+04') == -1 )
+
+  - name: Update tzdata (apt)
+    apt: name=tzdata state=latest update_cache=yes
+    when: ( ansible_distribution == "Debian" and date_contents.stdout.find('+04') == -1 )
+
+  - name: Change timezone for CentOS 6, Debian [67]
+    shell: "mv /etc/localtime /root/old.timezone && ln -sv /usr/share/zoneinfo/Europe/Astrakhan /etc/localtime"
+    when: (( ansible_distribution == "CentOS" and ansible_distribution_major_version == "6") or
+          ( ansible_distribution == "Debian" and
+          ( ansible_distribution_major_version == "6" or ansible_distribution_major_version == "7"  ))) and
+          ( date_contents.stdout.find('+04') == -1 )
+
+  - name: Change timezone for CentOS 7, Fedora, Debian 8
+    command: "timedatectl set-timezone Europe/Astrakhan"
+    when: (( ansible_distribution == "CentOS" and ansible_distribution_major_version == "7" ) or
+          ( ansible_distribution == "Fedora" ) or
+          ( ansible_distribution == "Debian" and ansible_distribution_major_version == "8" )) and
+          ( date_contents.stdout.find('+04') == -1 )
+
+  - stat: path=/etc/php.ini
+    register: php_ini
+
+  - name: Editing php.ini (rh-based)
+    lineinfile:
+      dest: "/etc/php.ini"
+      regexp: '(^date.timezone\s*=\s*Europe\/Moscow|^date.timezone\s*=\s*Europe\/Volgograd|;date.timezone\s*=\s*)'
+      line: 'date.timezone = Europe/Astrakhan'
+    when: php_ini.stat.exists == True
+    notify:
+        - restart httpd
+
+  handlers:
+    - name: restart httpd
+      service: name=httpd state=restarted
+
+### EOF
+# vim:ft=ansible:

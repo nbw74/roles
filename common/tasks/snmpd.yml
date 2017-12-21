@@ -1,0 +1,9 @@
+---
+- name: "Template snmpd config"
+  template:
+    src: "snmpd.conf.j2"
+    dest: "/etc/snmp/snmpd.conf"
+    backup: yes
+  when: not alien
+  tags: [ snmpd ]
+

@@ -1,0 +1,10 @@
+---
+
+- name: "Template 91-awstats.j2"
+  template:
+    dest: "{{ confd }}/91-awstats.conf"
+    src: 91-awstats.j2
+    owner: root
+    mode: 0644
+    force: no
+  tags: [awstats]

@@ -1,0 +1,5 @@
+---
+php_fpm_memcached_client: false
+php_fpm_memcached_nubmer_of_replicas: 1
+php_fpm_force_templates: true
+...

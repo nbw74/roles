@@ -1,0 +1,90 @@
+- name: Update all packages
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    pornpath: /usr/local/bin
+    pornname: eos
+    porn_args: "-m passwd -u"
+
+  tasks:
+    - name: Exclude bitrix-env (broken dependencies) [1]
+      command: getent passwd bitrix
+      register: getent_bitrix
+      ignore_errors: yes
+      tags: [bitrix-env]
+
+    - name: Exclude bitrix-env (broken dependencies) [2]
+      lineinfile:
+        dest: /etc/yum.conf
+        line: "exclude=bitrix-env* ansible*"
+        state: present
+      when: getent_bitrix.stdout.find('bitrix') == 0
+      tags: [bitrix-env]
+
+    - name: Update all (yum)
+      yum: name=* state=latest
+      when: (( ansible_distribution == "CentOS" ) or
+            ( ansible_distribution == "Fedora" and ansible_distribution_major_version < 22 ))
+      environment: "{{ proxy_env }}"
+      notify: "upload {{ pornname }}"
+
+    - name: Update all (dnf)
+      dnf: name=* state=latest
+      when: ( ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 22 )
+      notify: "upload {{ pornname }}"
+
+    - name: Update all (apt)
+      apt: upgrade=dist update_cache=yes
+      when: ( ansible_distribution == "Debian" )
+      notify: "upload {{ pornname }}"
+
+    - name: "Check for existing {{ pornname }}"
+      stat: "path={{ pornpath }}/{{ pornname }}"
+      register: porn_path
+
+    - meta: flush_handlers
+
+    - name: Check for reboot hint (rh)
+      shell: LAST_KERNEL=$(rpm -q --last kernel|sed -r 's/^kernel-(\S+).*/\1/g'|head -1); CURRENT_KERNEL=$(uname -r); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+      ignore_errors: True
+      register: reboot_hint_rh
+      when: ( ansible_distribution == "CentOS" or ansible_distribution == "Fedora" )
+
+    - name: Check for reboot hint (deb)
+      shell: LAST_KERNEL=$(dpkg --list|grep linux-image|sed -r 's/^ii\s+linux-image-\S+\s+(\S+).*/\1/g'|head -1); CURRENT_KERNEL=$(cat /proc/version | awk '{ print $NF }'); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+      ignore_errors: True
+      register: reboot_hint_deb
+      when: ( ansible_distribution == "Debian" )
+
+    - name: Rebooting (rh)
+      shell: shutdown -r +1
+      ignore_errors: True
+      async: 0
+      poll: 0
+      when: (( ansible_distribution == "CentOS" or ansible_distribution == "Fedora" ) and
+            reboot_hint_rh.stdout.find("reboot") != -1 )
+      register: rebooting_rh
+
+    - name: Wait for (rh) to reboot...
+      pause: seconds=45
+      when: rebooting_rh|changed
+
+    - name: Rebooting (deb)
+      shell: shutdown -r +1
+      ignore_errors: True
+      async: 0
+      poll: 0
+      when: ansible_distribution == "Debian" and reboot_hint_deb.stdout.find("reboot") != -1
+      register: rebooting_deb
+
+    - name: Wait for (deb) to reboot...
+      pause: seconds=45
+      when: rebooting_deb|changed
+
+  handlers:
+    - name: "upload {{ pornname }}"
+      shell: "{{ pornpath }}/{{ pornname }} {{ porn_args }}"
+      when: porn_path.stat.exists == True
+      ignore_errors: True
+...

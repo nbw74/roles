@@ -1,0 +1,18 @@
+---
+- name: Eos upload
+  hosts: all
+  become: yes
+  vars:
+    eos_path: "/usr/local/bin/eos"
+
+  tasks:
+    - name: check path
+      stat:
+        path: "{{ eos_path }}"
+      register: eos_exists
+      changed_when: false
+
+    - name: "EOS UPLOAD"
+      shell: "{{ eos_path }} -m passwd -u"
+      when: eos_exists.stat.exists == true
+...

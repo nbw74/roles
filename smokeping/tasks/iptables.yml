@@ -1,0 +1,13 @@
+#####
+# IPTables config
+#
+- name: "Copy IPTables config"
+  copy:
+    src: "{{ item }}"
+    dest: /etc/sysconfig
+    force: yes
+  with_items:
+    - iptables
+  notify: config restart iptables
+  tags: [iptables]
+

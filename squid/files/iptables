@@ -1,0 +1,15 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [39:6040]
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -m conntrack --ctstate INVALID -j DROP
+-A INPUT -p tcp -m tcp --dport 22 -m set --match-set SSH-DIRECT src -m conntrack --ctstate NEW -j ACCEPT
+-A INPUT -i eth0 -p tcp -m multiport --dports 3128 -m conntrack --ctstate NEW -m set --match-set PERMIT-SQUID src -j ACCEPT
+-A INPUT -i eth0 -p udp -m multiport --dports 123,161 -m set --match-set SSH-DIRECT src -j ACCEPT
+-A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
+-A INPUT -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -j REJECT --reject-with icmp-proto-unreachable
+COMMIT

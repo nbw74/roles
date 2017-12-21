@@ -1,0 +1,18 @@
+---
+- name: "Template ipset config"
+  template:
+    src: "ipset.j2"
+    dest: "/etc/sysconfig/ipset"
+    force: no
+  when: ansible_distribution == "Fedora" or ansible_distribution == "CentOS"
+  tags: [ services, ipset ]
+
+- name: "Enable and start ipset service"
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - ipset
+  tags: [ services, ipset ]
+...

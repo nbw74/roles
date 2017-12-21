@@ -1,0 +1,131 @@
+# vim:ft=ansible:
+---
+- hosts: all
+  become: no
+  vars:
+    user: nbw
+
+  tasks:
+    - name: Presence of the required packages
+      become: yes
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - zsh
+        - vim
+        - tree
+        - git
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_distribution_major_version|int <= 21
+
+    - name: Set repo schema [ssh://]
+      set_fact:
+        repo: "git@github.com:nbw74/dotfiles.git"
+      when: alien is not defined
+
+    - name: Set repo schema [git://]
+      set_fact:
+        repo: "git@github.com:nbw74/dotfiles.git"
+      when: alien is defined
+
+    - name: Check if path exists
+      stat:
+        path: '/home/{{ user }}/.dotfiles'
+      register: check_path
+
+    - name: TMP check if doctags path exists
+      stat:
+        path: '/home/{{ user }}/.dotfiles/.vim/doc/tags'
+      register: check_path_doctags
+
+    - name: TMP git checkout
+      shell: "cd .dotfiles && git checkout -- .vim/doc/tags"
+      when:
+        - check_path.stat.exists
+        - check_path_doctags.stat.exists
+
+    - name: Git update
+      git:
+        repo: '{{ repo }}'
+        dest: '/home/{{ user }}/.dotfiles'
+        clone: no
+        update: yes
+        accept_hostkey: yes
+      when: check_path.stat.exists == true
+
+    - name: Git clone
+      git:
+        repo: '{{ repo }}'
+        dest: '/home/{{ user }}/.dotfiles'
+        clone: yes
+        accept_hostkey: yes
+      when: check_path.stat.exists == false
+      notify: remove all
+
+    - meta: flush_handlers
+
+    - name: Check tmp dir
+      file:
+        state: directory
+        path: '/home/{{ user }}/.tmp'
+        owner: '{{ user }}'
+        group: '{{ user }}'
+
+    - name: Touch .viminfo
+      become: yes
+      file:
+        state: touch
+        path: '/home/{{ user }}/.viminfo'
+        owner: '{{ user }}'
+        group: '{{ user }}'
+
+    - name: Compile .zshrc.zwc
+      command: "/bin/zsh -i -c src"
+
+  handlers:
+    - name: remove all
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - .config/mc/ini
+        - .vim
+        - .zsh
+        - .gitconfig
+        - .tmux.conf
+        - .vimrc
+        - .zlogin
+        - .zlogout
+        - .zshrc
+      notify: create symlinks
+
+    - name: create symlinks
+      file:
+        src: '.dotfiles/{{ item }}'
+        path: '{{ item }}'
+        state: link
+      with_items:
+        - .vim
+        - .zsh
+        - .gitconfig
+        - .tmux.conf
+        - .vimrc
+        - .zlogin
+        - .zlogout
+        - .zshrc
+      notify: create MC config dir
+
+    - name: create MC config dir
+      file:
+        path: .config/mc
+        state: directory
+      notify: create MC ini symlink
+
+    - name: create MC ini symlink
+      file:
+        src: '../../.dotfiles/.config/mc/ini'
+        path: '.config/mc/ini'
+        state: link
+...

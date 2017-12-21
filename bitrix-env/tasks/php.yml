@@ -1,0 +1,24 @@
+---
+# - name: "Enable PHP modules"
+#   lineinfile:
+#     dest: "{{ item.dest }}"
+#     line: "{{ item.line }}"
+#     state: present
+#     create: yes
+#   with_items:
+#     - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
+#   tags: [php]
+#   Нехуй! Руками включать надо!
+
+- name: "Disable pdo_dblib"
+  lineinfile:
+    dest: "{{ item.dest }}"
+    regexp: "{{ item.regexp }}"
+    state: absent
+  with_items:
+    - { dest: '/etc/php.d/pdo_dblib.ini', regexp: '^extension=pdo_dblib.so' }
+  notify: pdo_dblib chattr
+  tags: [php]
+
+- meta: flush_handlers
+

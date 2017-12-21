@@ -1,0 +1,4 @@
+#!/bin/sh
+if [ -x /usr/share/awstats/tools/awstats_updateall.pl ]; then
+    /usr/share/awstats/tools/awstats_updateall.pl now -configdir="/etc/awstats" -awstatsprog="/usr/share/awstats/wwwroot/cgi-bin/awstats.pl" >/dev/null
+fi

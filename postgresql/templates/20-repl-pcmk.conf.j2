@@ -1,0 +1,41 @@
+# THIS FILE IS ANSIBLE MANAGED.
+# HANDS OFF!
+
+# - WAL Settings -
+
+{% if postgresql_version_norm|int >= 96 %}
+wal_level			= replica
+{% else %}
+wal_level			= hot_standby
+{% endif %}
+wal_log_hints			= on
+
+# - Archiving -
+
+archive_mode			= on
+{% if postgresql_wal_backup_enable %}
+archive_command			= '{{ postgresql_sb_libexec ~ '/' ~ postgresql_wal_backup_script ~ ' %p %f' }}'
+{% else %}
+archive_command			= '{{ postgresql_conf['archive_command']|default('cp %p /var/lib/pgsql/' ~ postgresql_version_raw ~ '/pg_archive/%f') }}'
+{% endif %}
+
+# - Replication: Sending Server(s) -
+
+max_wal_senders			= 10
+wal_keep_segments		= {{ postgresql_conf['wal_keep_segments']|default('32') }}
+wal_sender_timeout		= 5000
+max_replication_slots		= 10
+
+# - Replication: Standby Servers -
+
+hot_standby			= on
+max_standby_archive_delay	= -1
+max_standby_streaming_delay	= -1
+wal_receiver_status_interval	= 2
+wal_receiver_timeout		= 5000
+
+# - Error Handling
+
+restart_after_crash		= false
+
+# - The End -

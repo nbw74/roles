@@ -1,0 +1,43 @@
+---
+- name: "Set private IP address [VMware]"
+  set_fact:
+    private_ip: "{{ ansible_ens192.ipv4.address }}"
+  when: ansible_virtualization_type == "VMware"
+
+- name: "Set public IP address [VMware]"
+  set_fact:
+    public_ip: "{{ ansible_ens224.ipv4.address }}"
+  when: ansible_virtualization_type == "VMware" and
+        ansible_ens224 is defined
+
+- name: "Set private IP address [kvm]"
+  set_fact:
+    private_ip: "{{ ansible_eth0.ipv4.address }}"
+  ignore_errors: yes
+  when: ansible_virtualization_type == "kvm" or ansible_virtualization_type == "NA"
+
+- name: "Set public IP address [kvm]"
+  set_fact:
+    public_ip: "{{ ansible_eth1.ipv4.address }}"
+  when: (ansible_virtualization_type == "kvm" or ansible_virtualization_type == "NA") and
+        ansible_eth1 is defined
+
+- name: "Set private IP address [virtualbox]"
+  set_fact:
+    private_ip: "{{ ansible_enp0s3.ipv4.address }}"
+  ignore_errors: yes
+  when: ansible_virtualization_type == "virtualbox"
+
+- name: "Set public IP address [virtualbox]"
+  set_fact:
+    public_ip: "{{ ansible_eno1.ipv4.address }}"
+  when: ansible_virtualization_type == "virtualbox" and
+        ansible_eno1 is defined
+
+# - debug: msg="private_ip is {{ private_ip }}"
+#
+- name: "Swap IPs if needed"
+  set_fact:
+    public_ip: "{{ private_ip }}"
+  when: public_ip is undefined
+

@@ -1,0 +1,45 @@
+# Color definitions
+#
+# PR = Prompt
+# BR = Bright
+# BG = Background
+
+# regular:
+PR_BLACK='\033[0;30m'
+PR_RED='\033[0;31m'
+PR_GREEN='\033[0;32m'
+PR_YELLOW='\033[0;33m'
+PR_BLUE='\033[0;34m'
+PR_MAGENTA='\033[0;35m'
+PR_CYAN='\033[0;36m'
+PR_WHITE='\033[0;37m'
+# bold:
+PR_BR_BLACK='\033[1;30m'
+PR_BR_RED='\033[1;31m'
+PR_BR_GREEN='\033[1;32m'
+PR_BR_YELLOW='\033[1;33m'
+PR_BR_BLUE='\033[1;34m'
+PR_BR_MAGENTA='\033[1;35m'
+PR_BR_CYAN='\033[1;36m'
+PR_BR_WHITE='\033[1;37m'
+
+PR_RESET='\033[0m'
+PR_BG_RESET='\033[40m'
+PR_BG_RED='\033[41m'
+PR_BG_GREEN='\033[42m'
+PR_BG_WHITE='\033[47m'
+
+# File contains local machine attributes
+ATTRIB_FILE=/etc/bash.attr
+
+if [ -f "$ATTRIB_FILE" -a -r "$ATTRIB_FILE" ]; then
+    . $ATTRIB_FILE
+# Root or no root?
+    if (( $EUID == 0 )); then
+    	PR_USER="$PR_ROOT"
+    fi
+# Prompt definition
+    PS1="\[${PR_CODE}\]\[${PR_BG_RESET}\][${PR_ATTRIB}-${PR_SRV_CODE}]\[${PR_BG_RESET}\]${debian_chroot:+($debian_chroot)}\
+\[${PR_USER}\]\u\[${PR_BR_WHITE}\]@\[${PR_HOST}\]\h\[${PR_RESET}\]:\[${PR_GREEN}\]\w\[${PR_RESET}\]\\$ "
+fi
+

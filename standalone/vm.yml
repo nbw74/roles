@@ -1,0 +1,131 @@
+---
+- name: Virtual machine state definition
+  hosts: all
+  become: yes
+  vars:
+    old_package: "acpid"
+    new_package: "qemu-guest-agent"
+    old_service: "acpid"
+    new_service_6: "qemu-ga"
+    new_service_7: "qemu-guest-agent"
+    ttyS0_6: "ttyS0.conf"
+    ttyS0_7: "autologin.conf"
+    ttyS0_dir: "/etc/systemd/system/getty@ttyS0.service.d"
+
+  tasks:
+    - name: Fail if not a guest
+      fail:
+        msg: "NOT A GUEST"
+      when: 'ansible_virtualization_role != "guest"'
+
+    - set_fact:
+        vm_hv_type: "kvm"
+      when:
+        - 'ansible_virtualization_type == "kvm"'
+        - 'ansible_virtualization_role == "guest"'
+
+    - name: "{{ old_service }} disabled and stopped"
+      service:
+        name: "{{ old_service }}"
+        state: stopped
+        enabled: no
+      failed_when: false
+      when: vm_hv_type == "kvm"
+
+#####
+# GUEST AGENT STUFF
+#
+    - name: "{{ old_package }} package is not present"
+      yum:
+        name: "{{ old_package }}"
+        state: absent
+      when: vm_hv_type == "kvm"
+
+    - name: "Latest version of the {{ new_package }} package"
+      yum:
+        name: "{{ new_package }}"
+        state: latest
+      when: vm_hv_type == "kvm"
+
+    - name: "{{ new_service_6 }} enabled and started (6)"
+      service:
+        name: "{{ new_service_6 }}"
+        state: started
+        enabled: yes
+      when:
+        - vm_hv_type == "kvm"
+        - ansible_distribution_major_version == "6"
+
+    - name: "{{ new_service_7 }} enabled and started (7)"
+      service:
+        name: "{{ new_service_7 }}"
+        state: started
+        enabled: yes
+      when:
+        - vm_hv_type == "kvm"
+        - ansible_distribution_major_version == "7"
+
+#####
+# AUTOLOGIN STUFF
+#
+    - name: ttyS0 enabled (6)
+      copy:
+        src: "{{ ttyS0_6 }}"
+        dest: "/etc/init/{{ ttyS0_6 }}"
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+      when: ansible_distribution_major_version == "6"
+      notify: initctl
+
+    - name: "Check getty@ttyS0.service.d directory"
+      file:
+        path: "{{ ttyS0_dir }}"
+        state: directory
+      when: ansible_distribution_major_version == "7"
+
+    - name: ttyS0 service enabled
+      systemd:
+        name: getty@ttyS0.service
+        enabled: yes
+      when: ansible_distribution_major_version == "7"
+
+    - name: "Check override file"
+      copy:
+        src: "{{ ttyS0_7 }}"
+        dest: "{{ ttyS0_dir }}/{{ ttyS0_7 }}"
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+      when: ansible_distribution_major_version == "7"
+      notify: systemd ttyS0 restart
+
+#####
+# HANDLERS
+#
+  handlers:
+    - name: initctl
+      command: "initctl start ttyS0"
+
+    - name: systemd ttyS0 restart
+      systemd:
+        daemon_reload: yes
+        name: getty@ttyS0.service
+        state: restarted
+
+    - name: vm reboot
+      shell: nohup bash -c "sleep 2s && reboot" &
+      async: 0
+      poll: 0
+      ignore_errors: true
+      notify: reboot waiting
+
+    - name: reboot waiting
+      local_action: wait_for host={{ inventory_hostname }} \
+        port=22 \
+        delay=10 \
+        timeout=300 \
+        state=started
+...

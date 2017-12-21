@@ -1,0 +1,18 @@
+---
+- name: Iptables-service disabled
+  service:
+    name: iptables
+    enabled: no
+    state: stopped
+
+- name: Firewalld installed
+  yum:
+    name: firewalld
+    state: latest
+
+- name: Firewalld enabled
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
+...

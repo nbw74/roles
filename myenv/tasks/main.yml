@@ -1,0 +1,109 @@
+---
+- name: Packages installed
+  become: yes
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - zsh
+    - vim
+    - tree
+    - git
+    - libselinux-python
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int <= 21
+    - not requiretty
+
+- name: Sudoers (I)
+  become: yes
+  lineinfile:
+    path: "/etc/sudoers"
+    regexp: '^(Defaults\s+always_set_home)'
+    line: '# \1'
+    backrefs: yes
+  when: not requiretty
+
+- name: Check if path exists
+  stat:
+    path: '/home/{{ username }}/.dotfiles'
+  register: check_path
+
+- name: Git update
+  git:
+    repo: '{{ repo }}'
+    dest: '/home/{{ username }}/.dotfiles'
+    clone: no
+    update: yes
+    accept_hostkey: yes
+  when: check_path.stat.exists == true
+
+- name: Git clone
+  git:
+    repo: '{{ repo }}'
+    dest: '/home/{{ username }}/.dotfiles'
+    clone: yes
+    accept_hostkey: yes
+  when: check_path.stat.exists == false
+  notify: touch zshrc
+
+- meta: flush_handlers
+
+- name: Attrib file (touch)
+  file:
+    state: touch
+    path: "/home/{{ username }}/{{ prompt_file }}"
+  changed_when: false
+
+- name: Set prompt fact if host
+  set_fact:
+    prompt_color_user: 'GREEN'
+    prompt_color_root: 'RED'
+  when: ansible_virtualization_role == "host" or ansible_virtualization_role is undefined
+
+- name: Set prompt fact if guest
+  set_fact:
+    prompt_color_user: 'CYAN'
+    prompt_color_root: 'YELLOW'
+  when: ansible_virtualization_role == "guest"
+
+- name: Attrib file
+  blockinfile:
+    dest: "/home/{{ username }}/{{ prompt_file }}"
+    block: |
+      # Username color (phy=GREEN, virt=CYAN)
+      PR_USER=${PR_BR_{{ prompt_color_user }}}
+      # Root user color (phy=RED, virt=YELLOW)
+      PR_ROOT=${PR_BR_{{ prompt_color_root }}}
+      # Hostname color (prod=RED, dev=GREEN, test=YELLOW, net=BLUE, localhost=MAGENTA)
+      PR_HOST=${PR_BR_YELLOW}
+
+- name: Check tmp dir
+  file:
+    state: directory
+    path: '/home/{{ username }}/.tmp'
+    owner: '{{ username }}'
+
+- name: Touch .viminfo
+  become: yes
+  file:
+    state: touch
+    path: "/home/{{ username }}/.viminfo"
+    owner: "{{ username }}"
+  changed_when: false
+  when: not requiretty
+
+- name: Check user shell
+  become: yes
+  user:
+    name: "{{ username }}"
+    shell: "/bin/zsh"
+  when: not requiretty
+
+- name: SSH key
+  authorized_key:
+    user: "{{ username }}"
+    state: present
+    key: "{{ lookup('file', '/home/{{ addkey_user|default(username) }}/.ssh/id_rsa.pub') }}"
+  when: addkey
+...

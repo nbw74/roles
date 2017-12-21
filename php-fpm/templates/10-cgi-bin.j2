@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+# Manual customization of this file is not recommended.
+
+upstream fpm9000 {
+    server 127.0.0.1:9000;
+}
+
+server {
+    include         /etc/nginx/include.d/listen_inside.conf;
+    server_name     {{ ansible_fqdn }};
+
+    # Load configuration files for the default server block.
+    include         /etc/nginx/default.d/*.conf;
+    
+    set $root_path  '/var/www';
+    set $fpmport    9000;
+
+    root            $root_path;
+    index           index.php;
+
+    include         /etc/nginx/include.d/fpm.conf;
+}
+

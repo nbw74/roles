@@ -1,0 +1,25 @@
+---
+- name: Postfix installed
+  yum:
+    name: postfix
+    state: latest
+  tags: [ packages, mail ]
+
+- name: "Template msmtprc"
+  template:
+    dest: "/etc/msmtprc"
+    src: msmtprc.j2
+    force: yes
+    # notify: link template msmtprc
+  tags: [ mail ]
+
+- name: "Adding bitrix alias in /etc/aliases"
+  lineinfile:
+    dest: /etc/aliases
+    line: "bitrix:\t\t{{ bx_mail_alias }}"
+  notify: config newaliases
+  when: bx_mail_alias is defined
+  tags: [ mail, mail_alias ]
+
+- meta: flush_handlers
+...

@@ -1,0 +1,4 @@
+---
+repo: "https://github.com/nbw74/dotfiles.git"
+prompt_file: .prompt.attr
+...

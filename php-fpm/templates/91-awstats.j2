@@ -1,0 +1,47 @@
+# {{ ansible_managed }}
+# Manual customization of this file is not recommended.
+
+server {
+    include         /etc/nginx/include.d/listen_inside.conf;
+    server_name     awstats.{{ ansible_fqdn }};
+
+    root            /usr/share/awstats/wwwroot;
+
+    location ^~ /awstatsclasses {
+        alias   /usr/share/awstats/wwwroot/classes/;
+        access_log off;
+    }
+
+    location ^~ /awstatscss {
+        alias   /usr/share/awstats/wwwroot/css/;
+        access_log off;
+    }
+
+    location ^~ /awstatsicons {
+        alias   /usr/share/awstats/wwwroot/icon/;
+        access_log off;
+    }
+
+    location ~ ^/cgi-bin/.*\.pl$ {
+        gzip            off;
+        include         /etc/nginx/fastcgi_params;
+        fastcgi_pass    fpm9000;
+        fastcgi_index   cgi-bin.php;
+        fastcgi_param   SCRIPT_FILENAME    /etc/nginx/cgi-bin.php;
+        fastcgi_param   SCRIPT_NAME        /cgi-bin/cgi-bin.php;
+        fastcgi_param   X_SCRIPT_FILENAME  /usr/share/awstats/wwwroot$fastcgi_script_name;
+        fastcgi_param   X_SCRIPT_NAME      $fastcgi_script_name;
+        fastcgi_param   REMOTE_USER        $remote_user;
+    }
+    
+    location ~ ^/cgi-bin/.*\.php$ {
+        include             /etc/nginx/fastcgi_params;
+        try_files           $uri =404;
+        fastcgi_intercept_errors on;
+        fastcgi_param       SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass        fpm9000;
+        include             /etc/nginx/include.d/proxy_common.conf;
+    }
+
+}
+

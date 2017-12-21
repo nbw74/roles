@@ -1,0 +1,6 @@
+---
+username: "{{ ansible_user }}"
+
+requiretty: true
+addkey: false
+...

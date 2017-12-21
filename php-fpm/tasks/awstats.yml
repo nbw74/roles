@@ -1,0 +1,19 @@
+---
+
+- name: "Copy cgi-bin.php"
+  copy:
+    src: cgi-bin.php
+    dest: /etc/nginx/
+    owner: root
+    mode: 0644
+    force: yes
+  tags: [awstats]
+
+- name: "Template 91-awstats.j2"
+  template:
+    dest: "{{ confd }}/91-awstats.conf"
+    src: 91-awstats.j2
+    owner: root
+    mode: 0644
+    force: yes
+  tags: [awstats]

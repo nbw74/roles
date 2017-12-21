@@ -1,0 +1,24 @@
+---
+postgresql_sb_bin: "/usr/local/bin"
+postgresql_sb_etc: "/usr/local/etc"
+postgresql_sb_libexec: "/usr/local/libexec"
+postgresql_sb_check: "/usr/local/check/hourly"
+postgresql_flag_file: "/root/.postgresql"
+
+postgresql_include_dir: "sb.conf.d"
+postgresql_custom_config: "10-main.conf"
+postgresql_custom_config_pcmk: "20-repl-pcmk.conf"
+
+postgresql_iptables_service: "sb-iptables-postgresql"
+postgresql_iptables_script: "{{ postgresql_iptables_service }}.sh"
+postgresql_iptables_config: "{{ postgresql_iptables_service }}.conf"
+postgresql_iptables_chain: "SB.postgresql"
+
+postgresql_user: "postgres"
+
+postgresql_pcmk_ra_dir: "/usr/lib/ocf/resource.d/{{ postgresql_pcmk_ra_org }}"
+postgresql_pcmk_scripts_dir: "/usr/local/scripts"
+postgresql_pcmk_bin_dir: "/usr/local/bin"
+
+postgresql_wal_backup_script: "pgsql-archive-command.sh"
+...

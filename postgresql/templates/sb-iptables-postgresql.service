@@ -1,0 +1,17 @@
+[Unit]
+Description=Custom firewall chain for postgresql service
+After=syslog.target iptables.service
+PartOf=iptables.service
+AssertPathExists={{ postgresql_sb_etc }}/{{ postgresql_iptables_config }}
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart={{ postgresql_sb_libexec }}/{{ postgresql_iptables_script }} start
+ExecReload={{ postgresql_sb_libexec }}/{{ postgresql_iptables_script }} reload
+ExecStop={{ postgresql_sb_libexec }}/{{ postgresql_iptables_script }} stop
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=basic.target

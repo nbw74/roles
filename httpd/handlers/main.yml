@@ -1,0 +1,20 @@
+---
+- name: config reload systemd
+  command: systemctl daemon-reload
+  notify: config restart httpd
+
+- name: config restart httpd
+  service: name=httpd enabled=yes state=restarted
+
+- name: config reboot
+  shell: shutdown -r +1
+  ignore_errors: True
+  async: 0
+  poll: 0
+
+#####
+# Remi repo
+- name: enable remi repo
+  command: yum-config-manager --enable remi-php{{ remi_php_version }}
+  tags: [packages,remi]
+...
