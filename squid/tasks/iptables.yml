@@ -1,8 +1,8 @@
 ---
 - name: "ipset configuration"
   copy:
-    src: ipset
-    dest: /etc/sysconfig/
+    src: "ipset"
+    dest: "/etc/sysconfig/"
     force: yes
   notify: config restart ipset
   tags: [iptables,ipset]
@@ -12,7 +12,7 @@
 - name: "iptables configuration"
   copy:
     src: "{{ item }}"
-    dest: /etc/sysconfig/
+    dest: "/etc/sysconfig/"
     force: yes
   with_items:
     - iptables
@@ -21,3 +21,4 @@
   tags: [iptables]
 
 - meta: flush_handlers
+...

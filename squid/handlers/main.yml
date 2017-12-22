@@ -19,4 +19,4 @@
     enabled: yes
     state: restarted
   tags: [squid]
-
+...

@@ -14,4 +14,4 @@
     - iptables-services
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7
   tags: [packages]
-
+...

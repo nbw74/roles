@@ -21,7 +21,7 @@ selinux_state: "enforcing|permissive|disabled" # default: "disabled"
 timezone: "string" # default: 'Europe/Moscow' :Временна'я зона, устанавливаемая в php.ini
 ```
 ## Tags
-
+`conf` `index` `logrotate` `memcached` `packages` `php` `remi` `selinux` `selinux_ports` `services` `templates` `timezone`
 ## Dependencies
 Роль "nginx" (включена в meta)
 
