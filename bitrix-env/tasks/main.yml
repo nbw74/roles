@@ -48,7 +48,7 @@
 
 - name: "Template bxmult scripts"
   template:
-    src: "{{ item }}"
+    src: "{{ item }}.j2"
     dest: /usr/local/bin/
     force: yes
     owner: root

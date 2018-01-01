@@ -1,7 +1,7 @@
 ---
 - name: "Template {{ ptr }}"
   template:
-    src: "{{ ptr }}"
+    src: "{{ ptr }}.j2"
     dest: "/usr/local/bin/{{ ptr }}"
     owner: root
     mode: 0755
