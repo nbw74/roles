@@ -23,5 +23,11 @@ host	all		all		127.0.0.1/32		md5
 host	{{ item.db }}		{{ item.user }}		{{ item.address }}		md5
 {% endfor %}
 {% endif %}
+# IPv4 remote connections (ident)
+{% if postgresql_hba_tcp_ident is defined %}
+{% for item in postgresql_hba_tcp_ident %}
+host	{{ item.db }}		{{ item.user }}		{{ item.address }}		ident map=remote
+{% endfor %}
+{% endif %}
 
 ### EOF ###
