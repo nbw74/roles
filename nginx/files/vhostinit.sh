@@ -10,6 +10,8 @@ set -o errtrace
 readonly bn=$(basename $0)
 readonly hn=$(hostname -f)
 
+typeset keytype=ed25519
+
 typeset -i NOSITE=0 NOUSER=0 NOECHO=0 NORELOAD=0 REMOVE=0 REMOVEALL=0
 typeset -i NOSELINUX=0 SSL=0 NOAWSTATS=0 AWSTATSONLY=0 WEBINFO=0
 typeset -i COPY_SSH_KEY=0 SUBDOMAIN=0 warn=0
@@ -179,13 +181,13 @@ CreateUser() {
     sudo -u $user mkdir -p -m 0755 vault $WEBROOT
     sudo -u $user mkdir -m 0775 ${BASEDIR}/${user}/tmp ${BASEDIR}/${user}/log
     # и ключи
-    sudo -u $user ssh-keygen -t ed25519 -q -f ${BASEDIR}/${user}/.ssh/${user}_ed25519 -N ""
-    sudo -u $user bash -c "cat ${BASEDIR}/${user}/.ssh/${user}_rsa.pub >> ${BASEDIR}/${user}/.ssh/authorized_keys"
+    sudo -u $user ssh-keygen -t $keytype -q -f ${BASEDIR}/${user}/.ssh/${user}_$keytype -N ""
+    sudo -u $user bash -c "cat ${BASEDIR}/${user}/.ssh/${user}_${keytype}.pub >> ${BASEDIR}/${user}/.ssh/authorized_keys"
     sudo -u $user chmod 0600 ${BASEDIR}/${user}/.ssh/authorized_keys
 
     if (( COPY_SSH_KEY )); then
         mkdir -p /root/keys
-        cat ${BASEDIR}/${user}/.ssh/${user}_rsa > /root/keys/${hn}_${user}_rsa
+        cat ${BASEDIR}/${user}/.ssh/${user}_$keytype > /root/keys/${hn}_${user}_$keytype
     fi
 
     if (( SUBDOMAIN )); then
@@ -437,7 +439,7 @@ h3. SSH Access
 *User:* @${user}@
 *Private Key:* {{collapse
 <pre>
-$(cat $BASEDIR/${user}/.ssh/${user}_rsa)
+$(cat $BASEDIR/${user}/.ssh/${user}_$keytype)
 </pre>
 }}
 
@@ -660,7 +662,7 @@ usage() {
         -x          remove user and website configs instead creation
         -A          do not configure Awstats
         -B          BASEDIR (default: /var/www)
-        -C          copy SSH private key in /root/keys/<hostname>_<username>_rsa
+        -C          copy SSH private key in /root/keys/<hostname>_<username>_$keytype
         -E          suppress Wiki page print
         -L          do not execute SELinux-related statements
         -N          do not reload web-servers
