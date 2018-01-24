@@ -37,15 +37,19 @@ postgresql_conf: # Параметры конфигурации СУБД
     archive_command: "string" # default: "cp %p /var/lib/pgsql/X.X/pg_archive/%f"
     wal_keep_segments: int # default: 32
 
-postgresql_ident_local: # peer/ident map для локальных соединений socket
+postgresql_ident: # peer/ident map
   - { map: <string>, sysuser: <string>, pguser: <string> }
-# при текущей реализации шаблона pg_hba.conf map всегда supervisor
+# для локальных подключений использовать map 'supervisor',
+# для удалённых - 'remote'
 
 postgresql_hba_tcp: # HBA для удаленных tcp-соединений с аутентификацией md5
   - { db: <string>, user: <string>, address: <CIDR> }
 
 postgresql_hba_tcp_local: # HBA для локальных tcp-соединений с аутентификацией md5
   - { db: <string>, user: <string> }
+
+postgresql_hba_tcp_ident: # HBA для удаленных tcp-соединений с аутентификацией ident
+  - { db: <string>, user: <string>, address: <CIDR> }
 
 postgresql_backup_enable: bool # (default: true) Включение в штатную систему резервного копирования Southbridge
 
