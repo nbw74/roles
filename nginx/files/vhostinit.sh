@@ -179,7 +179,7 @@ CreateUser() {
     sudo -u $user mkdir -p -m 0755 vault $WEBROOT
     sudo -u $user mkdir -m 0775 ${BASEDIR}/${user}/tmp ${BASEDIR}/${user}/log
     # и ключи
-    sudo -u $user ssh-keygen -t rsa -q -f ${BASEDIR}/${user}/.ssh/${user}_rsa -N ""
+    sudo -u $user ssh-keygen -t ed25519 -q -f ${BASEDIR}/${user}/.ssh/${user}_ed25519 -N ""
     sudo -u $user bash -c "cat ${BASEDIR}/${user}/.ssh/${user}_rsa.pub >> ${BASEDIR}/${user}/.ssh/authorized_keys"
     sudo -u $user chmod 0600 ${BASEDIR}/${user}/.ssh/authorized_keys
 
