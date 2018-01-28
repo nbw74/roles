@@ -16,8 +16,8 @@
     - "{{ common_ntp_domains }}"
     - servers
   when:
-    - ansible_domain == item.0.domain
     - not alien
+    - ansible_domain == item.0.domain
   notify: config restart ntpd
   tags: [ ntp ]
 

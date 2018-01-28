@@ -1,12 +1,14 @@
 # {{ ansible_managed }}
 
-# smtp account configuration for default
-# (https://dev.1c-bitrix.ru/learning/course/?COURSE_ID=37&LESSON_ID=6689)
 account default
 logfile /var/log/msmtp.log
 host {{ bx_msmtp_host }}
 port {{ bx_msmtp_port }}
+{% if alien %}
+from {{ bx_msmtp_user }}
+{% else %}
 from no_reply@{{ ansible_fqdn }}
+{% endif %}
 keepbcc on
 auth on
 user {{ bx_msmtp_user }}

@@ -33,7 +33,7 @@ server {
 
     root            /var/www/html;
 
-{% if ansible_fqdn|search({{ nginx_main_domain }}) %}
+{% if ansible_fqdn|search(nginx_main_domain) %}
     ssl_certificate /etc/pki/tls/certs/{{ nginx_main_cert }};
     ssl_certificate_key /etc/pki/tls/private/{{ nginx_main_key }};
 {% else %}

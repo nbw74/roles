@@ -10,6 +10,7 @@
 - include_tasks: include.d.yml
 
 - include_tasks: conf.d.yml
+  tags: [ nginx, templates ]
 
 - include_tasks: tls.yml
 

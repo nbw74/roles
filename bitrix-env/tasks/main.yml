@@ -49,7 +49,7 @@
 - name: "Template bxmult scripts"
   template:
     src: "{{ item }}.j2"
-    dest: /usr/local/bin/
+    dest: "/usr/local/bin/{{ item }}"
     force: yes
     owner: root
     group: root
@@ -71,6 +71,7 @@
 - include: mail.yml
 
 - include: mysqld.yml
+  when: not alien
 
 - name: "Set bash prompt attributes [dev]"
   lineinfile:
