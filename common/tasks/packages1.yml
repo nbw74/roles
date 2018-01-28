@@ -31,7 +31,7 @@
     - pkgupdate is defined
     - pkgupdate
   tags: [packages,update]
-
+# -------------------------------------------------------------
 - name: "Install required packages (YUM)"
   yum:
     state: present
@@ -42,15 +42,27 @@
   when: ansible_distribution == "CentOS"
   tags: [packages]
 
-- name: "Install required packages (DNF)"
-  dnf:
-    name: "{{ item }}"
+- name: "Install required SELinux packages (YUM)"
+  yum:
     state: present
+    name: "{{ item }}"
   with_items:
-    - '{{ common_required_base_packages }}'
-    - '{{ common_required_epel_packages }}' 
-    - '{{ common_fedora_specific_packages }}'
-  when: ansible_distribution == "Fedora"
+    - '{{ common_required_base_packages_selinux }}'
+    - '{{ common_centos_specific_packages_selinux }}'
+  when:
+    - ansible_distribution == "CentOS"
+    - selinux_state != "disabled"
+  tags: [packages]
+
+- name: "Install required FreeIPA packages (YUM)"
+  yum:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - '{{ common_centos_specific_packages_ipa }}'
+  when:
+    - ansible_distribution == "CentOS"
+    - not alien
   tags: [packages]
 
 - name: "Install EPEL packages (YUM)"
@@ -60,7 +72,40 @@
   with_items: '{{ common_required_epel_packages }}'
   when: ansible_distribution == "CentOS"
   tags: [packages]
+# -------------------------------------------------------------
+- name: "Install required packages (DNF)"
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - '{{ common_required_base_packages }}'
+    - '{{ common_required_epel_packages }}' 
+  when: ansible_distribution == "Fedora"
+  tags: [packages]
 
+- name: "Install required SELinux packages (DNF)"
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - '{{ common_required_base_packages_selinux }}'
+    - '{{ common_fedora_specific_packages_selinux }}'
+  when:
+    - ansible_distribution == "Fedora"
+    - selinux_state != "disabled"
+  tags: [packages]
+
+- name: "Install required FreeIPA packages (DNF)"
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - '{{ common_fedora_specific_packages_ipa }}'
+  when:
+    - ansible_distribution == "Fedora"
+    - not alien
+  tags: [packages]
+# -------------------------------------------------------------
 - name: "Install open-vm-tools"
   action: '{{ ansible_pkg_mgr }} name="open-vm-tools" state=latest'
   when: 'ansible_virtualization_type == "VMware"'

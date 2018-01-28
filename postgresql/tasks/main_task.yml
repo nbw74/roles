@@ -59,8 +59,8 @@
       supervisor      postgres                postgres
       supervisor      zabbix                  postgres
       supervisor      root                    postgres
-      {% if postgresql_ident is defined %}
-      {% for item in postgresql_ident %}
+      {% if postgresql_ident_local is defined %}
+      {% for item in postgresql_ident_local %}
       {{ item.map }} {{ item.sysuser}} {{ item.pguser }}
       {% endfor %}
       {% endif %}

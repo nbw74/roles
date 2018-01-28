@@ -13,6 +13,12 @@
     mode: 0644
   tags: [nginx]
 
+- debug:
+    msg: "{{ ansible_fqdn }}"
+
+- debug:
+    msg: "{{ nginx_main_domain }}"
+
 - name: "Template dummy host config"
   template:
     src: "00-dummy.j2"

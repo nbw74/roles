@@ -1,10 +1,11 @@
----
+
 - name: "Set SELinux alert recipient"
   lineinfile:
     dest: /var/lib/setroubleshoot/email_alert_recipients
     line: "{{ common_selinux_alert_recipients }}"
     create: yes
     mode: 0600
+  when: selinux_state != "disabled"
   tags: [ mail ]
 
 - name: "Set inet_protocols in main.cf"

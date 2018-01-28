@@ -31,10 +31,12 @@ common_required_base_packages:
   - postfix
   - rsync
   - rsyslog
-  - setroubleshoot-server
   - vim
   - yum-utils
   - zsh
+
+common_required_base_packages_selinux:
+  - setroubleshoot-server
 
 common_required_epel_packages:
   - ccze
@@ -44,12 +46,18 @@ common_required_epel_packages:
   - tree
 
 common_centos_specific_packages:
-  - ipa-client
-  - policycoreutils-python
   - epel-release
 
-common_fedora_specific_packages:
+common_centos_specific_packages_ipa:
+  - ipa-client
+
+common_centos_specific_packages_selinux:
+  - policycoreutils-python
+
+common_fedora_specific_packages_ipa:
   - freeipa-client
+
+common_fedora_specific_packages_selinux:
   - policycoreutils-python-utils
 
 common_virt_unnecessary_packages:

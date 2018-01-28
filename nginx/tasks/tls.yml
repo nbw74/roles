@@ -8,7 +8,7 @@
     group: root
     mode: 0644
   tags: [ nginx, tls ]
-  when: ansible_fqdn | search({{ nginx_main_domain }})
+  when: ansible_fqdn | search(nginx_main_domain)
 
 - name: "Copy MAIN certificate key for dummy host"
   copy:
@@ -19,7 +19,7 @@
     group: root
     mode: 0400
   tags: [ nginx, tls ]
-  when: ansible_fqdn | search({{ nginx_main_domain }})
+  when: ansible_fqdn | search(nginx_main_domain)
 
 - name: "Copy EXAMPLE certificate for dummy host"
   copy:
@@ -30,7 +30,7 @@
     group: root
     mode: 0644
   tags: [ nginx, tls ]
-  when: not ( ansible_fqdn | search({{ nginx_main_domain }}) )
+  when: not ( ansible_fqdn | search(nginx_main_domain) )
 
 - name: "Copy EXAMPLE certificate key for dummy host"
   copy:
@@ -41,5 +41,5 @@
     group: root
     mode: 0400
   tags: [ nginx, tls ]
-  when: not ( ansible_fqdn | search({{ nginx_main_domain }}) )
+  when: not ( ansible_fqdn | search(nginx_main_domain) )
 ...

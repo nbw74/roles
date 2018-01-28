@@ -13,6 +13,7 @@
   tags: [ nginx, templates ]
 
 - include_tasks: tls.yml
+  when: not alien
 
 - name: Copy nginx.conf
   copy:
@@ -36,10 +37,11 @@
     dest: "/usr/local/bin/"
     owner: root
     group: root
-    mode: 0744
+    mode: 0755
     force: yes
   with_items:
-    - "{{ vhostinit_sh }}"
+    - "vhostinit.sh"
+    - "dbinit.sh"
   tags: [scripts]
 
 - name: "Create symlinks in /usr/bin/"
@@ -50,5 +52,6 @@
     force: no
   with_items:
     - "vhostinit"
+    - "dbinit"
   tags: [scripts]
 ...

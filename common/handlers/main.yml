@@ -12,6 +12,7 @@
 - name: restorecon ptr_se
   command: restorecon -R /usr/local/bin
   notify: copy ptr_se
+  when: selinux_state != "disabled"
   tags: [porntube]
 
 - name: copy ptr_se

@@ -7,9 +7,10 @@
 
 . /etc/rc.d/init.d/functions
 
-BASEDIR=/home
-USER=bitrix
-WEBROOT=www
+readonly BASEDIR=/home
+readonly USER=bitrix
+readonly WEBROOT=www
+readonly keytype=ed25519
 
 bn=$(basename $0)
 host=$(hostname -f)
@@ -37,15 +38,15 @@ Main() {
 CreateKeys() {
     FN=$FUNCNAME
 
-    echo -n "Creating RSA key..."
+    echo -n "Creating $keytype key..."
 
     # Создаём необходимые директории
     sudo -u ${USER} mkdir -p -m 700 $BASEDIR/${USER}/.ssh
     except quiet
 
-    sudo -u ${USER} ssh-keygen -t rsa -q -f $BASEDIR/${USER}/.ssh/${USER}_rsa -N ""
+    sudo -u ${USER} ssh-keygen -t $keytype -q -f $BASEDIR/${USER}/.ssh/${USER}_$keytype -N ""
     except quiet
-    sudo -u ${USER} cp $BASEDIR/${USER}/.ssh/${USER}_rsa.pub $BASEDIR/${USER}/.ssh/authorized_keys
+    sudo -u ${USER} cp $BASEDIR/${USER}/.ssh/${USER}_${keytype}.pub $BASEDIR/${USER}/.ssh/authorized_keys
     except quiet
     sudo -u ${USER} chmod 600 $BASEDIR/${USER}/.ssh/authorized_keys
     except
@@ -59,7 +60,7 @@ Echo() {
     fi
 
     # Wiki page generation
-    local PRIVKEY="$(cat $BASEDIR/${USER}/.ssh/${USER}_rsa)"
+    local PRIVKEY="$(cat $BASEDIR/${USER}/.ssh/${USER}_${keytype})"
     except quiet
 
     echo "
