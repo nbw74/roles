@@ -1,0 +1,27 @@
+---
+- name: Template the pg_repack wrapper
+  template:
+    src: "{{ postgresql_repack_script }}"
+    dest: "{{ postgresql_sb_bin }}"
+    mode: 0755
+    force: yes
+  tags: [ pg_repack ]
+
+- name: Template the pg_repack cronjob
+  template:
+    src: "{{ postgresql_repack_crontab }}.j2"
+    dest: "/etc/cron.d/{{ postgresql_repack_crontab }}"
+    mode: 0644
+    force: yes
+  when: postgresql_repack_tables is defined
+  notify: reload crond
+  tags: [ pg_repack ]
+
+- name: Absence of the pg_repack cronjob
+  file:
+    path: "/etc/cron.d/{{ postgresql_repack_crontab }}"
+    state: absent
+  when: postgresql_repack_tables is not defined
+  notify: reload crond
+  tags: [ pg_repack ]
+...
