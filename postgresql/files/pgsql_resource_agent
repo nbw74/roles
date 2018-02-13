@@ -618,6 +618,9 @@ pgsql_real_start() {
     # Tack pass-through options onto pg_ctl options
     pgctl_options="$pgctl_options -o '$postgres_options'"
 
+    # Disable OOM killer for postgresql
+    echo -1000 > /proc/self/oom_score_adj
+
     # Invoke pg_ctl
     runasowner "unset PGUSER; unset PGPASSWORD; $OCF_RESKEY_pgctl $pgctl_options -W start"
 

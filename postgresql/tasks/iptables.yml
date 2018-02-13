@@ -15,10 +15,10 @@
     mode: 0644
   register: postgresql_whitelist
 
-- include: "iptables-sysvinit.yml"
+- import_tasks: "iptables-sysvinit.yml"
   when: ansible_distribution_major_version|int <= 6
 
-- include: "iptables-systemd.yml"
+- import_tasks: "iptables-systemd.yml"
   when: ansible_distribution_major_version|int >= 7
 
 - name: Iptables service check script

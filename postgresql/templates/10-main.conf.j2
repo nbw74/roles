@@ -40,6 +40,9 @@ effective_cache_size		= {{ postgresql_conf['effective_cache_size']|default(auto_
 
 # - What to Log -
 
+{% if postgresql_conf['log_lock_waits'] is defined %}
+log_lock_waits			= {{ postgresql_conf['log_lock_waits'] }}
+{% endif %}
 log_timezone			= '{{ postgresql_conf['log_timezone']|default('W-SU') }}'
 
 # - Autovacuum Parameters -
@@ -59,5 +62,11 @@ lc_monetary			= '{{ postgresql_lc_monetary|default(postgresql_locale) }}'
 lc_numeric			= '{{ postgresql_lc_numeric|default(postgresql_locale) }}'
 lc_time				= '{{ postgresql_lc_time|default(postgresql_locale) }}'
 default_text_search_config	= '{{ postgresql_conf['default_text_search_config']|default('pg_catalog.russian') }}'
+
+# - Lock management -
+
+{% if postgresql_conf['deadlock_timeout'] is defined %}
+deadlock_timeout		= {{ postgresql_conf['deadlock_timeout'] }}
+{% endif %}
 
 # - The End -

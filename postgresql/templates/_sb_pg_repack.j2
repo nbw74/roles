@@ -1,0 +1,10 @@
+# THIS FILE IS ANSIBLE MANAGED
+{% if postgresql_repack_tables is defined %}
+{% for item in postgresql_repack_tables %}
+{{ item.cron }} postgres {{ postgresql_sb_bin }}/{{ postgresql_repack_script }} -d {{ item.db }} {% for table in item.tables %}
+-t {{ table }}
+{%- if not loop.last %} {% endif %}
+{% endfor %}
+
+{% endfor %}
+{% endif %}

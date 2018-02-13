@@ -21,4 +21,6 @@ postgresql_pcmk_scripts_dir: "/usr/local/scripts"
 postgresql_pcmk_bin_dir: "/usr/local/bin"
 
 postgresql_wal_backup_script: "pgsql-archive-command.sh"
+postgresql_repack_script: "sb-pgsql-repackwrapper.sh"
+postgresql_repack_crontab: "_sb_pg_repack"
 ...

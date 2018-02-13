@@ -55,4 +55,14 @@
     group: root
     mode: 0755
     force: yes
+
+- name: Periodic restart of pcsd
+  cron:
+    name: pcsd_restart
+    job: "/usr/bin/systemctl restart pcsd.service"
+    cron_file: "_sb_pcsd_restart"
+    user: root
+    hour: "*/{{ postgresql_pcmk_pcsd_restart_hour }}"
+    minute: "{{ postgresql_pcmk_pcsd_restart_minute }}"
+    state: "{{ postgresql_pcmk_pcsd_restart_enable|ternary('present','absent') }}"
 ...

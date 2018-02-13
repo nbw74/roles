@@ -17,6 +17,10 @@ postgresql_pcmk_ra_org: "custom"
 postgresql_pcmk_force_ra_update: false
 postgresql_pcmk_force_pcs_update: false
 
+postgresql_pcmk_pcsd_restart_enable: false
+postgresql_pcmk_pcsd_restart_hour: 37
+postgresql_pcmk_pcsd_restart_minute: 37
+
 postgresql_backup_enable: true
 postgresql_wal_backup_enable: false
 postgresql_wal_backup_server: ''

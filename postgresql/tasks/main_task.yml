@@ -4,7 +4,7 @@
     msg: "This role is intended for RHEL (CentOS) version 6 or above"
   when: ansible_distribution_major_version|int < 6
 
-- include: "packages.yml"
+- import_tasks: "packages.yml"
 
 - name: DB cluster initialization
   become: yes
@@ -17,12 +17,14 @@
           --lc-messages={{ postgresql_lc_messages }}"
   args:
     creates: "{{ postgresql_datadir }}/PG_VERSION"
+  tags: [ initdb ]
 
 - name: postgres homedir access mode
   file:
     path: "{{ postgresql_homedir }}"
     state: directory
     mode: 0750
+  tags: [ initdb ]
 
 - name: Custom config directory
   become: yes
@@ -31,6 +33,7 @@
     path: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}"
     state: directory
     mode: 0700
+  tags: [ initdb ]
 
 - name: Include in postgresql.conf
   become: yes
@@ -40,6 +43,7 @@
     insertafter: EOF
     block: |
       include_dir {{ postgresql_include_dir }}
+  tags: [ initdb ]
 
 - name: Template custom config
   become: yes
@@ -48,6 +52,7 @@
     src: "{{ postgresql_custom_config }}.j2"
     dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config }}"
     mode: 0600
+  tags: [ initdb ]
 
 - name: PG_IDENT configuration file
   become: yes
@@ -64,6 +69,7 @@
       {{ item.map }} {{ item.sysuser}} {{ item.pguser }}
       {% endfor %}
       {% endif %}
+  tags: [ initdb ]
 
 - name: PG_HBA configuration file
   become: yes
@@ -72,6 +78,7 @@
     src: "pg_hba.conf.j2"
     dest: "{{ postgresql_datadir }}/pg_hba.conf"
     mode: 0600
+  tags: [ initdb ]
 
 - name: PostgreSQL service enabled and started
   service:
@@ -80,12 +87,14 @@
     enabled: yes
   when: not postgresql_pcmk_enable
 
-- include: "walbackup.yml"
+- import_tasks: "repack.yml"
+
+- import_tasks: "walbackup.yml"
   when: postgresql_wal_backup_enable
 
-- include: "iptables.yml"
+- import_tasks: "iptables.yml"
   when: postgresql_iptables_enable
 
-- include: "pcmk.yml"
+- import_tasks: "pcmk.yml"
   when: postgresql_pcmk_enable
 ...

@@ -22,11 +22,12 @@ postgresql_conf: # Параметры конфигурации СУБД
     temp_buffers: intUNIT # default: 8MB
     work_mem: intUNIT # default: 1% from total RAM
     maintenance_work_mem: intUNIT # default: 4% from total RAM
-    max_stack_depth: intUNIT # default: none, out-of-the-box: 2MB. Suitable value is $(($(ulimit -s)-2048))
+    max_stack_depth: intUNIT # default: none, PostgreSQL default: 2MB. Suitable value is $(($(ulimit -s)-2048))
     effective_io_concurrency: int # default: 2 (for HDD RAID 10). For SSD set > 100
-    max_wal_size: intUNIT # default: none (out-ot-the-box: 1GB)
-    random_page_cost: float # default: none, out-of-the-box: 4.0 (suitable for HDD). For SSD set to 1.1 - 1.3
+    max_wal_size: intUNIT # default: none (PostgreSQL default: 1GB)
+    random_page_cost: float # default: none, PostgreSQL default: 4.0 (suitable for HDD). For SSD set to 1.1 - 1.3
     effective_cache_size: intUNIT # default: 1/2 RAM
+    log_lock_waits: "string" # default: none (PostgreSQL default: bool: off)
     log_timezone: "string" # default: W-SU (MSK)
     autovacuum_max_workers: int # default: 3 (change requires restart)
     autovacuum_vacuum_threshold: int # default: 50
@@ -36,20 +37,21 @@ postgresql_conf: # Параметры конфигурации СУБД
     timezone: "string" # default: W-SU (MSK)
     archive_command: "string" # default: "cp %p /var/lib/pgsql/X.X/pg_archive/%f"
     wal_keep_segments: int # default: 32
+    deadlock_timeout: "string" # default: none (PostgreSQL default: time: 1s)
 
-postgresql_ident: # peer/ident map
-  - { map: <string>, sysuser: <string>, pguser: <string> }
+postgresql_ident_local: # peer/ident map
+  - { map: 'string', sysuser: 'string', pguser: 'string' }
 # для локальных подключений использовать map 'supervisor',
 # для удалённых - 'remote'
 
 postgresql_hba_tcp: # HBA для удаленных tcp-соединений с аутентификацией md5
-  - { db: <string>, user: <string>, address: <CIDR> }
+  - { db: 'string', user: 'string', address: 'CIDR' }
 
 postgresql_hba_tcp_local: # HBA для локальных tcp-соединений с аутентификацией md5
-  - { db: <string>, user: <string> }
+  - { db: 'string', user: 'string' }
 
 postgresql_hba_tcp_ident: # HBA для удаленных tcp-соединений с аутентификацией ident
-  - { db: <string>, user: <string>, address: <CIDR> }
+  - { db: 'string', user: 'string', address: 'CIDR' }
 
 postgresql_backup_enable: bool # (default: true) Включение в штатную систему резервного копирования Southbridge
 
@@ -57,6 +59,12 @@ postgresql_wal_backup_enable: bool # (default: false) Включение арх�
 postgresql_wal_backup_server: "ipv4" # (default: none) Адрес архивного сервера
 postgresql_wal_backup_user: "string" # (default: "walbackup") Пользователь для архивирования WAL
 postgresql_wal_backup_dir: "string" # (default:: none) Каталог для архивов на сервере
+
+postgresql_additional_packages: # Дополнительно установить указанные пакеты
+  - "package1"
+
+postgresql_repack_tables: # Включение периодического выполнения pg_repack на указанных таблицах
+  - { db: 'string', tables: [ 'string', 'string', ... ], cron: 'string' } # где строку для cron указать в обычном формате cronjob '* * * * *'
 
 ```
 
@@ -84,6 +92,10 @@ postgresql_pcmk_ip_repl: ipv4 # (default: none) Виртуальный IPv4-ад
 		# все вышеуказанные параметры являются обязательными при настройке кластера Postgresql
 postgresql_pcmk_force_ra_update: bool # (default: false) Не включать для продакшен-серверов! Форсировать обновление ресурс-агента
 postgresql_pcmk_force_pcs_update: bool # (default: false) Форсировать обновление скрипта инициализации кластера
+
+postgresql_pcmk_pcsd_restart_enable: bool # (default: false) Включить периодически перезапуск pcsd (если жрёт память)
+postgresql_pcmk_pcsd_restart_hour: int # (default: 37) Перезапуск pcsd каждые int часов
+postgresql_pcmk_pcsd_restart_minute: int # (default: 37) Минута часа, в которую происходит перезапуск pcsd
 ```
 
 ### pg_hba
@@ -108,20 +120,17 @@ chmod 0600 .pgpass
 
 ### Подготовка слейвов
 
-На слейвах также нужно создать аналогичный `.pgpass`, а затем стянуть базу; скрипту в качестве параметра передаём IP-адрес текущего мастера
+На слейвах также нужно создать аналогичный `.pgpass`
 ```shell
 sudo -iu postgres
 /usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data stop
 echo '*:*:replication:replicator:PASSWORD' >> .pgpass
 chmod 0600 .pgpass
 ```
-
-Далее команда запускается от root и копирует базы данных с мастера на слэйв
-
+а затем стянуть базу; скрипту в качестве параметра передаём IP-адрес текущего мастера (запустить от postgres или root)
 ```shell
 /srv/southbridge/bin/pgsql-pcmk-slave-copy.sh MASTER_IPADDR
 ```
-
 Затем не забыть остановить сервис postgresql на мастере
 ```shell
 sudo -iu postgres /usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data stop
@@ -185,9 +194,16 @@ pcs resource clear PGSQL NODE1
 pcs resource cleanup PGSQL --node NODE1
 pcs resource cleanup
 ```
-Также, возможно, будет полезной команда, переводящая кластер в "режим обслуживания" (хотя на практике пока не понял, куда её приткнуть)
+Также будет очень полезной команда, переводящая одну или все ноды в "режим обслуживания"
 ```shell
+# Одну ноду
+pcs node maintenance NODE1
+# Все ноды
+pcs node maintenence --all
+# Как альтернатива - весь кластер
 pcs property set maintenance-mode=true
+# Вывести из режима обслуживания
+pcs node unmaintenance NODE1
 ```
 
 ### Медленная реплика: концепт

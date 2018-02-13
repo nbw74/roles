@@ -12,7 +12,7 @@ readonly chain="{{ postgresql_iptables_chain }}"
 readonly svc="{{ postgresql_iptables_service }}"
 readonly port="{{ postgresql_conf['port']|default('5432') }}"
 
-readonly PATH=/bin:/sbin:/user/bin:/usr/sbin
+readonly PATH=/bin:/sbin:/usr/bin:/usr/sbin
 readonly bn=$(basename $0)
 
 main() {
