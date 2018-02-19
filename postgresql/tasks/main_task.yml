@@ -5,6 +5,7 @@
   when: ansible_distribution_major_version|int < 6
 
 - import_tasks: "packages.yml"
+  tags: [ packages ]
 
 - name: DB cluster initialization
   become: yes
@@ -88,6 +89,7 @@
   when: not postgresql_pcmk_enable
 
 - import_tasks: "repack.yml"
+  tags: [ repack ]
 
 - import_tasks: "walbackup.yml"
   when: postgresql_wal_backup_enable

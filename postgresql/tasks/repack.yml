@@ -5,7 +5,7 @@
     dest: "{{ postgresql_sb_bin }}"
     mode: 0755
     force: yes
-  tags: [ pg_repack ]
+  tags: [ repack ]
 
 - name: Template the pg_repack cronjob
   template:
@@ -15,7 +15,7 @@
     force: yes
   when: postgresql_repack_tables is defined
   notify: reload crond
-  tags: [ pg_repack ]
+  tags: [ repack ]
 
 - name: Absence of the pg_repack cronjob
   file:
@@ -23,5 +23,5 @@
     state: absent
   when: postgresql_repack_tables is not defined
   notify: reload crond
-  tags: [ pg_repack ]
+  tags: [ repack ]
 ...

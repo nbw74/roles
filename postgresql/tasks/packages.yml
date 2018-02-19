@@ -27,6 +27,7 @@
     - "pcs"
     - "resource-agents"
   when: postgresql_pcmk_enable
+  tags: [ packages ]
 
 - name: Additional packages
   yum:
@@ -34,4 +35,5 @@
     state: present
   with_items: "{{ postgresql_additional_packages }}"
   when: postgresql_additional_packages is defined
+  tags: [ packages ]
 ...
