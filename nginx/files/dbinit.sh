@@ -10,7 +10,7 @@
 typeset -i MdbNameMaxLength=13
 typeset -i PdbNameMaxLength=62
 
-bn=$(basename $0)
+bn=$(basename "$0")
 
 set -o nounset
 set -o errtrace
@@ -21,7 +21,7 @@ typeset CHARSET="utf8"
 typeset COLLATE="utf8_general_ci"
 
 typeset DBMS="" DBHOST="" DBUSER="" PASSWD="" DBCREDS="" DBCREDS_RO=""
-typeset authParams="" cmd=""
+typeset authParams=""
 typeset DBPORT=""
 typeset mysql_bin=""
 
@@ -30,7 +30,7 @@ trap except ERR
 # trap 'prev_cmd=$cmd; cmd=$BASH_COMMAND' DEBUG
 
 Main() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
     local -i dbtype=0
 
     if [[ $DBMS =~ mysql|m ]]; then
@@ -69,7 +69,7 @@ mdpass() {
 }
 
 CreateDB() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     
     if [[ ${PASSWD:-NOP} == "NOP" ]]; then
@@ -107,7 +107,7 @@ CreateDB() {
 }
 
 findMy() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     # Find mysql executable
     # Fast and dirty
@@ -131,7 +131,7 @@ findMy() {
 }
 
 createMy() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     findMy
 
@@ -140,13 +140,13 @@ createMy() {
     $mysql_bin $authParams -e "CREATE DATABASE ${db} CHARACTER SET ${CHARSET} COLLATE ${COLLATE};"
 
     if (( NOUSER == 0 )); then
-        $mysql_bin $authParams ${db} -e "CREATE USER '${DBUSER}'@'%' IDENTIFIED BY '${mypass}';"
+        $mysql_bin $authParams "${db}" -e "CREATE USER '${DBUSER}'@'%' IDENTIFIED BY '${mypass}';"
     fi
 
-    $mysql_bin $authParams ${db} -e "GRANT ALL ON ${db}.* TO '${DBUSER}'@'%'; FLUSH PRIVILEGES;"
+    $mysql_bin $authParams "${db}" -e "GRANT ALL ON ${db}.* TO '${DBUSER}'@'%'; FLUSH PRIVILEGES;"
 
     if (( CREATE_RO == 1 )); then
-        $mysql_bin $authParams ${db} -e "CREATE USER '${DBUSER}_ro'@'%' IDENTIFIED BY '${mypass_ro}'; GRANT SELECT ON ${db}.* TO '${DBUSER}_ro'@'%'; FLUSH PRIVILEGES;"
+        $mysql_bin $authParams "${db}" -e "CREATE USER '${DBUSER}_ro'@'%' IDENTIFIED BY '${mypass_ro}'; GRANT SELECT ON ${db}.* TO '${DBUSER}_ro'@'%'; FLUSH PRIVILEGES;"
     fi
 
     readonly DBPORT=${DBPORT:-@3306@}
@@ -157,22 +157,22 @@ createMy() {
 }
 
 createPg() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     if [[ -n "$DBHOST" ]]; then
         DBHOST="-h $DBHOST"
     fi
 
     if (( NOUSER == 0 )); then
-        psql $DBHOST -U postgres -d postgres -c "CREATE ROLE $DBUSER LOGIN NOSUPERUSER UNENCRYPTED PASSWORD '${mypass}';"
+        psql "$DBHOST" -U postgres -d postgres -c "CREATE ROLE $DBUSER LOGIN NOSUPERUSER UNENCRYPTED PASSWORD '${mypass}';"
     fi
-    psql $DBHOST -U postgres -d postgres -c "CREATE DATABASE $db OWNER $DBUSER;"
+    psql "$DBHOST" -U postgres -d postgres -c "CREATE DATABASE $db OWNER $DBUSER;"
 
     readonly DBPORT=${DBPORT:-@3306@}
 }
 
 chkNameLength() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     local -i dbNameMaxLength=0 len=0
 
@@ -193,7 +193,7 @@ chkNameLength() {
 }
 
 Echo() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     # Wiki page generation
 
@@ -212,7 +212,7 @@ ${DBCREDS}${DBCREDS_RO}
 }
 
 RemoveDB() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
     warn=1
 
     if (( dbtype == 1 )); then
@@ -220,18 +220,18 @@ RemoveDB() {
         # Removing database
         if (( NOUSER == 0 )); then
             echo -n "Removing database user" "$DBUSER"
-            $mysql_bin $authParams ${db} -e "DROP USER '${DBUSER}'@'%'"
+            $mysql_bin $authParams "${db}" -e "DROP USER '${DBUSER}'@'%'"
             echo_success
             echo
             if (( CREATE_RO == 1 )); then
                 echo -n "Removing database user" "${DBUSER}_ro"
-                $mysql_bin $authParams ${db} -e "DROP USER '${DBUSER}_ro'@'%'"
+                $mysql_bin $authParams "${db}" -e "DROP USER '${DBUSER}_ro'@'%'"
                 echo_success
                 echo
             fi
         fi
         echo -n "Removing database" "$db"
-        $mysql_bin $authParams ${db} -e "DROP DATABASE $db"
+        $mysql_bin $authParams "${db}" -e "DROP DATABASE $db"
         echo_success
         echo
     elif (( dbtype == 2 )); then
@@ -239,10 +239,10 @@ RemoveDB() {
             DBHOST="-h $DBHOST"
         fi
 
-        psql $DBHOST -U postgres -c "DROP DATABASE $db"
+        psql "$DBHOST" -U postgres -c "DROP DATABASE $db"
 
         if (( NOUSER == 0 )); then
-            psql $DBHOST -U postgres -c "DROP ROLE $DBUSER;"
+            psql "$DBHOST" -U postgres -c "DROP ROLE $DBUSER;"
         fi
     else
         echo "Internal error" 1>&2

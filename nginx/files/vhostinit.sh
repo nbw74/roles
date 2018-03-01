@@ -7,7 +7,7 @@ set -o errtrace
 
 
 
-readonly bn=$(basename $0)
+readonly bn=$(basename "$0")
 readonly hn=$(hostname -f)
 
 typeset keytype=ed25519
@@ -19,7 +19,8 @@ typeset BACKEND="" OS="" FRONTENDUSER="" BACKENDUSER="" S_DOMAIN="" user="" WEBR
 typeset BASEDIR=/var/www user="" siteroot=""
 
 Main() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
+    local utime="" uhash=""
 
     trap except ERR
 
@@ -29,14 +30,12 @@ Main() {
     fi
 
     if grep -iq debian /etc/issue; then
-        authParams="--defaults-file=/etc/mysql/debian.cnf"
         OS=debian
         FRONTENDUSER=www-data
         ECHOMSG=log_daemon_msg
         httpd_sites=/etc/apache2/sites-available
         nginx_sites=/etc/nginx/sites-available
     elif [[ -f /etc/centos-release || -f /etc/fedora-release ]]; then
-        authParams=""
         OS=centos
         FRONTENDUSER=nginx
         ECHOMSG="echo -n"
@@ -79,7 +78,7 @@ Main() {
     fi
 
     # Проверка существования домена
-    if grep -RPq "\s+${S_DOMAIN}" $nginx_sites
+    if grep -RPq "\\s+${S_DOMAIN}" $nginx_sites
     then
         if (( ! REMOVE )); then
             writeLog "FATAL: collision: domain name already exists in the Nginx configuration"
@@ -96,17 +95,17 @@ Main() {
             else
                 # Обработка доменного имени
                 if [[ $OS == "centos" ]]; then
-                    local utime=$(date '+%s')
-                    local uhash=$(echo "${S_DOMAIN}$-${utime}" | md5sum)
+                    utime=$(date '+%s')
+                    uhash=$(echo "${S_DOMAIN}$-${utime}" | md5sum)
                     readonly user=${S_DOMAIN}.${uhash:0:4}
                 else
                     # Generation username from reversed domain name
                     # domain to array decomposition
-                    typeset -a A_DOMAIN=( $(echo "$S_DOMAIN"|awk -F"." 'BEGIN { OFS=" " } { $1 = $1; print $0 }') )
-                    typeset -a A_USER=( "" )
+                    typeset -a A_DOMAIN=() A_USER=()
+                    mapfile -t A_DOMAIN < <( echo "$S_DOMAIN"|awk -F"." 'BEGIN { OFS=" " } { $1 = $1; print $0 }' )
                     # reverse (thnx to http://stackoverflow.com/questions/13360091/how-to-reverse-array-in-bash-onliner-for-loop)
-                    for (( idx = ${#A_DOMAIN[@]}-1 ; idx >= 0 ; idx-- )) ; do
-                        A_USER=( ${A_USER[@]} ${A_DOMAIN[idx]} )
+                    for (( idx = ${#A_DOMAIN[@]}-1 ; idx >= 0 ; idx-- )); do
+                        A_USER=( "${A_USER[@]}" "${A_DOMAIN[idx]}" )
                     done
                     # adding separators
                     readonly user=$(echo "${A_USER[@]}"|awk 'BEGIN { OFS="." } { $1 = $1; print $0 }')
@@ -143,12 +142,12 @@ Main() {
 CreateUser() {
 
     CreateSubdir() {
-        local FN=$FUNCNAME
+        local FN=${FUNCNAME[0]}
 
-        sudo -u $user mkdir -p $BASEDIR/${user}/$siteroot
+        sudo -u "$user" mkdir -p "$BASEDIR/${user}/$siteroot"
     }
 
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     if (( NOUSER )); then
         return
@@ -167,40 +166,40 @@ CreateUser() {
 
     $ECHOMSG "Creating site user: " "$user"
 
-    useradd $user -b $BASEDIR -m -U -s /bin/bash
-    usermod -a -G $user $FRONTENDUSER
+    useradd "$user" -b $BASEDIR -m -U -s /bin/bash
+    usermod -a -G "$user" $FRONTENDUSER
 
     if [[ -n $BACKENDUSER ]]; then
-        usermod -a -G $user $BACKENDUSER
+        usermod -a -G "$user" $BACKENDUSER
     fi
     # Chdir to user directory
-    cd ${BASEDIR}/$user
+    cd "${BASEDIR}/$user"
 
     # Создаём необходимые директории
-    sudo -u $user mkdir -m 0700 .ssh
-    sudo -u $user mkdir -p -m 0755 vault $WEBROOT
-    sudo -u $user mkdir -m 0775 ${BASEDIR}/${user}/tmp ${BASEDIR}/${user}/log
+    sudo -u "$user" mkdir -m 0700 .ssh
+    sudo -u "$user" mkdir -p -m 0755 vault $WEBROOT
+    sudo -u "$user" mkdir -m 0775 "${BASEDIR}/${user}/tmp" "${BASEDIR}/${user}/log"
     # и ключи
-    sudo -u $user ssh-keygen -t $keytype -q -f ${BASEDIR}/${user}/.ssh/${user}_$keytype -N ""
-    sudo -u $user bash -c "cat ${BASEDIR}/${user}/.ssh/${user}_${keytype}.pub >> ${BASEDIR}/${user}/.ssh/authorized_keys"
-    sudo -u $user chmod 0600 ${BASEDIR}/${user}/.ssh/authorized_keys
+    sudo -u "$user" ssh-keygen -t $keytype -q -f "${BASEDIR}/${user}/.ssh/${user}_$keytype" -N ""
+    sudo -u "$user" bash -c "cat ${BASEDIR}/${user}/.ssh/${user}_${keytype}.pub >> ${BASEDIR}/${user}/.ssh/authorized_keys"
+    sudo -u "$user" chmod 0600 "${BASEDIR}/${user}/.ssh/authorized_keys"
 
     if (( COPY_SSH_KEY )); then
         mkdir -p /root/keys
-        cat ${BASEDIR}/${user}/.ssh/${user}_$keytype > /root/keys/${hn}_${user}_$keytype
+        cat "${BASEDIR}/${user}/.ssh/${user}_$keytype" > "/root/keys/${hn}_${user}_$keytype"
     fi
 
     if (( SUBDOMAIN )); then
         CreateSubdir
     fi
 
-    chmod 0750 ${BASEDIR}/$user
+    chmod 0750 "${BASEDIR}/$user"
 
     echoOK
 }
 
 CreateSite() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
     local -i F_PORT=0 FPM_CONFIG_EXISTS=0
 
     if (( NOSITE == 1 )); then
@@ -208,15 +207,15 @@ CreateSite() {
     fi
 
     FpmPortFind() {
-        local FN=$FUNCNAME
-        local -a F_Ports="( )"
+        local FN=${FUNCNAME[0]}
+        local -a F_Ports=()
         
         if [[ $BACKEND =~ php-fpm|fpm ]]; then
             if [[ $SUBDOMAIN == 1 && -f "${fpm_d}/${user}.conf" ]]; then
-                F_PORT=$(egrep 'listen.*:[0-9]{4}' "${fpm_d}/${user}.conf" | egrep -o '[0-9]{4}')
+                F_PORT=$(grep -E 'listen.*:[0-9]{4}' "${fpm_d}/${user}.conf" | grep -Eo '[0-9]{4}')
             else
                 # Finding PHP-FPM instance port
-                F_Ports=( $(grep -hP 'listen.+:\d{4}' ${fpm_d}/*.conf | awk -F':' '{ print $2 }' | sort -n) )
+                mapfile -t F_Ports < <( grep -hP 'listen.+:\d{4}' ${fpm_d}/*.conf | awk -F':' '{ print $2 }' | sort -n )
 
                 if (( ! ${#F_Ports[@]} )); then
                     F_PORT=9001
@@ -236,7 +235,7 @@ CreateSite() {
     }
 
     CreateServerConfig() {
-        local FN=$FUNCNAME
+        local FN=${FUNCNAME[0]}
         local TEMPLATE=${1:-NOP}
 
         if [[ $TEMPLATE == "TEMPLATE_FPM" ]]; then
@@ -260,32 +259,32 @@ CreateSite() {
                 false
             fi
         else
-            sed -e "s|\[BASEDIR\]|${BASEDIR}|g" \
-                -e "s|\[USER\]|${user}|g" \
-                -e "s|\[PORT\]|${F_PORT}|g" \
-                -e "s|\[DOMAIN\]|${S_DOMAIN}|g" \
-                -e "s|\[WEBROOT\]|${WEBROOT}|g" \
-                -e "s|\[SUBDOMAIN\]|${siteroot}${siteroot:+-}|g" \
-                $TEMPLATE > $NEWCONFG
+            sed -e "s|\\[BASEDIR\\]|${BASEDIR}|g" \
+                -e "s|\\[USER\\]|${user}|g" \
+                -e "s|\\[PORT\\]|${F_PORT}|g" \
+                -e "s|\\[DOMAIN\\]|${S_DOMAIN}|g" \
+                -e "s|\\[WEBROOT\\]|${WEBROOT}|g" \
+                -e "s|\\[SUBDOMAIN\\]|${siteroot}${siteroot:+-}|g" \
+                "$TEMPLATE" > "$NEWCONFG"
 
             if [[ $TEMPLATE =~ TEMPLATE_NG.* && $FPM_CONFIG_EXISTS == 1 ]]; then
-                sed -i -e '/upstream fpm/,+3d' $NEWCONFG
+                sed -i -e '/upstream fpm/,+3d' "$NEWCONFG"
             fi
 
             if [[ $OS == "centos" && $NOSELINUX == 0 ]]; then
-                chcon -u system_u $NEWCONFG
-                restorecon $NEWCONFG
+                chcon -u system_u "$NEWCONFG"
+                restorecon "$NEWCONFG"
             fi
         fi
 
     }
 
     DebianSiteEnable() {
-        local FN=$FUNCNAME
+        local FN=${FUNCNAME[0]}
 
         if [[ $OS == "debian" ]]; then
             cd ../sites-enabled
-            ln -s ../sites-available/${user} ./
+            ln -s "../sites-available/${user}" ./
         fi
     }
 
@@ -326,20 +325,21 @@ CreateSite() {
 
     warn=1
     if [[ "$BACKEND" == "none" ]]; then
-        echo -e 'Site content is missing' >> ${BASEDIR}/${user}/$WEBROOT/index.html
+        echo -e 'Site content is missing' >> "${BASEDIR}/${user}/$WEBROOT/index.html"
     else
-        echo -e '<?php\necho("PHP: Site content for domain " . $_SERVER["HTTP_HOST"] . " is missing");\n?>' >> ${BASEDIR}/${user}/$WEBROOT/index.php
+        # shellcheck disable=SC2016
+        echo -e '<?php\necho("PHP: Site content for domain " . $_SERVER["HTTP_HOST"] . " is missing");\n?>' >> "${BASEDIR}/${user}/$WEBROOT/index.php"
     fi
     warn=0
 
-    cd $HOME
+    cd "$HOME"
     echoOK
 
     Reloading
 }
 
 AwstatsConfig() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     if (( NOAWSTATS == 1 )); then
         return
@@ -350,12 +350,12 @@ AwstatsConfig() {
     $ECHOMSG "Creating awstats configuration: "
     cp /etc/awstats/awstats.TEMPLATE /etc/awstats/awstats.${S_DOMAIN}.conf
 
-    sed -i -r -e "s|\[BASEDIR\]|${BASEDIR}|g" \
-        -e "s|\[DOMAIN\]|${S_DOMAIN}|g" \
-        -e "s|\[SUBDOMAIN\]|${siteroot}${siteroot:+-}|g" \
-        -e "s|\[USER\]|${user}|g" \
+    sed -i -r -e "s|\\[BASEDIR\\]|${BASEDIR}|g" \
+        -e "s|\\[DOMAIN\\]|${S_DOMAIN}|g" \
+        -e "s|\\[SUBDOMAIN\\]|${siteroot}${siteroot:+-}|g" \
+        -e "s|\\[USER\\]|${user}|g" \
         /etc/awstats/awstats.${S_DOMAIN}.conf
-
+    # shellcheck disable=SC2174
     mkdir -p -m 755 /var/lib/awstats/${S_DOMAIN}
     chown root:root /var/lib/awstats/${S_DOMAIN}    # Нахуя??
     restorecon -R /etc/awstats /var/lib/awstats
@@ -364,10 +364,10 @@ AwstatsConfig() {
 }
 
 Reloading() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     if (( ! NOSELINUX )); then
-        restorecon -R ${BASEDIR}/${user}
+        restorecon -R "${BASEDIR}/${user}"
     fi
 
     if (( ! NORELOAD )); then
@@ -401,12 +401,12 @@ Reloading() {
     fi
 
     if (( ! NOSELINUX )); then
-        restorecon -R ${BASEDIR}/${user}
+        restorecon -R "${BASEDIR}/${user}"
     fi
 }
 
 Echo() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     if (( NOECHO )); then
         return
@@ -439,7 +439,7 @@ h3. SSH Access
 *User:* @${user}@
 *Private Key:* {{collapse
 <pre>
-$(cat $BASEDIR/${user}/.ssh/${user}_$keytype)
+$(cat "$BASEDIR/${user}/.ssh/${user}_$keytype")
 </pre>
 }}
 
@@ -452,9 +452,9 @@ splitSubdomain() {
     # Разбивает доменное имя (длинное, при включённой опции SUBDOMAIN) на имя 
     # пользователя (sld.tld) и имя каталога - корня сайта $siteroot
 
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
-    readonly user=$(echo "$S_DOMAIN" | egrep -o '[a-z0-9]+\.[a-z]+$')
+    readonly user=$(echo "$S_DOMAIN" | grep -Eo '[a-z0-9]+\.[a-z]+$')
     readonly siteroot=${S_DOMAIN%\.*\.*}
 
     if [[ "$user" == "$siteroot" ]]; then
@@ -464,13 +464,13 @@ splitSubdomain() {
 }
 
 findUserName() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     local -i domain_users_count=0
     
     if [[ $OS == "centos" ]]; then
         # Кол-во пользователей вида ${S_DOMAIN}.????
-        domain_users_count=$(grep -P "^${S_DOMAIN}" /etc/passwd | wc -l)
+        domain_users_count=$(grep -Pc "^${S_DOMAIN}" /etc/passwd)
         if (( domain_users_count > 1 )); then
             writeLog "More than one matching user detected. Please resolve collision manually. Aborting"
             false
@@ -488,7 +488,7 @@ findUserName() {
 }
 
 RemoveAll() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
     local frontend_config="" backend_config=""
     local -r timestamp=$(date '+%FT%H%M')
 
@@ -514,12 +514,12 @@ RemoveAll() {
     if (( ! SUBDOMAIN ));then
         # Removing user
         $ECHOMSG "Removing site user" "${user}: "
-        userdel $user 2>/dev/null
-        rm /var/spool/mail/$user
+        userdel "$user" 2>/dev/null
+        rm "/var/spool/mail/$user"
         echoOK
         # Removing group
         $ECHOMSG "Removing group" "${user}: "
-        groupdel $user
+        groupdel "$user"
         echoOK
         # Removing crontab
         if [[ -f "/var/spool/cron/$user" ]]; then
@@ -539,8 +539,8 @@ RemoveAll() {
     fi
 
     if [[ $OS == "debian" ]]; then
-        rm /etc/nginx/sites-enabled/${siteroot}${siteroot:+.}$user
-        rm /etc/apache2/sites-enabled/${siteroot}${siteroot:+.}$user
+        rm "/etc/nginx/sites-enabled/${siteroot}${siteroot:+.}$user"
+        rm "/etc/apache2/sites-enabled/${siteroot}${siteroot:+.}$user"
         frontend_config=${nginx_sites}/${siteroot}${siteroot:+.}$user
         backend_config=${httpd_sites}/${siteroot}${siteroot:+.}$user
     else
@@ -555,15 +555,15 @@ RemoveAll() {
         fi
     fi
 
-    mv $frontend_config ${bakdir}/${frontend_config##*\/}-frontend.${timestamp}.bak
-    [[ -n "$backend_config" ]] && mv $backend_config ${bakdir}/${backend_config##*\/}-backend.${timestamp}.bak
+    mv "$frontend_config" "${bakdir}/${frontend_config##*\/}-frontend.${timestamp}.bak"
+    [[ -n "$backend_config" ]] && mv "$backend_config" "${bakdir}/${backend_config##*\/}-backend.${timestamp}.bak"
 
     flushThisShit() {
-        local FN=$FUNCNAME
+        local FN=${FUNCNAME[0]}
         local arg1="$1"
         local REPLY=""
 
-        echo -e "\n"
+        echo -e "\\n"
 
         while true; do
             read -r -p ":: Are you really wanna remove directory \"${arg1}\"? [y/N] " REPLY
@@ -595,7 +595,7 @@ RemoveAll() {
     Reloading
 
     if (( ! REMOVEALL )); then
-        echo -e "\e[0;37m[\e[0;33mSite directory was not removed!\e[0;37m]\e[0m"
+        echo -e "\\e[0;37m[\\e[0;33mSite directory was not removed!\\e[0;37m]\\e[0m"
     fi
 
 }
@@ -644,7 +644,7 @@ echoOK() {
 }
 
 writeLog() {
-    echo -e "\n$*" 1>&2
+    echo -e "\\n$*" 1>&2
     logger -t "$bn" "$*"
 }
 
