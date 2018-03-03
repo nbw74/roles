@@ -3,14 +3,16 @@
 # SNMP extender
 # v.0.4.1
 #
-{% raw %}
+# {% raw %}
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-bn=$(basename $0)
+bn=$(basename "$0")
 hn=$(hostname -f)
 
+# shellcheck disable=SC1083
 FTPSERVER={{ common_sha_store_addr }}
+# shellcheck disable=SC1083
 FTPUSER={{ common_sha_store_user }}
 WARN_THR=64
 CRIT_THR=86
@@ -41,7 +43,7 @@ main() {
 }
 
 modeConntrack() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     local -i msg_tf_count=0 ct_size=0 ct_count=0
     local ct_perc="" conntrack_proc="" conntrack_sys=""
@@ -57,9 +59,9 @@ modeConntrack() {
         CODE=0; PERFDATA=0; exit
     fi
 
-    msg_tf_count=$(dmesg | fgrep 'table full' | wc -l)
+    msg_tf_count=$(dmesg | grep -Fc 'table full')
     ct_size=$(sysctl $conntrack_sys | awk '{ print $3 }')
-    ct_count=$(cat $conntrack_proc | wc -l)
+    ct_count=$(wc -l $conntrack_proc)
     ct_perc=$(echo "x = $ct_count/($ct_size/100); scale=2; print (x+0.005)/1"|bc -l|awk '{printf "%.2f\n", $0}')
 
     if (( msg_tf_count > 0 )); then
@@ -81,14 +83,16 @@ modeConntrack() {
 }
 
 modePasswd() {
-    FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
+    local curr_time=""
+    local lock_time=""
 
     local -a F=("")
 
     F[0]=/etc/passwd
     F[${#F[@]}]=/etc/shadow
     F[${#F[@]}]=/etc/group
-    if egrep -qi "debian.*6" /etc/issue
+    if grep -Eqi "debian.*6" /etc/issue
     then
         true
     else
@@ -108,10 +112,10 @@ modePasswd() {
     [[ -f "/usr/sbin/nginx" ]] && F[${#F[@]}]=/usr/sbin/nginx
 
     # OS determination
-    if fgrep -qi debian /etc/issue 2>/dev/null
+    if grep -Fqi debian /etc/issue 2>/dev/null
     then
         OS=debian
-    elif fgrep -q 'release 5' /etc/redhat-release 2>/dev/null
+    elif grep -Fq 'release 5' /etc/redhat-release 2>/dev/null
     then
         OS=rh5
     else
@@ -136,8 +140,8 @@ modePasswd() {
     fi
 
     if [[ -f "$LOCKFILE" ]]; then
-        local lock_time=$(stat --format="%Y" $LOCKFILE)
-        local curr_time=$(date '+%s')
+        lock_time=$(stat --format="%Y" "$LOCKFILE")
+        curr_time=$(date '+%s')
 
         if (( ((curr_time - lock_time)) < 280 )); then
             writeLg "Lock file found, exiting..."
@@ -145,7 +149,7 @@ modePasswd() {
             CODE=3; LOCK=1; exit
         fi
     else
-        touch $LOCKFILE >$OUTFILE 2>&1
+        touch "$LOCKFILE" >"$OUTFILE" 2>&1
     fi
 
     if (( UPLOAD == 1 )); then
@@ -160,14 +164,14 @@ modePasswd() {
 }
 
 CreateSums() {
-    cat /dev/null > $HASHFILE
+    cat /dev/null > "$HASHFILE"
     
     for (( i=0; i<${#F[@]}; i++ )); do
-        sha256sum ${F[$i]} >> $HASHFILE 2> $OUTFILE
+        sha256sum ${F[$i]} >> "$HASHFILE" 2> "$OUTFILE"
     done
-
-    scp -oStrictHostKeyChecking=no $HASHFILE ${FTPUSER}@${FTPSERVER}:/usr/share/nginx/html/256/ > $OUTFILE 2>&1
-    rm -v "$HASHFILE" > $OUTFILE 2>&1
+    # shellcheck disable=SC2086
+    scp -oStrictHostKeyChecking=no "$HASHFILE" ${FTPUSER}@${FTPSERVER}:/usr/share/nginx/html/256/ > $OUTFILE 2>&1
+    rm -v "$HASHFILE" > "$OUTFILE" 2>&1
     CODE=0; exit
 }
 
@@ -179,18 +183,18 @@ CheckSums() {
     }
 
     Mismatch() {
-        MSG="$(cat $OUTFILE)"
+        MSG="$(cat "$OUTFILE")"
         CODE=2; exit
     }
 
     if [[ -f "$HASHFILE" ]]; then
-        rm "$HASHFILE" > $OUTFILE 2>&1
+        rm "$HASHFILE" > "$OUTFILE" 2>&1
     fi
 
-    curl -s -m 10 -o ${HASHFILE} http://${FTPSERVER}/256/${HASHFILE##*\/} > $OUTFILE 2>&1
+    curl -s -m 10 -o "${HASHFILE}" "http://${FTPSERVER}/256/${HASHFILE##*\/}" > "$OUTFILE" 2>&1
 
     for (( i=0; i<${#F[@]}; i++ )); do
-        if fgrep -q "${F[$i]}" $HASHFILE
+        if grep -Fq "${F[$i]}" "$HASHFILE"
         then
             continue
         else
@@ -200,14 +204,14 @@ CheckSums() {
     done
 
     if [[ $OS == "rh5" ]]; then
-        if sha256sum -c $HASHFILE >/dev/null 2> $OUTFILE
+        if sha256sum -c "$HASHFILE" >/dev/null 2> "$OUTFILE"
         then
             Match;
         else
             Mismatch;
         fi
     else
-        if sha256sum --quiet -c $HASHFILE > $OUTFILE 2>&1
+        if sha256sum --quiet -c "$HASHFILE" > "$OUTFILE" 2>&1
         then
             Match;
         else
@@ -217,7 +221,7 @@ CheckSums() {
 }
 
 usage() {
-    echo -e "Usage: $(basename $0) option (REQUIRED)
+    echo -e "Usage: $(basename "$0") option (REQUIRED)
         Options:
         -c          check PASSWD checksums
         -f          add performance data output
@@ -229,7 +233,7 @@ usage() {
 except() {
     local -i RET=$?
     
-    MSG="Error occured, exit code $RET. Program output: \"$(cat ${OUTFILE:-/dev/null})\""
+    MSG="Error occured in function '$FN', exit code $RET. Program output: \"$(cat "${OUTFILE:-/dev/null}")\""
     writeLg "$MSG"
 
     CODE=3; exit
@@ -286,5 +290,5 @@ done
 
 main
 
-{% endraw %}
+# {% endraw %}
 ### EOF ###

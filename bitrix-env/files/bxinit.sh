@@ -12,7 +12,7 @@ readonly USER=bitrix
 readonly WEBROOT=www
 readonly keytype=ed25519
 
-bn=$(basename $0)
+bn=$(basename "$0")
 host=$(hostname -f)
 
 set -o nounset
@@ -20,11 +20,9 @@ set -o nounset
 typeset -i NOECHO=0
 
 Main() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
-    if grep -i centos /etc/issue >/dev/null; then
-        authParams=""
-    else
+    if ! grep -iq centos /etc/issue; then
         echo "Current system is not a CentOS, exiting"
         false || except
     fi
@@ -36,7 +34,7 @@ Main() {
 
 
 CreateKeys() {
-    FN=$FUNCNAME
+    FN=${FUNCNAME[0]}
 
     echo -n "Creating $keytype key..."
 
@@ -53,14 +51,15 @@ CreateKeys() {
 }
 
 Echo() {
-    FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
+    local PRIVKEY=""
 
     if (( NOECHO == 1 )); then
         return
     fi
 
     # Wiki page generation
-    local PRIVKEY="$(cat $BASEDIR/${USER}/.ssh/${USER}_${keytype})"
+    PRIVKEY="$(cat $BASEDIR/${USER}/.ssh/${USER}_${keytype})"
     except quiet
 
     echo "
@@ -76,7 +75,7 @@ h3. Web
 *URI:* http://$(hostname -f)
 *Frontend:* @$(nginx -V 2>&1 | awk '/nginx version:/ { print $3 }')@
 *Backend:* @$(httpd -V | awk '/Server version:/ { print $3 }') + $(php -v | awk '/PHP .* \(cli\)/ { print $1, $2 }')@
-*Bitrix-env:* @$(rpm -q --qf "%{VERSION}-%{RELEASE}\n" bitrix-env)@
+*Bitrix-env:* @$(rpm -q --qf "%{VERSION}-%{RELEASE}\\n" bitrix-env)@
 
 h3. SSH Access
 

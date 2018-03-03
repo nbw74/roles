@@ -541,16 +541,16 @@ RemoveAll() {
     if [[ $OS == "debian" ]]; then
         rm "/etc/nginx/sites-enabled/${siteroot}${siteroot:+.}$user"
         rm "/etc/apache2/sites-enabled/${siteroot}${siteroot:+.}$user"
-        frontend_config=${nginx_sites}/${siteroot}${siteroot:+.}$user
-        backend_config=${httpd_sites}/${siteroot}${siteroot:+.}$user
+        frontend_config="${nginx_sites}/${siteroot}${siteroot:+.}$user"
+        backend_config="${httpd_sites}/${siteroot}${siteroot:+.}$user"
     else
-        frontend_config=${nginx_sites}/${siteroot}${siteroot:+.}${user}.conf
+        frontend_config="${nginx_sites}/${siteroot}${siteroot:+.}${user}.conf"
 
         if (( ! SUBDOMAIN )); then
             if [[ $BACKEND =~ httpd|apache2 ]]; then
-                backend_config=${httpd_sites}/${siteroot}${siteroot:+.}${user}.conf
+                backend_config="${httpd_sites}/${siteroot}${siteroot:+.}${user}.conf"
             elif [[ $BACKEND =~ php-fpm|fpm ]]; then
-                backend_config=${fpm_d}/${siteroot}${siteroot:+.}${user}.conf
+                backend_config="${fpm_d}/${siteroot}${siteroot:+.}${user}.conf"
             fi
         fi
     fi

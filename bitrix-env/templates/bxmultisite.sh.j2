@@ -9,22 +9,22 @@ set -o errtrace
 
 readonly bitrixhome="/home/bitrix"
 
-readonly bn=$(basename $0)
+readonly bn=$(basename "$0")
 readonly newdomain=${1:-NOP}
 
 main() {
     trap except ERR
 
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     # Create new site catalog with symlinks
-    [[ ! -d "$bitrixhome/$newdomain" ]] && sudo -u bitrix mkdir -m 0770 $bitrixhome/$newdomain
-    cd $bitrixhome/$newdomain
+    [[ ! -d "${bitrixhome}/$newdomain" ]] && sudo -u bitrix mkdir -m 0770 "$bitrixhome/$newdomain"
+    cd "${bitrixhome}/$newdomain" || false
     [[ ! -e "bitrix" ]] && sudo -u bitrix ln -s ../www/bitrix ./
     [[ ! -e "upload" ]] && sudo -u bitrix ln -s ../www/upload ./
 
     # Add next nginx config
-    cd /etc/nginx/bx/site_avaliable
+    cd /etc/nginx/bx/site_avaliable || false
 
     local -i i=1
     while true; do
@@ -35,7 +35,7 @@ main() {
         fi
     done
 
-    if hostname -f | fgrep -q ".dev"
+    if hostname -f | grep -Fq ".dev"
     then
         local newservername="${newdomain}.dev"
     else
@@ -46,28 +46,28 @@ main() {
     sed -i -r -e "s/Default website/Additional website/" \
         -e "s/80 default_server/80/" \
         -e "s/server_name _/server_name ${newservername}/" \
-        -e "s|(${bitrixhome}/)www|\1${newdomain}|g" \
+        -e "s|(${bitrixhome}/)www|\\1${newdomain}|g" \
         $newconf
-    cd /etc/nginx/bx/site_enabled
+    cd /etc/nginx/bx/site_enabled || false
     ln -s ../site_avaliable/$newconf ./
 
     # Add httpd config
-    cd /etc/httpd/bx/conf
+    cd /etc/httpd/bx/conf || false
     cp default.conf $newconf
     sed -i -r -e "/^Listen/d" \
-        -e "/DocumentRoot/a \\\tServerName $newservername" \
-        -e "s|(ServerAdmin) .*|\1 {{ bx_mail_alias }}|" \
-        -e "s|(${bitrixhome}/)www|\1${newdomain}|g" \
+        -e "/DocumentRoot/a \\\\tServerName $newservername" \
+        -e "s|(ServerAdmin) .*|\\1 {{ bx_mail_alias }}|" \
+        -e "s|(${bitrixhome}/)www|\\1${newdomain}|g" \
         $newconf
 
     # Configuration test
     nginx -t
     apachectl configtest
     # Web-servers restart
-    if fgrep -q 'release 6' /etc/centos-release
+    if grep -Fq 'release 6' /etc/centos-release
     then
         service nginx restart
-    elif fgrep -q 'release 7' /etc/centos-release
+    elif grep -Fq 'release 7' /etc/centos-release
     then
         systemctl restart nginx.service
         systemctl restart httpd.service
@@ -78,7 +78,7 @@ main() {
 }
 
 usage() {
-    echo -e "\n\tUsage:\n\n$bn <new_domain>\n\n\tnew_domain: full domain name without '.dev' suffix"
+    echo -e "\\n\\tUsage:\\n\\n$bn <new_domain>\\n\\n\\tnew_domain: full domain name without '.dev' suffix"
 }
 
 except() {
