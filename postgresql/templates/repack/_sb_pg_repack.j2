@@ -1,4 +1,4 @@
-# THIS FILE IS ANSIBLE MANAGED
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 {% if postgresql_repack_tables is defined %}
 {% for item in postgresql_repack_tables %}
 {{ item.cron }} postgres {{ postgresql_sb_bin }}/{{ postgresql_repack_script }} -d {{ item.db }} {% for table in item.tables %}

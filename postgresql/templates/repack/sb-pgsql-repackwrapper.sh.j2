@@ -1,4 +1,5 @@
 #!/bin/bash
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 #
 # Wrapper script for pg_repack
 # Southbridge LLC, 2017 A.D.
@@ -8,11 +9,12 @@ set -E
 set -o nounset
 
 # CONSTANTS BEGIN
+# shellcheck disable=SC1083
 readonly PATH=/usr/pgsql-{{ postgresql_version_raw }}/bin:/bin:/usr/bin:/sbin:/usr/sbin
-{% raw %}
+# {% raw %}
 readonly CONFIG_PATH=/usr/local/etc:/srv/southbridge/etc
-readonly bn="$(basename $0)"
-readonly LOGERR=$(mktemp --tmpdir ${bn%\.*}.XXXX)
+readonly bn="$(basename "$0")"
+readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
 readonly CONFIG=${bn%\.*}.conf
 readonly BIN_REQUIRED="logger mailx pg_repack pidof"
 # CONSTANTS END
@@ -26,12 +28,12 @@ typeset -i FREE_SPACE_SCALE_FACTOR=2
 typeset -i WAIT_TIMEOUT_SECS=60
 # DEFAULTS END
 
-typeset -i VERBOSE=0 NOMAIL=0 config_present=0
+typeset -i VERBOSE=0 NOMAIL=0
 typeset -a TBL=()
 typeset DB=""
 
 main() {
-    local fn=$FUNCNAME
+    local fn=${FUNCNAME[0]}
     local -i free_bytes=0 total_relsize=0 required_space=0
 
     trap 'except $LINENO' ERR
@@ -41,24 +43,25 @@ main() {
 
     for path in $(echo "$CONFIG_PATH"|tr ':' ' '); do
         if [[ -f "${path}/$CONFIG" ]]; then
+            # shellcheck disable=SC1090
             source "${path}/$CONFIG"
         fi
     done
 
     free_bytes=$(_get_free_space)
-    if_zero $free_bytes "Cannot get free space"
+    if_zero "$free_bytes" "Cannot get free space"
     (( VERBOSE )) && echo "free_bytes, MB: $(( free_bytes / 1048576 ))"
 
     for (( i=0; i < ${#TBL[@]}; i++ )); do
         total_relsize=$(_get_pg_data "SELECT pg_total_relation_size('${TBL[$i]}')" "$DB")
-        if_zero $total_relsize "Cannot get relation size"
+        if_zero "$total_relsize" "Cannot get relation size"
         (( VERBOSE )) && echo "relation: '${TBL[$i]}', total_relsize, MB: $(( total_relsize / 1048576 ))"
 
         required_space=$(( total_relsize * FREE_SPACE_SCALE_FACTOR + FREE_SPACE_THRESHOLD_MB * 1048576 ))
         (( VERBOSE )) && echo "relation: '${TBL[$i]}', required_space, MB: $(( required_space / 1048576 ))"
 
         if (( free_bytes < required_space )); then
-            echo "Not enough free disk space for pg_repack" >>$LOGERR
+            echo "Not enough free disk space for pg_repack" >>"$LOGERR"
             false
         fi
 
@@ -83,7 +86,7 @@ main() {
         while true; do
             if [[ -f $LOGERR ]]; then
                 # Последнее поле последней строки
-                last_pid=$(awk 'END { if ( $NF ~ /^[0-9]+$/ ) print $NF; else print 0; }' $LOGERR)
+                last_pid=$(awk 'END { if ( $NF ~ /^[0-9]+$/ ) print $NF; else print 0; }' "$LOGERR")
             else
                 break
             fi
@@ -103,15 +106,15 @@ main() {
                 continue
             fi
             # Количество строк в последних $tail_lines, содержащих $last_pid
-            tail_lines_with_last_pid=$(tail -n $tail_lines $LOGERR|fgrep $last_pid|wc -l)
+            tail_lines_with_last_pid=$(tail -n $tail_lines "$LOGERR"|grep -Fc "$last_pid")
             # Если эти значения равны друг другу...
             if (( tail_lines_with_last_pid == tail_lines )); then
                 lines_total_prev=$lines_total
-                lines_total=$(cat $LOGERR|wc -l)
+                lines_total=$(wc -l "$LOGERR")
                 # И если со времени предыдущего убийства кол-во строк в файле изменилось
                 # - прерываем $last_pid
                 if (( lines_total != lines_total_prev )); then
-                    _get_pg_data "SELECT pg_terminate_backend($last_pid);" >>$LOGERR
+                    _get_pg_data "SELECT pg_terminate_backend($last_pid);" >>"$LOGERR"
                 fi
             fi
             # Ждём
@@ -126,19 +129,19 @@ main() {
         done
     ) &
 
-    (( VERBOSE )) && echo "TBL: ${TBL[@]}"
+    (( VERBOSE )) && echo "TBL: ${TBL[*]}"
 
-    pg_repack -T $WAIT_TIMEOUT_SECS -d $DB ${TBL[@]} 2>>$LOGERR
+    pg_repack -T $WAIT_TIMEOUT_SECS -d $DB "${TBL[@]}" 2>>"$LOGERR"
 }
 
 _get_pg_data() {
-    local fn=$FUNCNAME
+    local fn=${FUNCNAME[0]}
 
-    psql -AXqtc "$1" "${2:-postgres}" 2>>$LOGERR
+    psql -AXqtc "$1" "${2:-postgres}" 2>>"$LOGERR"
 }
 
 _get_free_space() {
-    local fn=$FUNCNAME
+    local fn=${FUNCNAME[0]}
     local datadir="" fs=""
     local -i free_kb=0
 
@@ -149,20 +152,20 @@ _get_free_space() {
     if_null "$fs" "Cannot get filesystem"
 
     free_kb=$(df -P | awk -v fs="^$fs" '$0 ~ fs { sub(/%/, ""); print $4 }')
-    if_zero $free_kb "Cannot determine free space for '$datadir'"
+    if_zero "$free_kb" "Cannot determine free space for '$datadir'"
 
     printf "%i" $(( free_kb * 1024 ))
 }
 
 _get_filesystem() {
-    local fn=$FUNCNAME
+    local fn=${FUNCNAME[0]}
     local check_path=$datadir
     local -i loop=0
 
     while true; do
 
         if (( loop > 10 )); then
-            echo "Infinite loop apparently occured: cannot find filesystem" >>$LOGERR
+            echo "Infinite loop apparently occured: cannot find filesystem" >>"$LOGERR"
             false
         fi
 
@@ -180,24 +183,24 @@ _get_filesystem() {
 }
 
 checks() {
-    local fn=$FUNCNAME
+    local fn=${FUNCNAME[0]}
     local -i pg_repack_pid=0
 
-    if [[ $(whoami) != $RUNUSER ]]; then
-        echo "This script must be run as '$RUNUSER' user" >>$LOGERR
+    if [[ $(whoami) != "$RUNUSER" ]]; then
+        echo "This script must be run as '$RUNUSER' user" >>"$LOGERR"
         false
     fi
 
     for i in $BIN_REQUIRED; do
-        if ! hash $i 2>/dev/null
+        if ! hash "$i" 2>/dev/null
         then
-            echo "Required binary '$i' is not installed" >>$LOGERR
+            echo "Required binary '$i' is not installed" >>"$LOGERR"
             false
         fi
     done
 
     if [[ ${#TBL[@]} == 0 || -z $DB ]]; then
-        echo "Required parameter missing" >>$LOGERR
+        echo "Required parameter missing" >>"$LOGERR"
         false
     fi
 
@@ -209,7 +212,7 @@ checks() {
     pg_repack_pid=$(pidof -s pg_repack|cat)
 
     if (( pg_repack_pid )); then
-        echo "pg_repack already running" >>$LOGERR
+        echo "pg_repack already running" >>"$LOGERR"
         false
     fi
 }
@@ -219,7 +222,7 @@ if_zero() {
     local arg2="$2"
 
     if (( ! arg1 )); then
-        echo "$arg2" >>$LOGERR
+        echo "$arg2" >>"$LOGERR"
         false
     fi
 }
@@ -229,7 +232,7 @@ if_null() {
     local arg2="$2"
 
     if [[ -z $arg1 ]]; then
-        echo "$arg2" >>$LOGERR
+        echo "$arg2" >>"$LOGERR"
         false
     fi
 }
@@ -239,16 +242,16 @@ except() {
     local no=${1:-no_line}
 
     if (( ! NOMAIL )); then
-        echo -e "\tПроизошла ошибка при выполнении скрипта ${0} (строка ${no}, функция '$fn'), 
+        echo -e "\\tПроизошла ошибка при выполнении скрипта ${0} (строка ${no}, функция '$fn'), 
 выполняющего сжатие таблиц СУБД PostgreSQL посредством команды pg_repack.
-\tВывод сбойной команды:\n\n  $(cat ${LOGERR}|awk '$1=$1' ORS=' ')" | mailx -s "$MAIL_SUBJ" $MAILXTO
+\\tВывод сбойной команды:\\n\\n  $(awk '$1=$1' ORS=' ' "${LOGERR}")" | mailx -s "$MAIL_SUBJ" $MAILXTO
     fi
 
     if [[ -t 1 ]]; then
-        echo "* FATAL: error occured in function '$fn' on line ${no}. Output: '$(cat ${LOGERR}|awk '$1=$1' ORS=' ')'" 1>&2
+        echo "* FATAL: error occured in function '$fn' on line ${no}. Output: '$(awk '$1=$1' ORS=' ' "${LOGERR}")'" 1>&2
     fi
 
-    logger -p user.err -t "$bn" "* FATAL: error occured in function '$fn' on line ${no}. Output: '$(cat ${LOGERR}|awk '$1=$1' ORS=' ')'"
+    logger -p user.err -t "$bn" "* FATAL: error occured in function '$fn' on line ${no}. Output: '$(awk '$1=$1' ORS=' ' "${LOGERR}")'"
     exit $ret
 }
 
@@ -260,12 +263,12 @@ myexit() {
 }
 
 usage() {
-    echo -e "\tUsage: $bn [-v] -d database -t table_name [ -t table_name ... ]\n
-\t-d db_name\t\tSpecifies the name of the database to be reorganized.
-\t-t [schema.]table_name\tReorganize the specified table(s). Multiple tables may be reorganized by writing multiple -t switches.
-\t-v\t\t\tVerbose mode
-\t-h\t\t\tPrint this help.
-\n\tThis script must be run as 'postgres' user.
+    echo -e "\\tUsage: $bn [-v] -d database -t table_name [ -t table_name ... ]\\n
+\\t-d db_name\\t\\tSpecifies the name of the database to be reorganized.
+\\t-t [schema.]table_name\\tReorganize the specified table(s). Multiple tables may be reorganized by writing multiple -t switches.
+\\t-v\\t\\t\\tVerbose mode
+\\t-h\\t\\t\\tPrint this help.
+\\n\\tThis script must be run as 'postgres' user.
 "
 }
 
@@ -280,6 +283,8 @@ while getopts "d:t:hvM" OPTION; do
         M) NOMAIL=1
             ;;
         h) usage; exit 0
+            ;;
+        *) usage; exit 1
     esac
 done
 
@@ -290,5 +295,5 @@ fi
 
 main
 
-{% endraw %}
+# {% endraw %}
 ## EOF ##
