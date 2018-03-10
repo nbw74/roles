@@ -220,35 +220,56 @@ CreateSite() {
 
     CreateServerConfig() {
         local FN=${FUNCNAME[0]}
-        local TEMPLATE=${1:-NOP}
+        local template=${1:-NOP}
 
-        if [[ $TEMPLATE == "TEMPLATE_FPM" ]]; then
+        if [[ $template == "TEMPLATE_FPM" ]]; then
             local prefix=""
         else
             local prefix=${siteroot}${siteroot:+.}
         fi
 
-        local NEWCONFG=${prefix}${user}.conf
+        local newconfg=${prefix}${user}.conf
 
-        if [[ -f "$NEWCONFG" ]]; then
-            if [[ $TEMPLATE == "TEMPLATE_FPM" ]]; then
+        if [[ -f "$newconfg" ]]; then
+            if [[ $template == "TEMPLATE_FPM" ]]; then
                 FPM_CONFIG_EXISTS=1
                 return 0
             else
-                writeLog "FATAL: config file ${PWD}/$NEWCONFG already exists"
+                writeLog "FATAL: config file ${PWD}/$newconfg already exists"
                 false
             fi
         else
             local SITEROOT="${siteroot}${siteroot:+-}"
-            envsubst < "$TEMPLATE" > "$NEWCONFG"
+            envsubst < "$template" > "$newconfg"
 
-            if [[ $TEMPLATE =~ TEMPLATE_NG.* && $FPM_CONFIG_EXISTS == 1 ]]; then
-                sed -i -e '/upstream fpm/,+3d' "$NEWCONFG"
+            if [[ $template =~ TEMPLATE_NG.* ]]; then
+
+                local upstream=$(mktemp --tmpdir "${bn%\.*}.XXXX")
+
+                if (( F_PORT )); then
+                    envsubst < "TEMPLATE_UPSTREAM" > "$upstream"
+                    ed -s "$newconfg" <<IN
+/server[[:space:]]\+{/-r $upstream
+w
+q
+IN
+
+                if (( MOBILE == 1 )); then
+                    (
+                    S_DOMAIN="m.$S_DOMAIN"
+                    echo -e "\n## MOBILE VERSION ##\n" >> "$newconfg"
+                    envsubst < "$template" >> "$newconfg"
+                    )
+                fi
+
+                if (( FPM_CONFIG_EXISTS == 1 )); then
+                    sed -i -e '/upstream fpm/,+3d' "$newconfg"
+                fi
             fi
 
             if (( ! NOSELINUX )); then
-                chcon -u system_u "$NEWCONFG"
-                restorecon "$NEWCONFG"
+                chcon -u system_u "$newconfg"
+                restorecon "$newconfg"
             fi
         fi
 

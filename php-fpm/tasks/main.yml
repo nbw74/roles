@@ -20,7 +20,7 @@
     force: yes
   tags: [conf]
 
-- name: "Copy TEMPLATE_NG_FP(_SSL)"
+- name: "Copy TEMPLATEs"
   copy:
     dest: "{{ confd }}"
     src: "{{ item }}"
@@ -28,6 +28,7 @@
   with_items:
     - TEMPLATE_NG_FP
     - TEMPLATE_NG_FP_SSL
+    - TEMPLATE_UPSTREAM
   tags: [templates]
 
 - name: "Template 10-cgi-bin.j2"

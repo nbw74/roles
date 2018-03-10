@@ -1,8 +1,5 @@
 #####
 # vim: ft=nginx:
-upstream fpm${F_PORT} {
-    server 127.0.0.1:${F_PORT};
-}
 
 server {
     include         /etc/nginx/include.d/listen${_alt}.conf;
