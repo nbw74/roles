@@ -639,7 +639,7 @@ usage() {
 if ! TEMP=$(getopt -o ab:d:u:i:r:slmxhAB:CELNSUWX --longoptions alt,\
 awstatsonly,backend:,domain:,root:,subdomain,user:,address:,ssl,remove,\
 noawstats,basedir:,copy-ssh-key,noecho,noreload,nosite,nouser,webinfo,\
-removeall,help,mobilei,go-ssl -n "$bn" -- "$@")
+removeall,help,mobile,go-ssl -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
