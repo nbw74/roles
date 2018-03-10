@@ -1,19 +1,19 @@
 ---
 - name: "Install Nginx (YUM)"
-  yum: state=present name={{ item }}
+  yum:
+    state: present
+    name: "{{ item }}"
   with_items:
-    - nginx
-    - awstats
-    - patch                     # Required by awstats tag
+    - '{{ nginx_packages }}'
   when: ansible_distribution == "CentOS"
   tags: [packages]
 
 - name: "Install Nginx (DNF)"
-  dnf: state=present name={{ item }}
+  dnf:
+    state: present
+    name: "{{ item }}"
   with_items:
-    - nginx
-    - awstats
-    - patch                     # Required by awstats tag
+    - '{{ nginx_packages }}'
   when: ansible_distribution == "Fedora"
   tags: [packages]
 ...
