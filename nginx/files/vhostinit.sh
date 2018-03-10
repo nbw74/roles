@@ -14,8 +14,8 @@ typeset keytype=ed25519
 
 typeset -i NOSITE=0 NOUSER=0 NOECHO=0 NORELOAD=0 REMOVE=0 REMOVEALL=0
 typeset -i NOSELINUX=0 SSL=0 NOAWSTATS=0 AWSTATSONLY=0 WEBINFO=0
-typeset -i COPY_SSH_KEY=0 SUBDOMAIN=0 warn=0
-typeset BACKEND="" OS="" FRONTENDUSER="" BACKENDUSER="" S_DOMAIN="" user="" WEBROOT=""
+typeset -i COPY_SSH_KEY=0 SUBDOMAIN=0 warn=0 GO_SSL=0
+typeset BACKEND="" FRONTENDUSER="" BACKENDUSER="" S_DOMAIN="" user="" WEBROOT=""
 typeset BASEDIR=/var/www user="" siteroot="" _alt=""
 # For envsubst templates
 readonly root_path="root_path"
@@ -36,14 +36,7 @@ Main() {
         false
     fi
 
-    if grep -iq debian /etc/issue; then
-        OS=debian
-        FRONTENDUSER=www-data
-        ECHOMSG=log_daemon_msg
-        httpd_sites=/etc/apache2/sites-available
-        nginx_sites=/etc/nginx/sites-available
-    elif [[ -f /etc/centos-release || -f /etc/fedora-release ]]; then
-        OS=centos
+    if [[ -f /etc/redhat-release ]]; then
         FRONTENDUSER=nginx
         ECHOMSG="echo -n"
         httpd_sites=/etc/httpd/conf.d
@@ -60,7 +53,7 @@ Main() {
             fi
         fi
     else
-        echo "FATAL: Unknown operating system (only Debian & CentOS|Fedora supported)" >&2
+        echo "FATAL: Unknown operating system (only RHEL-based is supported)" >&2
         false
     fi
 
@@ -73,19 +66,14 @@ Main() {
         writeLog "FATAL: Required parameter is missing (-b)"
         false
     else
-        if [[ $BACKEND =~ httpd|apache2|php-fpm|fpm|none ]]; then
-            if [[ $OS == "debian" && $BACKEND =~ php-fpm|fpm ]]; then
-                writeLog "FATAL: Not supported"
-                false
-            fi
-        else
+        if ! [[ $BACKEND =~ httpd|apache2|php-fpm|fpm|none ]]; then
             writeLog "FATAL: Unknown backend (${BACKEND})"
             false
         fi
     fi
 
     # Проверка существования домена
-    if grep -RPq "\\s+${S_DOMAIN}" $nginx_sites
+    if grep -RPq "\\s+${S_DOMAIN}[; ]" $nginx_sites
     then
         if (( ! REMOVE )); then
             writeLog "FATAL: collision: domain name already exists in the Nginx configuration"
@@ -101,22 +89,9 @@ Main() {
                 splitSubdomain;
             else
                 # Обработка доменного имени
-                if [[ $OS == "centos" ]]; then
-                    utime=$(date '+%s')
-                    uhash=$(echo "${S_DOMAIN}$-${utime}" | md5sum)
-                    readonly user=${S_DOMAIN}.${uhash:0:4}
-                else
-                    # Generation username from reversed domain name
-                    # domain to array decomposition
-                    typeset -a A_DOMAIN=() A_USER=()
-                    mapfile -t A_DOMAIN < <( echo "$S_DOMAIN"|awk -F"." 'BEGIN { OFS=" " } { $1 = $1; print $0 }' )
-                    # reverse (thnx to http://stackoverflow.com/questions/13360091/how-to-reverse-array-in-bash-onliner-for-loop)
-                    for (( idx = ${#A_DOMAIN[@]}-1 ; idx >= 0 ; idx-- )); do
-                        A_USER=( "${A_USER[@]}" "${A_DOMAIN[idx]}" )
-                    done
-                    # adding separators
-                    readonly user=$(echo "${A_USER[@]}"|awk 'BEGIN { OFS="." } { $1 = $1; print $0 }')
-                fi
+                utime=$(date '+%s')
+                uhash=$(echo "${S_DOMAIN}$-${utime}" | md5sum)
+                readonly user=${S_DOMAIN}.${uhash:0:4}
             fi
         fi
     else
@@ -218,7 +193,7 @@ CreateSite() {
     FpmPortFind() {
         local FN=${FUNCNAME[0]}
         local -a F_Ports=()
-        
+
         if [[ $BACKEND =~ php-fpm|fpm ]]; then
             if [[ $SUBDOMAIN == 1 && -f "${fpm_d}/${user}.conf" ]]; then
                 F_PORT=$(grep -E 'listen.*:[0-9]{4}' "${fpm_d}/${user}.conf" | grep -Eo '[0-9]{4}')
@@ -253,11 +228,7 @@ CreateSite() {
             local prefix=${siteroot}${siteroot:+.}
         fi
 
-        if [[ $OS == "debian" ]]; then
-            local NEWCONFG=${prefix}${user}
-        else
-            local NEWCONFG=${prefix}${user}.conf
-        fi
+        local NEWCONFG=${prefix}${user}.conf
 
         if [[ -f "$NEWCONFG" ]]; then
             if [[ $TEMPLATE == "TEMPLATE_FPM" ]]; then
@@ -275,21 +246,12 @@ CreateSite() {
                 sed -i -e '/upstream fpm/,+3d' "$NEWCONFG"
             fi
 
-            if [[ $OS == "centos" && $NOSELINUX == 0 ]]; then
+            if (( ! NOSELINUX )); then
                 chcon -u system_u "$NEWCONFG"
                 restorecon "$NEWCONFG"
             fi
         fi
 
-    }
-
-    DebianSiteEnable() {
-        local FN=${FUNCNAME[0]}
-
-        if [[ $OS == "debian" ]]; then
-            cd ../sites-enabled || false
-            ln -s "../sites-available/${user}" ./
-        fi
     }
 
     if [[ $BACKEND =~ php-fpm|fpm ]]; then
@@ -302,7 +264,6 @@ CreateSite() {
         BE=A2
         cd $httpd_sites || false
         CreateServerConfig TEMPLATE_A2
-        DebianSiteEnable
     elif [[ $BACKEND =~ php-fpm|fpm ]]; then
         $ECHOMSG "Creating backend configuration" "${BACKEND}: "
         BE=FP
@@ -324,8 +285,6 @@ CreateSite() {
     else
         CreateServerConfig TEMPLATE_NG_$BE
     fi
-
-    DebianSiteEnable
 
     warn=1
     if [[ "$BACKEND" == "none" ]]; then
@@ -373,28 +332,21 @@ Reloading() {
     if (( ! NORELOAD )); then
         $ECHOMSG "Reloading web-servers: "
 
-        if [[ $OS == "debian" ]]; then
-            service apache2 reload
-            service nginx configtest
-            service nginx reload
-        else
-
-            if [[ $BACKEND =~ httpd|apache2 ]]; then
-                apachectl configtest
-            elif [[ $BACKEND =~ php-fpm|fpm ]]; then
-                /sbin/php-fpm -t
-            fi
-
-            nginx -qt
-
-            if [[ $BACKEND =~ httpd|apache2 ]]; then
-                systemctl reload httpd.service
-            elif [[ $BACKEND =~ php-fpm|fpm ]]; then
-                systemctl reload php-fpm.service
-            fi
-
-            systemctl reload nginx.service
+        if [[ $BACKEND =~ httpd|apache2 ]]; then
+            apachectl configtest
+        elif [[ $BACKEND =~ php-fpm|fpm ]]; then
+            /sbin/php-fpm -t
         fi
+
+        nginx -qt
+
+        if [[ $BACKEND =~ httpd|apache2 ]]; then
+            systemctl reload httpd.service
+        elif [[ $BACKEND =~ php-fpm|fpm ]]; then
+            systemctl reload php-fpm.service
+        fi
+
+        systemctl reload nginx.service
 
         echoOK
 
@@ -467,22 +419,17 @@ findUserName() {
     local FN=${FUNCNAME[0]}
 
     local -i domain_users_count=0
-    
-    if [[ $OS == "centos" ]]; then
-        # Кол-во пользователей вида ${S_DOMAIN}.????
-        domain_users_count=$(grep -Pc "^${S_DOMAIN}" /etc/passwd)
-        if (( domain_users_count > 1 )); then
-            writeLog "More than one matching user detected. Please resolve collision manually. Aborting"
-            false
-        elif (( domain_users_count == 0 )); then
-            writeLog "No matching user detected. Aborting"
-            false
-        else
-            readonly user=$(grep -P "^${S_DOMAIN}" /etc/passwd | awk -F":" '{ print $1 };')
-        fi
-    else
-        echo "Not implemented" >&2
+
+    # Кол-во пользователей вида ${S_DOMAIN}.????
+    domain_users_count=$(grep -Pc "^${S_DOMAIN}" /etc/passwd)
+    if (( domain_users_count > 1 )); then
+        writeLog "More than one matching user detected. Please resolve collision manually. Aborting"
         false
+    elif (( domain_users_count == 0 )); then
+        writeLog "No matching user detected. Aborting"
+        false
+    else
+        readonly user=$(grep -P "^${S_DOMAIN}" /etc/passwd | awk -F":" '{ print $1 };')
     fi
 
 }
@@ -533,25 +480,18 @@ RemoveAll() {
     $ECHOMSG "Removing site configs" "${siteroot:-$user}: "
 
     # Removing awstats config and stats
-    if (( NOAWSTATS == 0 )); then
+    if (( ! NOAWSTATS )); then
         [[ -f "/etc/awstats/awstats.${S_DOMAIN}.conf" ]] && rm "/etc/awstats/awstats.${S_DOMAIN}.conf"
         [[ -d "/var/lib/awstats/${S_DOMAIN}" ]] && rm -r "/var/lib/awstats/${S_DOMAIN}"
     fi
 
-    if [[ $OS == "debian" ]]; then
-        rm "/etc/nginx/sites-enabled/${siteroot}${siteroot:+.}$user"
-        rm "/etc/apache2/sites-enabled/${siteroot}${siteroot:+.}$user"
-        frontend_config="${nginx_sites}/${siteroot}${siteroot:+.}$user"
-        backend_config="${httpd_sites}/${siteroot}${siteroot:+.}$user"
-    else
-        frontend_config="${nginx_sites}/${siteroot}${siteroot:+.}${user}.conf"
+    frontend_config="${nginx_sites}/${siteroot}${siteroot:+.}${user}.conf"
 
-        if (( ! SUBDOMAIN )); then
-            if [[ $BACKEND =~ httpd|apache2 ]]; then
-                backend_config="${httpd_sites}/${siteroot}${siteroot:+.}${user}.conf"
-            elif [[ $BACKEND =~ php-fpm|fpm ]]; then
-                backend_config="${fpm_d}/${siteroot}${siteroot:+.}${user}.conf"
-            fi
+    if (( ! SUBDOMAIN )); then
+        if [[ $BACKEND =~ httpd|apache2 ]]; then
+            backend_config="${httpd_sites}/${siteroot}${siteroot:+.}${user}.conf"
+        elif [[ $BACKEND =~ php-fpm|fpm ]]; then
+            backend_config="${fpm_d}/${siteroot}${siteroot:+.}${user}.conf"
         fi
     fi
 
@@ -606,11 +546,6 @@ if [[ -f /etc/init.d/functions ]]; then
     ECHO_SUCCESS=echo_success
     ECHO_FAILURE=echo_failure
     ECHO_WARNING=echo_warning
-elif [[ -f /lib/lsb/init-functions ]]; then
-    . /lib/lsb/init-functions
-    ECHO_SUCCESS="log_end_msg 0"
-    ECHO_FAILURE="log_end_msg 1"
-    ECHO_WARNING="log_end_msg 255"
 else
     echo "FATAL: init-functions not found"
     exit 18
@@ -623,12 +558,12 @@ except() {
 
     if (( warn )); then
         $ECHO_WARNING
-        [[ $OS == "centos" ]] && echo
+        echo
         return
     else
         echo "Runtime error in function ${FN:-UNKNOWN}"
         $ECHO_FAILURE
-        [[ $OS == "centos" ]] && echo
+        echo
         exit $RET
     fi
 }
@@ -640,7 +575,7 @@ echoOK() {
         return
     else
         $ECHO_SUCCESS
-        [[ $OS == "centos" ]] && echo
+        echo
     fi
 }
 
@@ -658,6 +593,8 @@ usage() {
         -d, --domain <string>       site domain (REQUIRED)
         -i, --address <ipv4|string> IP address or hostname (default: \$domain)
         -l, --ssl                   create Nginx config with SSL
+        --go-ssl                    convert configuration to SSL
+        -m, --mobile                also add Nginx configuration for mobile domain
         -r, --root <string>         web root directory (default: www)
         -s, --subdomain             create subdomain for existing user
         -u, --user <string>         site user
@@ -672,13 +609,13 @@ usage() {
         -U, --nouser                skip user creation
         -W, --webinfo               print frontend/backend info for Wiki
         -X, --removeall             remove user, website configs AND FILES
-        "
+"
 }
 
-if ! TEMP=$(getopt -o ab:d:u:i:r:slxhAB:CELNSUWX --longoptions alt,awstatsonly,\
-backend:,domain:,root:,subdomain,user:,address:,ssl,remove,noawstats,\
-basedir:,copy-ssh-key,noecho,noreload,nosite,nouser,webinfo,removeall,\
-help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o ab:d:u:i:r:slmxhAB:CELNSUWX --longoptions alt,\
+awstatsonly,backend:,domain:,root:,subdomain,user:,address:,ssl,remove,\
+noawstats,basedir:,copy-ssh-key,noecho,noreload,nosite,nouser,webinfo,\
+removeall,help,mobilei,go-ssl -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -698,6 +635,8 @@ while true; do
         -u|--user)          user=$2 ;       shift 2 ;;
         -i|--address)       S_IPADDR=$2 ;   shift 2 ;;
         -l|--ssl)           SSL=1 ;         shift   ;;
+        --go-ssl)           GO_SSL=1 ;      shift   ;;
+        -m|--mobile)        MOBILE=1 ;      shift   ;;
         -x|--remove)        REMOVE=1 ;      shift   ;;
         -A|--noawstats)     NOAWSTATS=1 ;   shift   ;;
         -B|--basedir)       BASEDIR=$2 ;    shift 2 ;;
