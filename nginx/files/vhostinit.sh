@@ -399,8 +399,11 @@ if (( WEBINFO )); then
     echo "
 h3. Web
 
-*URI:* http://$ipaddr
-*Frontend:* @$(nginx -V 2>&1 | awk '/nginx version:/ { print $3 }')@"
+*URI:* http://${S_DOMAIN}"
+if (( MOBILE )); then
+    echo "*URI (mob):* http://m.${S_DOMAIN}"
+fi
+echo "*Frontend:* @$(nginx -V 2>&1 | awk '/nginx version:/ { print $3 }')@"
     if [[ $BACKEND =~ httpd|apache2 ]]; then
         echo "*Backend:* @$(httpd -V | awk '/Server version:/ { print $3 }') + $(php -v | awk '/PHP .* \(cli\)/ { print $1, $2 }')@"
     elif [[ $BACKEND =~ php-fpm|fpm ]]; then
