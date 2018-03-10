@@ -1,33 +1,33 @@
 #####
-#
+# vim: ft=nginx:
 server {
-    include         /etc/nginx/include.d/listen.conf;
-    server_name     [DOMAIN]
-                    www.[DOMAIN];
+    include         /etc/nginx/include.d/listen${_alt}.conf;
+    server_name     ${DOMAIN}
+                    www.${DOMAIN};
 
     # Log files
-    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
-    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
-    
-    return          301 https://[DOMAIN]$request_uri;
+    access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
+    error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
+
+    return          301 https://${DOMAIN}$$request_uri;
 }
 
 server {
-    include         /etc/nginx/include.d/listen_ssl.conf;
-    server_name     [DOMAIN];
+    include         /etc/nginx/include.d/listen_ssl${_alt}.conf;
+    server_name     ${DOMAIN};
 
     # Load configuration files for the default server block.
     include         /etc/nginx/default.d/*.conf;
     # Log files
-    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
-    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
-    
-    ssl_certificate         /etc/pki/tls/certs/[DOMAIN].crt;
-    ssl_certificate_key     /etc/pki/tls/private/[DOMAIN].key;
+    access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
+    error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
+
+    ssl_certificate         /etc/pki/tls/certs/${DOMAIN}.crt;
+    ssl_certificate_key     /etc/pki/tls/private/${DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
 
     location ~* \.(jpg|jpeg|gif|png|css|eot|woff|svg|ttf|js|zip|tgz|gz|rar|bz2|doc|xls|exe|pdf|ppt|tar|wav|bmp|rtf|swf|ico|flv|txt|docx|xlsx)$ {
-        root                [BASEDIR]/[USER]/[WEBROOT];
+        root                ${BASEDIR}/${user}/${WEBROOT};
         index               index.html index.php;
         expires             30d;
     }
@@ -43,16 +43,16 @@ server {
 }
 
 server {
-    include         /etc/nginx/include.d/listen_ssl.conf;
-    server_name     www.[DOMAIN];
+    include         /etc/nginx/include.d/listen_ssl${_alt}.conf;
+    server_name     www.${DOMAIN};
 
     # Log files
-    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
-    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
-    
-    ssl_certificate         /etc/pki/tls/certs/[DOMAIN].crt;
-    ssl_certificate_key     /etc/pki/tls/private/[DOMAIN].key;
+    access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
+    error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
+
+    ssl_certificate         /etc/pki/tls/certs/${DOMAIN}.crt;
+    ssl_certificate_key     /etc/pki/tls/private/${DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
 
-    return          301 https://[DOMAIN]$request_uri;
+    return          301 https://${DOMAIN}$$request_uri;
 }

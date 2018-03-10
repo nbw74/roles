@@ -1,55 +1,55 @@
 #####
-#
-upstream fpm[PORT] {
-    server 127.0.0.1:[PORT];
+# vim: ft=nginx:
+upstream fpm${F_PORT} {
+    server 127.0.0.1:${F_PORT};
 }
 
 server {
-    include         /etc/nginx/include.d/listen.conf;
-    server_name     [DOMAIN]
-                    www.[DOMAIN];
+    include         /etc/nginx/include.d/listen${_alt}.conf;
+    server_name     ${DOMAIN}
+                    www.${DOMAIN};
 
     # Log files
-    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
-    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
+    access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
+    error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
     
-    return          301 https://[DOMAIN]$request_uri;
+    return          301 https://${DOMAIN}$$request_uri;
 }
 
 server {
-    include         /etc/nginx/include.d/listen_ssl.conf;
-    server_name     [DOMAIN];
+    include         /etc/nginx/include.d/listen_ssl${_alt}.conf;
+    server_name     ${DOMAIN};
 
     # Load configuration files for the default server block.
     include         /etc/nginx/default.d/*.conf;
     # Log files
-    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
-    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
+    access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
+    error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
     
-    ssl_certificate         /etc/pki/tls/certs/[DOMAIN].crt;
-    ssl_certificate_key     /etc/pki/tls/private/[DOMAIN].key;
+    ssl_certificate         /etc/pki/tls/certs/${DOMAIN}.crt;
+    ssl_certificate_key     /etc/pki/tls/private/${DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
 
-    set $root_path  '[BASEDIR]/[USER]/[WEBROOT]';
-    set $fpmport    [PORT];
+    set             $$root_path     '${BASEDIR}/${user}/${WEBROOT}';
+    set             $$fpmport       ${F_PORT};
 
-    root            $root_path;
+    root            $$root_path;
     index           index.php;
 
     include         /etc/nginx/include.d/fpm.conf;
 }
 
 server {
-    include         /etc/nginx/include.d/listen_ssl.conf;
-    server_name     www.[DOMAIN];
+    include         /etc/nginx/include.d/listen_ssl${_alt}.conf;
+    server_name     www.${DOMAIN};
 
     # Log files
-    access_log      [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-access.log combined buffer=128k;
-    error_log       [BASEDIR]/[USER]/log/[SUBDOMAIN]nginx-error.log;
-    
-    ssl_certificate         /etc/pki/tls/certs/[DOMAIN].crt;
-    ssl_certificate_key     /etc/pki/tls/private/[DOMAIN].key;
+    access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
+    error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
+
+    ssl_certificate         /etc/pki/tls/certs/${DOMAIN}.crt;
+    ssl_certificate_key     /etc/pki/tls/private/${DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
 
-    return          301 https://[DOMAIN]$request_uri;
+    return          301 https://${DOMAIN}$$request_uri;
 }

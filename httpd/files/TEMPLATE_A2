@@ -1,12 +1,13 @@
+# vim: ft=apache:
 <VirtualHost 127.0.0.1:8888>
-    DocumentRoot [BASEDIR]/[USER]/[WEBROOT]
-    ServerAdmin admin@[DOMAIN]
-    ServerName [DOMAIN]
-    ServerAlias www.[DOMAIN]
-    ErrorLog [BASEDIR]/[USER]/log/[SUBDOMAIN]apache-error.log
-    CustomLog [BASEDIR]/[USER]/log/[SUBDOMAIN]apache-access.log combined
+    DocumentRoot ${BASEDIR}/${user}/${WEBROOT}
+    ServerAdmin admin@${DOMAIN}
+    ServerName ${DOMAIN}
+    ServerAlias www.${DOMAIN}
+    ErrorLog ${BASEDIR}/${user}/log/${SITEROOT}apache-error.log
+    CustomLog ${BASEDIR}/${user}/log/${SITEROOT}apache-access.log combined
 
-    <Directory [BASEDIR]/[USER]/[WEBROOT]>
+    <Directory ${BASEDIR}/${user}/${WEBROOT}>
         Options -ExecCGI -Indexes -Includes +FollowSymLinks
         AllowOverride All
 
@@ -21,13 +22,12 @@
         </LimitExcept>
     </Directory>
 
-    AssignUserId apache [USER]
+    AssignUserId apache ${user}
 
-    php_admin_value open_basedir "[BASEDIR]/[USER]/:."
-    php_admin_value upload_tmp_dir "[BASEDIR]/[USER]/tmp"
-    php_admin_value session.save_path "[BASEDIR]/[USER]/tmp"
+    php_admin_value open_basedir "${BASEDIR}/${user}/:."
+    php_admin_value upload_tmp_dir "${BASEDIR}/${user}/tmp"
+    php_admin_value session.save_path "${BASEDIR}/${user}/tmp"
     php_admin_value mbstring.internal_encoding "UTF-8"
 #    php_admin_value mbstring.func_overload "2"
 
 </VirtualHost>
-

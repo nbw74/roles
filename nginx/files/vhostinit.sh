@@ -16,7 +16,13 @@ typeset -i NOSITE=0 NOUSER=0 NOECHO=0 NORELOAD=0 REMOVE=0 REMOVEALL=0
 typeset -i NOSELINUX=0 SSL=0 NOAWSTATS=0 AWSTATSONLY=0 WEBINFO=0
 typeset -i COPY_SSH_KEY=0 SUBDOMAIN=0 warn=0
 typeset BACKEND="" OS="" FRONTENDUSER="" BACKENDUSER="" S_DOMAIN="" user="" WEBROOT=""
-typeset BASEDIR=/var/www user="" siteroot=""
+typeset BASEDIR=/var/www user="" siteroot="" _alt=""
+# For envsubst templates
+readonly root_path="root_path"
+readonly request_uri="request_uri"
+readonly fpmport="fpmport"
+
+export BASEDIR user S_DOMAIN WEBROOT siteroot _alt root_path request_uri fpmport
 
 Main() {
     local FN=${FUNCNAME[0]}
@@ -173,7 +179,7 @@ CreateUser() {
         usermod -a -G "$user" $BACKENDUSER
     fi
     # Chdir to user directory
-    cd "${BASEDIR}/$user"
+    cd "${BASEDIR}/$user" || false
 
     # Создаём необходимые директории
     sudo -u "$user" mkdir -m 0700 .ssh
@@ -201,6 +207,8 @@ CreateUser() {
 CreateSite() {
     local FN=${FUNCNAME[0]}
     local -i F_PORT=0 FPM_CONFIG_EXISTS=0
+
+    export F_PORT
 
     if (( NOSITE == 1 )); then
         return
@@ -259,13 +267,8 @@ CreateSite() {
                 false
             fi
         else
-            sed -e "s|\\[BASEDIR\\]|${BASEDIR}|g" \
-                -e "s|\\[USER\\]|${user}|g" \
-                -e "s|\\[PORT\\]|${F_PORT}|g" \
-                -e "s|\\[DOMAIN\\]|${S_DOMAIN}|g" \
-                -e "s|\\[WEBROOT\\]|${WEBROOT}|g" \
-                -e "s|\\[SUBDOMAIN\\]|${siteroot}${siteroot:+-}|g" \
-                "$TEMPLATE" > "$NEWCONFG"
+            local SITEROOT="${siteroot}${siteroot:+-}"
+            envsubst < "$TEMPLATE" > "$NEWCONFG"
 
             if [[ $TEMPLATE =~ TEMPLATE_NG.* && $FPM_CONFIG_EXISTS == 1 ]]; then
                 sed -i -e '/upstream fpm/,+3d' "$NEWCONFG"
@@ -283,7 +286,7 @@ CreateSite() {
         local FN=${FUNCNAME[0]}
 
         if [[ $OS == "debian" ]]; then
-            cd ../sites-enabled
+            cd ../sites-enabled || false
             ln -s "../sites-available/${user}" ./
         fi
     }
@@ -296,13 +299,13 @@ CreateSite() {
     if [[ $BACKEND =~ httpd|apache2 ]]; then
         $ECHOMSG "Creating backend configuration" "${BACKEND}: "
         BE=A2
-        cd $httpd_sites
+        cd $httpd_sites || false
         CreateServerConfig TEMPLATE_A2
         DebianSiteEnable
     elif [[ $BACKEND =~ php-fpm|fpm ]]; then
         $ECHOMSG "Creating backend configuration" "${BACKEND}: "
         BE=FP
-        cd $fpm_d
+        cd $fpm_d || false
         CreateServerConfig TEMPLATE_FPM
     elif [[ $BACKEND =~ none ]]; then
         BE=NG
@@ -313,7 +316,7 @@ CreateSite() {
     # Frontend configuration ==================================================
     $ECHOMSG "Creating frontend configuration" "nginx: "
     # NginX website config creation
-    cd $nginx_sites
+    cd $nginx_sites || false
 
     if (( SSL == 1 )); then
         CreateServerConfig TEMPLATE_NG_${BE}_SSL
@@ -332,7 +335,7 @@ CreateSite() {
     fi
     warn=0
 
-    cd "$HOME"
+    cd "$HOME" || false
     echoOK
 
     Reloading
@@ -348,13 +351,9 @@ AwstatsConfig() {
     [[ -z $user ]] && findUserName
 
     $ECHOMSG "Creating awstats configuration: "
-    cp /etc/awstats/awstats.TEMPLATE /etc/awstats/awstats.${S_DOMAIN}.conf
 
-    sed -i -r -e "s|\\[BASEDIR\\]|${BASEDIR}|g" \
-        -e "s|\\[DOMAIN\\]|${S_DOMAIN}|g" \
-        -e "s|\\[SUBDOMAIN\\]|${siteroot}${siteroot:+-}|g" \
-        -e "s|\\[USER\\]|${user}|g" \
-        /etc/awstats/awstats.${S_DOMAIN}.conf
+    local SITEROOT="${siteroot}${siteroot:+-}"
+    envsubst < "/etc/awstats/awstats.TEMPLATE" > "/etc/awstats/awstats.${S_DOMAIN}.conf"
     # shellcheck disable=SC2174
     mkdir -p -m 755 /var/lib/awstats/${S_DOMAIN}
     chown root:root /var/lib/awstats/${S_DOMAIN}    # Нахуя??
@@ -600,6 +599,7 @@ RemoveAll() {
 
 }
 
+# shellcheck disable=SC1091
 if [[ -f /etc/init.d/functions ]]; then
     . /etc/init.d/functions
     ECHO_SUCCESS=echo_success
@@ -651,73 +651,66 @@ writeLog() {
 usage() {
     echo -e "Usage: $bn <option(s)>
         Options:
-        -a          configure Awstats for existing domain and exit
-        -b <>       backend (httpd|apache2, php-fpm|fpm or none) (REQUIRED)
-        -d <>       site domain (REQUIRED)
-        -i <>       IP address (default: \$domain)
-        -l          create Nginx config with SSL
-        -r <>       web root directory (default: www)
-        -s          create subdomain for existing user
-        -u <>       site user
-        -x          remove user and website configs instead creation
-        -A          do not configure Awstats
-        -B          BASEDIR (default: /var/www)
-        -C          copy SSH private key in /root/keys/<hostname>_<username>_$keytype
-        -E          suppress Wiki page print
-        -L          do not execute SELinux-related statements
-        -N          do not reload web-servers
-        -S          skip website config creation
-        -U          skip user creation
-        -W          print frontend/backend info for Wiki
-        -X          remove user, website configs AND FILES
+        -a, --awstatsonly           configure Awstats for existing domain and exit
+        --alt                       use alternative Nginx listen IP
+        -b, --backend <httpd|apache2|php-fpm|fpm|none>      backend (REQUIRED)
+        -d, --domain <string>       site domain (REQUIRED)
+        -i, --address <ipv4|string> IP address or hostname (default: \$domain)
+        -l, --ssl                   create Nginx config with SSL
+        -r, --root <string>         web root directory (default: www)
+        -s, --subdomain             create subdomain for existing user
+        -u, --user <string>         site user
+        -x, --remove                remove user and website configs instead creation
+        -A, --noawstats             skip Awstats configuring
+        -B, --basedir <string>      BASEDIR (default: /var/www)
+        -C, --copy-ssh-key          copy SSH private key in /root/keys/<hostname>_<username>_$keytype
+        -E, --noecho                suppress Wiki page print
+        -L, --noselinux             do not execute SELinux-related statements
+        -N, --noreload              do not reload web-servers
+        -S, --nosite                skip website config creation
+        -U, --nouser                skip user creation
+        -W, --webinfo               print frontend/backend info for Wiki
+        -X, --removeall             remove user, website configs AND FILES
         "
 }
 
-while getopts "ab:d:u:i:r:slxhAB:CELNSUWX" OPTION; do
-    case $OPTION in
-        a) AWSTATSONLY=1
-            ;;
-        b) BACKEND=$OPTARG
-            ;;
-        d) S_DOMAIN=$OPTARG
-            ;;
-        r) WEBROOT=$OPTARG
-            ;;
-        s) SUBDOMAIN=1
-            ;;
-        u) user=$OPTARG
-            ;;
-        i) S_IPADDR=$OPTARG
-            ;;
-        l) SSL=1
-            ;;
-        x) REMOVE=1
-            ;;
-        A) NOAWSTATS=1
-            ;;
-        B) BASEDIR=$OPTARG
-            ;;
-        C) COPY_SSH_KEY=1;
-            ;;
-        E) NOECHO=1
-            ;;
-        L) NOSELINUX=1
-            ;;
-        N) NORELOAD=1
-            ;;
-        S) NOSITE=1
-            ;;
-        U) NOUSER=1
-            ;;
-        W) WEBINFO=1
-            ;;
-        X) REMOVE=1; REMOVEALL=1
-            ;;
-        h) usage
-            exit 0
-                ;;
-        *) usage
-            exit 1
+if ! TEMP=$(getopt -o ab:d:u:i:r:slxhAB:CELNSUWX --longoptions alt,awstatsonly,\
+backend:,domain:,root:,subdomain,user:,address:,ssl,remove,noawstats,\
+basedir:,copy-ssh-key,noecho,noreload,nosite,nouser,webinfo,removeall,\
+help -n "$bn" -- "$@")
+then
+    echo "Terminating..." >&2
+    exit 1
+fi
+
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+    case $1 in
+        -a|--awstatsonly)   AWSTATSONLY=1 ; shift   ;;
+        --alt)              _alt="_alt" ;   shift   ;;
+        -b|--backend)       BACKEND=$2 ;    shift 2 ;;
+        -d|--domain)        S_DOMAIN=$2 ;   shift 2 ;;
+        -r|--root)          WEBROOT=$2 ;    shift 2 ;;
+        -s|--subdomain)     SUBDOMAIN=1 ;   shift   ;;
+        -u|--user)          user=$2 ;       shift 2 ;;
+        -i|--address)       S_IPADDR=$2 ;   shift 2 ;;
+        -l|--ssl)           SSL=1 ;         shift   ;;
+        -x|--remove)        REMOVE=1 ;      shift   ;;
+        -A|--noawstats)     NOAWSTATS=1 ;   shift   ;;
+        -B|--basedir)       BASEDIR=$2 ;    shift 2 ;;
+        -C|--copy-ssh-key)  COPY_SSH_KEY=1 ; shift  ;;
+        -E|--noecho)        NOECHO=1 ;      shift   ;;
+        -L|--noselinux)     NOSELINUX=1 ;   shift   ;;
+        -N|--noreload)      NORELOAD=1 ;    shift   ;;
+        -S|--nosite)        NOSITE=1 ;      shift   ;;
+        -U|--nouser)        NOUSER=1 ;      shift   ;;
+        -W|--webinfo)       WEBINFO=1 ;     shift   ;;
+        -X|--removeall)     REMOVE=1; REMOVEALL=1 ; shift ;;
+        -h|--help)          usage ;         exit 0  ;;
+        --)                 shift ;         break   ;;
+        *)                  usage ;         exit 1
     esac
 done
 
