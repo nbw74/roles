@@ -21,8 +21,9 @@ typeset BASEDIR=/var/www user="" siteroot="" _alt=""
 readonly root_path="root_path"
 readonly request_uri="request_uri"
 readonly fpmport="fpmport"
+readonly pool="pool"
 
-export BASEDIR user S_DOMAIN WEBROOT siteroot _alt root_path request_uri fpmport
+export BASEDIR user S_DOMAIN WEBROOT siteroot _alt root_path request_uri fpmport pool
 
 Main() {
     local FN=${FUNCNAME[0]}

@@ -2,8 +2,8 @@
 # vim: ft=nginx
 server {
     include         /etc/nginx/include.d/listen${_alt}.conf;
-    server_name     ${DOMAIN}
-                    www.${DOMAIN};
+    server_name     ${S_DOMAIN}
+                    www.${S_DOMAIN};
 
     # Load configuration files for the default server block.
     include         /etc/nginx/default.d/*.conf;

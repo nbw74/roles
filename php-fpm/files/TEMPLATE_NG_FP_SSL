@@ -6,19 +6,19 @@ upstream fpm${F_PORT} {
 
 server {
     include         /etc/nginx/include.d/listen${_alt}.conf;
-    server_name     ${DOMAIN}
-                    www.${DOMAIN};
+    server_name     ${S_DOMAIN}
+                    www.${S_DOMAIN};
 
     # Log files
     access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
     error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
     
-    return          301 https://${DOMAIN}$$request_uri;
+    return          301 https://${S_DOMAIN}$$request_uri;
 }
 
 server {
     include         /etc/nginx/include.d/listen_ssl${_alt}.conf;
-    server_name     ${DOMAIN};
+    server_name     ${S_DOMAIN};
 
     # Load configuration files for the default server block.
     include         /etc/nginx/default.d/*.conf;
@@ -26,8 +26,8 @@ server {
     access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
     error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
     
-    ssl_certificate         /etc/pki/tls/certs/${DOMAIN}.crt;
-    ssl_certificate_key     /etc/pki/tls/private/${DOMAIN}.key;
+    ssl_certificate         /etc/pki/tls/certs/${S_DOMAIN}.crt;
+    ssl_certificate_key     /etc/pki/tls/private/${S_DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
 
     set             $$root_path     '${BASEDIR}/${user}/${WEBROOT}';
@@ -41,15 +41,15 @@ server {
 
 server {
     include         /etc/nginx/include.d/listen_ssl${_alt}.conf;
-    server_name     www.${DOMAIN};
+    server_name     www.${S_DOMAIN};
 
     # Log files
     access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
     error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
 
-    ssl_certificate         /etc/pki/tls/certs/${DOMAIN}.crt;
-    ssl_certificate_key     /etc/pki/tls/private/${DOMAIN}.key;
+    ssl_certificate         /etc/pki/tls/certs/${S_DOMAIN}.crt;
+    ssl_certificate_key     /etc/pki/tls/private/${S_DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
 
-    return          301 https://${DOMAIN}$$request_uri;
+    return          301 https://${S_DOMAIN}$$request_uri;
 }
