@@ -714,9 +714,4 @@ while true; do
     esac
 done
 
-if [[ ${1:-NOP} == "NOP" ]]; then
-    usage
-    exit 1
-fi
-
 Main
