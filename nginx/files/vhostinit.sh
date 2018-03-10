@@ -244,22 +244,25 @@ CreateSite() {
 
             if [[ $template =~ TEMPLATE_NG.* ]]; then
 
-                local upstream=$(mktemp --tmpdir "${bn%\.*}.XXXX")
+                local upstream=""
+                upstream=$(mktemp --tmpdir "${bn%\.*}.XXXX")
 
                 if (( F_PORT )); then
                     envsubst < "TEMPLATE_UPSTREAM" > "$upstream"
                     ed -s "$newconfg" <<IN
-/server[[:space:]]\+{/-r $upstream
+/server[[:space:]]\\+{/-r $upstream
 w
 q
 IN
+                fi
 
+                # shellcheck disable=SC2030
                 if (( MOBILE == 1 )); then
-                    (
+                    local S_DOMAIN_tmp=$S_DOMAIN
                     S_DOMAIN="m.$S_DOMAIN"
-                    echo -e "\n## MOBILE VERSION ##\n" >> "$newconfg"
+                    echo -e "\\n## MOBILE VERSION ##\\n" >> "$newconfg"
                     envsubst < "$template" >> "$newconfg"
-                    )
+                    S_DOMAIN=$S_DOMAIN_tmp
                 fi
 
                 if (( FPM_CONFIG_EXISTS == 1 )); then
@@ -332,7 +335,7 @@ AwstatsConfig() {
     [[ -z $user ]] && findUserName
 
     $ECHOMSG "Creating awstats configuration: "
-
+    # shellcheck disable=SC2034
     local SITEROOT="${siteroot}${siteroot:+-}"
     envsubst < "/etc/awstats/awstats.TEMPLATE" > "/etc/awstats/awstats.${S_DOMAIN}.conf"
     # shellcheck disable=SC2174
