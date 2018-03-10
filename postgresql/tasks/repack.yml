@@ -1,7 +1,7 @@
 ---
 - name: Template the pg_repack wrapper
   template:
-    src: "repacl/{{ postgresql_repack_script }}.j2"
+    src: "repack/{{ postgresql_repack_script }}.j2"
     dest: "{{ postgresql_sb_bin }}/{{ postgresql_repack_script }}"
     mode: 0755
     force: yes
