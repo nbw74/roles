@@ -14,7 +14,7 @@ typeset keytype=ed25519
 
 typeset -i NOSITE=0 NOUSER=0 NOECHO=0 NORELOAD=0 REMOVE=0 REMOVEALL=0
 typeset -i NOSELINUX=0 SSL=0 NOAWSTATS=0 AWSTATSONLY=0 WEBINFO=0
-typeset -i COPY_SSH_KEY=0 SUBDOMAIN=0 warn=0 GO_SSL=0
+typeset -i COPY_SSH_KEY=0 SUBDOMAIN=0 warn=0 MOBILE=0 GO_SSL=0
 typeset BACKEND="" FRONTENDUSER="" BACKENDUSER="" S_DOMAIN="" user="" WEBROOT=""
 typeset BASEDIR=/var/www user="" siteroot="" _alt=""
 # For envsubst templates
@@ -257,7 +257,7 @@ IN
                 fi
 
                 # shellcheck disable=SC2030
-                if (( MOBILE == 1 )); then
+                if (( MOBILE )); then
                     local S_DOMAIN_tmp=$S_DOMAIN
                     S_DOMAIN="m.$S_DOMAIN"
                     echo -e "\\n## MOBILE VERSION ##\\n" >> "$newconfg"
