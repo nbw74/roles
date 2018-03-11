@@ -1,11 +1,9 @@
 #!/bin/bash
 #
-# version 0.6.1
+# version 0.7.0
 #
 
 set -o errtrace
-
-
 
 readonly bn=$(basename "$0")
 readonly hn=$(hostname -f)
@@ -152,7 +150,7 @@ goSSL() {
     # Find WEBROOT
     WEBROOT=${root##*$user}; WEBROOT=${WEBROOT#\/}
     # Find F_PORT
-    F_PORT=$(awk '/upstream/ { match($0, /[0-9]+/); print substr( $0, RSTART, RLENGTH ); exit }' $conf_file)
+    F_PORT=$(awk '/upstream/ { match($0, /[0-9]+/); print substr( $0, RSTART, RLENGTH ); exit }' "$conf_file")
     # Find if mobile
     if grep -Pq '\sm\.[a-z0-9]' "$conf_file"
     then
@@ -253,7 +251,6 @@ q
 IN
     fi
 
-    # shellcheck disable=SC2030
     if (( MOBILE )); then
         local S_DOMAIN_tmp=$S_DOMAIN
         S_DOMAIN="m.$S_DOMAIN"
@@ -750,3 +747,5 @@ while true; do
 done
 
 Main
+
+## EOF ##
