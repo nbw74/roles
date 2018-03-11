@@ -130,6 +130,7 @@ goSSL() {
     FN=${FUNCNAME[0]}
     local conf_file="" root=""
     local -i F_PORT=0 FPM_CONFIG_EXISTS=0
+    export F_PORT
     # Find username from Nginx configuration
     conf_file=$(grep -rlP "server_name\\s+${S_DOMAIN}" /etc/nginx/conf.d | head -n1)
 
