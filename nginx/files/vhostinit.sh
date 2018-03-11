@@ -62,6 +62,11 @@ Main() {
         exit 0
     fi
 
+    if (( GO_SSL )); then
+        goSSL
+        exit 0
+    fi
+
     if [[ -z $BACKEND ]]; then
         writeLog "FATAL: Required parameter is missing (-b)"
         false
@@ -121,6 +126,57 @@ Main() {
 
 }
 
+goSSL() {
+    FN=${FUNCNAME[0]}
+    local conf_file="" root=""
+    local -i F_PORT=0 FPM_CONFIG_EXISTS=0
+    # Find username from Nginx configuration
+    conf_file=$(grep -rlP "server_name\\s+${S_DOMAIN}" /etc/nginx/conf.d | head -n1)
+
+    if [[ ! -f $conf_file ]]; then
+        writeLog "FATAL: domain not found in then Nginx configuration"
+        false
+    fi
+
+    user=$(basename -s .conf "$conf_file")
+    # Find root_path
+    root=$(awk '/set[[:space:]]+\$root_path/ { gsub(/'\''/, ""); sub(/;/, ""); print $3 }' "$conf_file")
+
+    if [[ -z $root ]]; then
+        writeLog "FATAL: root_path not found in '$conf_file'"
+        false
+    fi
+    # Find BASEDIR
+    BASEDIR=${root%%$user*}; BASEDIR=${BASEDIR%\/}
+    # Find WEBROOT
+    WEBROOT=${root##*$user}; WEBROOT=${WEBROOT#\/}
+    # Find F_PORT
+    F_PORT=$(awk '/upstream/ { match($0, /[0-9]+/); print substr( $0, RSTART, RLENGTH ); exit }') $conf_file
+    # Find if mobile
+    if grep -Pq '\sm\.[a-z0-9]' "$conf_file"
+    then
+        MOBILE=1
+    fi
+    # Find if alternative ip included
+    if grep -Fq '_alt.conf' "$conf_file"
+    then
+        _alt="_alt"
+    fi
+    # Set template type
+    if (( F_PORT )); then
+        BE=FP
+    else
+        BE=A2
+    fi
+
+    # This variables used in function CreateNginxConfig
+    local newconfg=$conf_file
+    local template=TEMPLATE_NG_${BE}_SSL
+
+    cd $nginx_sites || false
+    CreateNginxConfig
+}
+
 CreateUser() {
 
     CreateSubdir() {
@@ -148,7 +204,7 @@ CreateUser() {
 
     $ECHOMSG "Creating site user: " "$user"
 
-    useradd "$user" -b $BASEDIR -m -U -s /bin/bash
+    useradd "$user" -b "$BASEDIR" -m -U -s /bin/bash
     usermod -a -G "$user" $FRONTENDUSER
 
     if [[ -n $BACKENDUSER ]]; then
@@ -159,7 +215,7 @@ CreateUser() {
 
     # Создаём необходимые директории
     sudo -u "$user" mkdir -m 0700 .ssh
-    sudo -u "$user" mkdir -p -m 0755 vault $WEBROOT
+    sudo -u "$user" mkdir -p -m 0755 vault "$WEBROOT"
     sudo -u "$user" mkdir -m 0775 "${BASEDIR}/${user}/tmp" "${BASEDIR}/${user}/log"
     # и ключи
     sudo -u "$user" ssh-keygen -t $keytype -q -f "${BASEDIR}/${user}/.ssh/${user}_$keytype" -N ""
@@ -178,6 +234,38 @@ CreateUser() {
     chmod 0750 "${BASEDIR}/$user"
 
     echoOK
+}
+
+CreateNginxConfig() {
+    local FN=${FUNCNAME[0]}
+    local upstream=""
+    upstream=$(mktemp --tmpdir "${bn%\.*}.upstream.XXXX")
+
+    if (( F_PORT )); then
+        envsubst < "TEMPLATE_UPSTREAM" > "$upstream"
+        ed -s "$newconfg" <<IN
+/server[[:space:]]\\+{/-r $upstream
+w
+q
+IN
+    fi
+
+    # shellcheck disable=SC2030
+    if (( MOBILE )); then
+        local S_DOMAIN_tmp=$S_DOMAIN
+        S_DOMAIN="m.$S_DOMAIN"
+        echo -e "\\n## MOBILE VERSION ##\\n" >> "$newconfg"
+        envsubst < "$template" >> "$newconfg"
+        S_DOMAIN=$S_DOMAIN_tmp
+    fi
+    # What the Fuck??
+    if (( FPM_CONFIG_EXISTS )); then
+        sed -i -e '/upstream fpm/,+3d' "$newconfg"
+    fi
+
+    if [[ -f "$upstream" ]]; then
+        rm "$upstream"
+    fi
 }
 
 CreateSite() {
@@ -243,31 +331,7 @@ CreateSite() {
             envsubst < "$template" > "$newconfg"
 
             if [[ $template =~ TEMPLATE_NG.* ]]; then
-
-                local upstream=""
-                upstream=$(mktemp --tmpdir "${bn%\.*}.XXXX")
-
-                if (( F_PORT )); then
-                    envsubst < "TEMPLATE_UPSTREAM" > "$upstream"
-                    ed -s "$newconfg" <<IN
-/server[[:space:]]\\+{/-r $upstream
-w
-q
-IN
-                fi
-
-                # shellcheck disable=SC2030
-                if (( MOBILE )); then
-                    local S_DOMAIN_tmp=$S_DOMAIN
-                    S_DOMAIN="m.$S_DOMAIN"
-                    echo -e "\\n## MOBILE VERSION ##\\n" >> "$newconfg"
-                    envsubst < "$template" >> "$newconfg"
-                    S_DOMAIN=$S_DOMAIN_tmp
-                fi
-
-                if (( FPM_CONFIG_EXISTS == 1 )); then
-                    sed -i -e '/upstream fpm/,+3d' "$newconfg"
-                fi
+                CreateNginxConfig
             fi
 
             if (( ! NOSELINUX )); then
