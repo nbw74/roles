@@ -174,6 +174,8 @@ goSSL() {
     local template=TEMPLATE_NG_${BE}_SSL
 
     cd $nginx_sites || false
+    cp -a "$conf_file" "${conf_file}.$(date '+%s').bak"
+    envsubst < "$template" > "$newconfg"
     CreateNginxConfig
 }
 
@@ -328,6 +330,7 @@ CreateSite() {
             fi
         else
             local SITEROOT="${siteroot}${siteroot:+-}"
+            export SITEROOT
             envsubst < "$template" > "$newconfg"
 
             if [[ $template =~ TEMPLATE_NG.* ]]; then
