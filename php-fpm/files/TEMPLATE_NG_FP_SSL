@@ -9,7 +9,7 @@ server {
     # Log files
     access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
     error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
-    
+
     return          301 https://${S_DOMAIN}$$request_uri;
 }
 
@@ -22,7 +22,7 @@ server {
     # Log files
     access_log      ${BASEDIR}/${user}/log/${SITEROOT}nginx-access.log combined buffer=128k;
     error_log       ${BASEDIR}/${user}/log/${SITEROOT}nginx-error.log;
-    
+
     ssl_certificate         /etc/pki/tls/certs/${S_DOMAIN}.crt;
     ssl_certificate_key     /etc/pki/tls/private/${S_DOMAIN}.key;
     include                 /etc/nginx/include.d/ssl_common.conf;
