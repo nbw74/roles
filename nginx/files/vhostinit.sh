@@ -151,7 +151,7 @@ goSSL() {
     # Find WEBROOT
     WEBROOT=${root##*$user}; WEBROOT=${WEBROOT#\/}
     # Find F_PORT
-    F_PORT=$(awk '/upstream/ { match($0, /[0-9]+/); print substr( $0, RSTART, RLENGTH ); exit }') $conf_file
+    F_PORT=$(awk '/upstream/ { match($0, /[0-9]+/); print substr( $0, RSTART, RLENGTH ); exit }' $conf_file)
     # Find if mobile
     if grep -Pq '\sm\.[a-z0-9]' "$conf_file"
     then
