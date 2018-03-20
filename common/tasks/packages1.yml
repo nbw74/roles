@@ -42,7 +42,7 @@
   when: ansible_distribution == "CentOS"
   tags: [packages]
 
-- name: "Install required SELinux packages (YUM)"
+- name: "Install SELinux packages (YUM)"
   yum:
     state: present
     name: "{{ item }}"
@@ -52,6 +52,18 @@
   when:
     - ansible_distribution == "CentOS"
     - selinux_state != "disabled"
+  tags: [packages]
+
+- name: "Remove SELinux packages (YUM)"
+  yum:
+    state: absent
+    name: "{{ item }}"
+  with_items:
+    - '{{ common_required_base_packages_selinux }}'
+    - '{{ common_centos_specific_packages_selinux }}'
+  when:
+    - ansible_distribution == "CentOS"
+    - selinux_state == "disabled"
   tags: [packages]
 
 - name: "Install required FreeIPA packages (YUM)"

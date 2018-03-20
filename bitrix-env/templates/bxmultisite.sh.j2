@@ -38,6 +38,9 @@ main() {
     if hostname -f | grep -Fq ".dev"
     then
         local newservername="${newdomain}.dev"
+    elif hostname -f | grep -Fq ".deff"
+    then
+        local newservername="${newdomain}.deff"
     else
         local newservername="$newdomain"
     fi
@@ -78,7 +81,7 @@ main() {
 }
 
 usage() {
-    echo -e "\\n\\tUsage:\\n\\n$bn <new_domain>\\n\\n\\tnew_domain: full domain name without '.dev' suffix"
+    echo -e "\\n\\tUsage:\\n\\n$bn <new_domain>\\n\\n\\tnew_domain: full domain name without '.deff' suffix"
 }
 
 except() {

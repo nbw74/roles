@@ -1,9 +1,9 @@
 # vim: ft=apache:
 <VirtualHost 127.0.0.1:8888>
     DocumentRoot ${BASEDIR}/${user}/${WEBROOT}
-    ServerAdmin admin@${DOMAIN}
-    ServerName ${DOMAIN}
-    ServerAlias www.${DOMAIN}
+    ServerAdmin admin@${S_DOMAIN}
+    ServerName ${S_DOMAIN}
+    ServerAlias www.${S_DOMAIN}
     ErrorLog ${BASEDIR}/${user}/log/${SITEROOT}apache-error.log
     CustomLog ${BASEDIR}/${user}/log/${SITEROOT}apache-access.log combined
 
