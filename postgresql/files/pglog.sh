@@ -100,11 +100,14 @@ _pgbadger() {
     if (( NOSESSION ));  then
 	s="--disable-connection --disable-session"
     fi
-    # If source queries should be truncated
-    if [[ ${Trhosts[0]} == "all" ]]; then
-	m="--maxlength $MAXLENGTH"
-    elif inArray Trhosts "$1"; then
-	m="--maxlength $MAXLENGTH"
+
+    if (( ${#Trhosts[@]} > 0 )); then
+	# If source queries should be truncated
+	if [[ ${Trhosts[0]} == "all" ]]; then
+	    m="--maxlength $MAXLENGTH"
+	elif inArray Trhosts "$1"; then
+	    m="--maxlength $MAXLENGTH"
+	fi
     fi
     # shellcheck disable=SC2086
     pgbadger --incremental --format syslog --jobs "$n" --average 1 \
