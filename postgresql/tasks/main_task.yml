@@ -4,6 +4,16 @@
     msg: "This role is intended for RHEL (CentOS) version 6 or above"
   when: ansible_distribution_major_version|int < 6
 
+- name: Check required dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ postgresql_sb_check }}"
+    - "{{ postgresql_sb_libexec }}"
+    - "{{ postgresql_sb_etc }}"
+    - "{{ postgresql_sb_bin }}"
+
 - import_tasks: "packages.yml"
   tags: [ packages ]
 
@@ -89,7 +99,6 @@
   when: not postgresql_pcmk_enable
 
 - import_tasks: "repack.yml"
-  tags: [ repack ]
 
 - import_tasks: "walbackup.yml"
   when: postgresql_wal_backup_enable
@@ -99,4 +108,13 @@
 
 - import_tasks: "pcmk.yml"
   when: postgresql_pcmk_enable
+
+- name: Template rsyslog config
+  template:
+    src: "{{ postgresql_rsyslog }}.j2"
+    dest: "/etc/rsyslog.d/{{ postgresql_rsyslog }}"
+    mode: 0444
+  when: postgresql_extended_logging
+  notify: restart rsyslog
+  tags: [ rsyslog ]
 ...

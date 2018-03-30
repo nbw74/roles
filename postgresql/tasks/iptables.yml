@@ -1,17 +1,8 @@
 ---
-- name: Check required dirs
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - "{{ postgresql_sb_check }}"
-    - "{{ postgresql_sb_libexec }}"
-    - "{{ postgresql_sb_etc }}"
-
 - name: Iptables whitelist
   template:
-    src: "{{ postgresql_iptables_config }}"
-    dest: "{{ postgresql_sb_etc }}"
+    src: "iptables/{{ postgresql_iptables_config }}.j2"
+    dest: "{{ postgresql_sb_etc }}/{{ postgresql_iptables_config }}"
     mode: 0644
   register: postgresql_whitelist
 
@@ -23,7 +14,7 @@
 
 - name: Iptables service check script
   template:
-    src: "_sb_iptables.postgresql"
-    dest: "{{ postgresql_sb_check }}"
+    src: "iptables/{{ postgresql_iptables_check_script }}.j2"
+    dest: "{{ postgresql_sb_check }}/{{ postgresql_iptables_check_script }}"
     mode: 0755
 ...

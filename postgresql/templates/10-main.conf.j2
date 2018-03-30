@@ -38,16 +38,37 @@ random_page_cost		= {{ postgresql_conf['random_page_cost'] }}
 {% set auto_effective_cache_size = ansible_memtotal_mb / 100 * 50 %}
 effective_cache_size		= {{ postgresql_conf['effective_cache_size']|default(auto_effective_cache_size|int ~ 'MB') }}
 
+{% if postgresql_extended_logging %}
+# - Where to Log -
+
+log_destination			= 'syslog'
+logging_collector		= off
+syslog_facility			= 'LOCAL5'
+
+# - When to Log -
+
+log_min_duration_statement	= {{ postgresql_conf['log_min_duration_statement']|default('1000') }}
+
 # - What to Log -
 
-{% if postgresql_conf['log_lock_waits'] is defined %}
-log_lock_waits			= {{ postgresql_conf['log_lock_waits'] }}
+log_checkpoints			= {{ postgresql_conf['log_checkpoints']|default('on') }}
+log_connections			= {{ postgresql_conf['log_connections']|default(postgresql_pcmk_enable|ternary('off','on')) }}
+log_disconnections		= {{ postgresql_conf['log_disconnections']|default(postgresql_pcmk_enable|ternary('off','on')) }}
+log_line_prefix			= 'user=%u,db=%d,app=%a,client=%h '
+log_lock_waits			= {{ postgresql_conf['log_lock_waits']|default('on') }}
+log_temp_files			= {{ postgresql_conf['log_temp_files']|default('0') }}
+{% else %}
+# - What to Log -
 {% endif %}
+
 log_timezone			= '{{ postgresql_conf['log_timezone']|default('W-SU') }}'
 
 # - Autovacuum Parameters -
 
 autovacuum			= on
+{% if postgresql_extended_logging %}
+log_autovacuum_min_duration	= 0
+{% endif %}
 autovacuum_max_workers		= {{ postgresql_conf['autovacuum_max_workers']|default('3') }}
 autovacuum_vacuum_threshold	= {{ postgresql_conf['autovacuum_vacuum_threshold']|default('50') }}
 autovacuum_analyze_threshold	= {{ postgresql_conf['autovacuum_analyze_threshold']|default('50') }}
@@ -57,7 +78,7 @@ autovacuum_analyze_scale_factor	= {{ postgresql_conf['autovacuum_analyze_scale_f
 # - Locale and Formatting -
 
 timezone			= '{{ postgresql_conf['timezone']|default('W-SU') }}'
-lc_messages			= '{{ postgresql_lc_messages }}'
+lc_messages			= '{{ postgresql_extended_logging|ternary('C',postgresql_lc_messages) }}'
 lc_monetary			= '{{ postgresql_lc_monetary|default(postgresql_locale) }}'
 lc_numeric			= '{{ postgresql_lc_numeric|default(postgresql_locale) }}'
 lc_time				= '{{ postgresql_lc_time|default(postgresql_locale) }}'

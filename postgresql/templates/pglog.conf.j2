@@ -1,0 +1,4 @@
+# THIS FILE IS ANSIBLE MANAGED
+local5.* @{{ postgresql_rsyslog_address }}:{{ postgresql_rsyslog_port|default('514') }}
+local5.* stop
+## EOF ##

@@ -14,6 +14,10 @@ postgresql_lc_messages: "string" # (default: en_US.UTF-8) Локаль для с
 
 postgresql_iptables_enable: bool # (default: true) Включать ли кастомную цепочку iptables
 
+postgresql_extended_logging: bool # (default: false) Включить расширенное журналирование
+postgresql_rsyslog_address: "string|ipv4" # (default: none) Адрес сервера rsyslog. Обязателен если postgresql_extended_logging.
+postgresql_rsyslog_port: int # (default: 514)
+
 postgresql_conf: # Параметры конфигурации СУБД
     listen_addresses: "ipaddr,ipaddr" # default: * (change requires restart)
     port: int # default: 5432 (change requires restart)
@@ -27,7 +31,6 @@ postgresql_conf: # Параметры конфигурации СУБД
     max_wal_size: intUNIT # default: none (PostgreSQL default: 1GB)
     random_page_cost: float # default: none, PostgreSQL default: 4.0 (suitable for HDD). For SSD set to 1.1 - 1.3
     effective_cache_size: intUNIT # default: 1/2 RAM
-    log_lock_waits: "string" # default: none (PostgreSQL default: bool: off)
     log_timezone: "string" # default: W-SU (MSK)
     autovacuum_max_workers: int # default: 3 (change requires restart)
     autovacuum_vacuum_threshold: int # default: 50
@@ -38,6 +41,13 @@ postgresql_conf: # Параметры конфигурации СУБД
     archive_command: "string" # default: "cp %p /var/lib/pgsql/X.X/pg_archive/%f"
     wal_keep_segments: int # default: 32
     deadlock_timeout: "string" # default: none (PostgreSQL default: time: 1s)
+    # нижеуказанные переменные эффективны только при "postgresql_extended_logging: true"
+    log_min_duration_statement: int # default: 1000
+    log_checkpoints: bool # default: on
+    log_connections: bool # default: if postgresql_pcmk_enable then off else on
+    log_disconnections: bool # default: if postgresql_pcmk_enable then off else on
+    log_lock_waits: bool # default: on
+    log_temp_files: int # default: 0
 
 postgresql_ident_local: # peer/ident map
   - { map: 'string', sysuser: 'string', pguser: 'string' }

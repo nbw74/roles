@@ -1,7 +1,7 @@
 ---
 - name: "{{ postgresql_iptables_service }} service"
   template:
-    src: "{{ postgresql_iptables_script }}"
+    src: "iptables/{{ postgresql_iptables_script }}.j2"
     dest: "/etc/init.d/{{ postgresql_iptables_service }}"
     mode: 0755
 

@@ -39,7 +39,7 @@ main() {
     fi
 
     for i in $BIN_REQUIRED; do
-        if ! hash $i 2>/dev/null
+        if ! hash "$i" 2>/dev/null
         then
             echo_err "* ERROR: Required binary '$i' is not installed"
             false
@@ -58,7 +58,7 @@ main() {
         false
     fi
 
-    if ! tcping -q ${master_ip} ${master_port} >/dev/null
+    if ! tcping -q "${master_ip}" ${master_port} >/dev/null
     then
         echo_err "* ERROR: Replication socket is unreachable"
         false
@@ -72,7 +72,7 @@ main() {
         $pg_sudo chmod 0600 "$authfile"
     fi
 
-    if ! $pg_sudo fgrep -q $username $authfile
+    if ! $pg_sudo grep -Fq "$username" "$authfile"
     then
         echo_err "* ERROR: user data in missing in the $authfile"
         false
@@ -84,7 +84,7 @@ main() {
 
     echo_info "* INFO: Running pg_basebackup..."
     warn=1
-    $pg_sudo pg_basebackup --host=$master_ip --username=$username --pgdata=$pgdata --xlog-method=stream --status-interval=1 --progress
+    $pg_sudo pg_basebackup --host="$master_ip" --username="$username" --pgdata="$pgdata" --xlog-method=stream --status-interval=1 --progress
     warn=0
 
     if $pg_sudo test -f "$lockfile"
@@ -96,9 +96,9 @@ main() {
     if (( CLEANUP )); then
         warn=1
         echo_info "* INFO: cleanup current node errors"
-        sudo pcs resource cleanup PGSQL --node $(uname -n)
+        sudo pcs resource cleanup PGSQL --node "$(uname -n)"
         echo_info "* INFO: clear PGGSL constraint"
-        sudo pcs resource clear PGSQL $(uname -n)
+        sudo pcs resource clear PGSQL "$(uname -n)"
         warn=0
     fi
 

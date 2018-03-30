@@ -9,7 +9,7 @@
 
 - name: Template the pg_repack cronjob
   template:
-    src: "{{ postgresql_repack_crontab }}.j2"
+    src: "repack/{{ postgresql_repack_crontab }}.j2"
     dest: "/etc/cron.d/{{ postgresql_repack_crontab }}"
     mode: 0644
     force: yes

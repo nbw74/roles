@@ -1,14 +1,14 @@
 ---
 - name: "{{ postgresql_iptables_service }} service script"
   template:
-    src: "{{ postgresql_iptables_script }}"
-    dest: "{{ postgresql_sb_libexec }}"
+    src: "iptables/{{ postgresql_iptables_script }}.j2"
+    dest: "{{ postgresql_sb_libexec }}/{{ postgresql_iptables_script }}"
     mode: 0744
 
 - name: "{{ postgresql_iptables_service }} service unit"
   template:
-    src: "{{ postgresql_iptables_service }}.service"
-    dest: "/etc/systemd/system"
+    src: "iptables/{{ postgresql_iptables_service }}.service.j2"
+    dest: "/etc/systemd/system/{{ postgresql_iptables_service }}.service"
     mode: 0644
   register: postgresql_iptables_unit
 

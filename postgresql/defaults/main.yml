@@ -29,4 +29,6 @@ postgresql_wal_backup_dir: ''
 
 postgresql_conf:
   empty: ""
+
+postgresql_extended_logging: false
 ...
