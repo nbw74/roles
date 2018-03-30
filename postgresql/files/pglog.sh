@@ -107,9 +107,9 @@ _pgbadger() {
 	m="--maxlength $MAXLENGTH"
     fi
     # shellcheck disable=SC2086
-    pgbadger --incremental --jobs "$n" --average 1 --start-monday \
+    pgbadger --incremental --format syslog --jobs "$n" --average 1 \
 	--retention 12 --extra-files --outdir "$outdir" $m $s $v \
-	--title "$TITLE" --timezone "${timezone:-+03}" \
+	--start-monday --title "$TITLE" --timezone "${timezone:-+03}" \
 	"${logdir}/postgresql-${date}.log"
 
 }
