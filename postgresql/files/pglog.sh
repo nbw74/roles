@@ -15,7 +15,7 @@ typeset -i MAXLENGTH=4096
 typeset LOGDIR="/var/log/pglog"
 typeset REPORTS="/opt/reports"
 typeset TITLE="$(hostname -d)"
-typeset TRUNCATE=""
+typeset TRUNCATE="" NOUSER=""
 # DEFAULTS END
 
 # CONSTANTS BEGIN
@@ -40,6 +40,7 @@ main() {
     local starttime="" endtime="" delta=""
     local -a Sources
     local -a Trhosts=()
+    local -a Nousers=()
 
     if [[ -n $SOURCE ]]; then
 	Sources[0]=$SOURCE
@@ -50,6 +51,9 @@ main() {
     # Host with truncate queries
     # shellcheck disable=SC2034
     read -ra Trhosts < <( echo "$TRUNCATE" | awk 'BEGIN { FS=","; OFS=" " } { $1=$1; print $0 }' )
+    # Disable reports for this users
+    # shellcheck disable=SC2034
+    read -ra Nousers < <( echo "$NOUSER" | awk 'BEGIN { FS=","; OFS=" " } { $1=$1; print $0 }' )
 
     starttime="$(date '+%s.%3N')"
     for i in "${!Sources[@]}"; do
@@ -66,7 +70,7 @@ main() {
 _pgbadger() {
     local fn=${FUNCNAME[0]}
     local -i n=0
-    local date="" timezone="" v="--quiet" s="" m=""
+    local date="" timezone="" v="--quiet" s="" m="" u=""
 
     timezone="$(date '+%:::z' || :)"
 
@@ -101,6 +105,10 @@ _pgbadger() {
 	s="--disable-connection --disable-session"
     fi
 
+    for (( i = 0; i < ${#Nousers[@]}; i++ )); do
+	u="$u --exclude-user ${Nousers[i]}"
+    done
+
     if (( ${#Trhosts[@]} > 0 )); then
 	# If source queries should be truncated
 	if [[ ${Trhosts[0]} == "all" ]]; then
@@ -111,7 +119,7 @@ _pgbadger() {
     fi
     # shellcheck disable=SC2086
     pgbadger --incremental --format syslog --jobs "$n" --average 1 \
-	--retention 12 --extra-files --outdir "$outdir" $m $s $v \
+	--retention 12 --extra-files --outdir "$outdir" $m $s $v $u \
 	--start-monday --title "$TITLE" --timezone "${timezone:-+03}" \
 	"${logdir}/postgresql-${date}.log"
 
@@ -183,16 +191,17 @@ usage() {
     -r, --reports <path>		reports directory (default: /opt/reports)
     -t, --today				process today log
     --truncate <node1[,node2...]|all>	truncate displayed query length for this nodes to --maxlength
+    -U, --nouser <username>		exclude entries for the specified user from report
+    -v, --verbose			pgbadger verbose output (use twice for debug). Not working.
     -y, --yesterday			process yesterday log (mainly for daily cron job)
-    -v, --verbose			pgbadger verbose output (use twice for debug)
     -h, --help				print help
 "
 }
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o c:H:l:r:tyvh --longoptions company:,source-host:,logdir:,\
-maxlength:,nosession,reports:,today,truncate:,yesterday,verbose,\
+if ! TEMP=$(getopt -o c:H:l:r:tU:yvh --longoptions company:,source-host:,logdir:,\
+maxlength:,nosession,reports:,today,truncate:,nouser:,yesterday,verbose,\
 help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
@@ -212,8 +221,9 @@ while true; do
 	-r|--reports)		REPORTS=$2 ;	shift 2	;;
 	-t|--today)		DAY=1 ;		shift	;;
 	--truncate)		TRUNCATE=$2 ;	shift 2	;;
-	-y|--yesterday)		DAY=2 ;		shift	;;
+	-U|--nouser)		NOUSER=$2 ;	shift 2	;;
 	-v|--verbose)		((VERBOSE++)) ;	shift	;;
+	-y|--yesterday)		DAY=2 ;		shift	;;
 	-h|--help)		usage ;		exit 0	;;
 	--)			shift ;		break	;;
 	*)			usage ;		exit 1
