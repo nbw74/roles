@@ -4,6 +4,7 @@
 - include_tasks: hostname.yml
 
 - include_tasks: porntube.yml
+  tags: [ porntube ]
 
 - include_tasks: ifcfg.yml
 

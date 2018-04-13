@@ -3,7 +3,6 @@
 # SNMP extender
 # v.0.4.1
 #
-# {% raw %}
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
@@ -27,6 +26,7 @@ typeset -i CHECK=0 UPLOAD=0 CODE=666 LOCK=0 PERFDATA=0
 set -o nounset
 set -o errtrace
 
+# {% raw %}
 main() {
 
     trap except ERR
@@ -61,7 +61,7 @@ modeConntrack() {
 
     msg_tf_count=$(dmesg | grep -Fc 'table full')
     ct_size=$(sysctl $conntrack_sys | awk '{ print $3 }')
-    ct_count=$(wc -l $conntrack_proc)
+    ct_count=$(wc -l $conntrack_proc | awk '{ print $1 }')
     ct_perc=$(echo "x = $ct_count/($ct_size/100); scale=2; print (x+0.005)/1"|bc -l|awk '{printf "%.2f\n", $0}')
 
     if (( msg_tf_count > 0 )); then
