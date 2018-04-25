@@ -1,4 +1,4 @@
-# {{ ansible_managed }}
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 
 {% for address in nginx_allow_status_list %}
 allow {{ address|ipv4|ternary(address,'# ' ~ address) }};
