@@ -14,5 +14,5 @@ nginx_example_cert: "string" # Если доменное имя хоста не 
 nginx_example_key: "string" # то применяются указанные здесь файлы
 ```
 ## Tags
-`awstats` `iptables` `logrotate` `nginx` `packages` `scripts` `templates` `tls`
+`awstats` `iptables` `logrotate` `nginx` `allow_status` `packages` `scripts` `templates` `tls`
 

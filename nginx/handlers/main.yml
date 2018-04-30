@@ -1,16 +1,16 @@
 ---
 - name: config restart iptables
   service: name=iptables state=restarted
-  tags: [iptables]
 
 - name: config restart nginx
   service: name=nginx enabled=yes state=restarted
-  tags: [nginx]
+
+- name: config reload nginx
+  service: name=nginx enabled=yes state=reloaded
 
 #####
 # Awstats
 - name: awstats patch
   shell: (cd /usr/share/awstats/wwwroot/cgi-bin/ && patch -p0) < /var/local/awstats.pl.patch
   ignore_errors: true
-  tags: [awstats]
-
+...
