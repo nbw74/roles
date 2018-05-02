@@ -14,6 +14,7 @@
 
 - include_tasks: tls.yml
   when: not alien
+  tags: [ tls ]
 
 - name: Copy nginx.conf
   copy:

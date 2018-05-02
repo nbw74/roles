@@ -1,0 +1,8 @@
+---
+icinga2_icingaweb2_node: false
+icinga2_sendxmpp_jid: "helios@webmechanic.ru"
+icinga2_sendxmpp_pass: "Frame3hound3item"
+
+icinga2_env_home: "/home/nbw"
+icinga2_env_uid: 1000
+...

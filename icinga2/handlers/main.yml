@@ -1,0 +1,12 @@
+---
+- name: package scl installed
+  command: "yum-config-manager --enable rhel-server-rhscl-7-rpms"
+
+- name: service icinga2 restart
+  systemd:
+    name: "icinga2.service"
+    state: restarted
+
+- name: pip installed
+  command: "pip3 install dnspython sleekxmpp"
+...

@@ -1,0 +1,36 @@
+---
+- name: yum install pip3
+  yum:
+    name: "python34-pip"
+    state: present
+  notify: pip installed
+
+- name: clone sendxmpp git repository
+  git:
+    repo: "https://github.com/moparisthebest/sendxmpp-py.git"
+    dest: "sendxmpp-py"
+    update: no
+
+- name: copy sendxmpp script
+  copy:
+    src: "sendxmpp-py/sendxmpp"
+    dest: "/usr/local/bin/sendxmpp.py"
+    remote_src: yes
+    mode: 0755
+
+- name: sendxmpp config directory
+  file:
+    state: directory
+    path: "{{ icinga2_home }}/.config"
+    owner: icinga
+    group: icinga
+    mode: 0755
+
+- name: template sendxmpp config
+  template:
+    src: "sendxmpp.cfg.j2"
+    dest: "{{ icinga2_home }}/.config/sendxmpp.cfg"
+    owner: icinga
+    group: icinga
+    mode: 0644
+...

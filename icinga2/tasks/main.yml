@@ -1,0 +1,42 @@
+---
+- name: Check if role assigned to host
+  fail:
+    msg: "Role icinga2 not assigned to host"
+  when: '"icinga2" not in roles'
+
+- name: yum install common packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ icinga2_common_packages }}"
+
+- import_tasks: icingaweb2.yml
+  when: icinga2_icingaweb2_node
+
+- name: add user icinga to nagios group
+  user:
+    name: "icinga"
+    groups: "nagios"
+    append: yes
+  notify: service icinga restart
+
+- name: copy utils.pm
+  copy:
+    src: "/usr/lib64/nagios/plugins/utils.pm"
+    remote_src: yes
+    dest: "/usr/share/perl5/vendor_perl/utils.pm"
+    force: no
+
+- name: git clone or update PluginOptDir
+  become: yes
+  environment:
+    HOME: "{{ icinga2_env_home }}"
+    KRB5CCNAME: "KEYRING:persistent:{{ icinga2_env_uid }}:{{ icinga2_env_uid }}"
+  git:
+    repo: "{{ icinga2_plugin_opt_repo }}"
+    dest: "{{ icinga2_plugin_opt_dir }}"
+    accept_hostkey: yes
+  ignore_errors: true
+
+- import_tasks: sendxmpp.yml
+...

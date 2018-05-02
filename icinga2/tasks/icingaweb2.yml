@@ -1,0 +1,27 @@
+---
+- name: yum install scl-rh package
+  yum:
+    name: "centos-release-scl-rh"
+    state: present
+  notify: package scl installed
+
+- name: yum install icingaweb2 packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ icinga2_icingaweb2_packages }}"
+
+- name: symlinks for icingaweb2 icons
+  file:
+    state: link
+    src: "{{ icinga2_logos }}/{{ item }}"
+    dest: "/usr/share/icingaweb2/public/{{ item }}"
+  with_items: "{{ icinga2_logos_catalogs }}"
+
+- name: copy custom icons
+  copy:
+    src: "{{ item }}/"
+    dest: "{{ icinga2_logos }}/{{ item }}/"
+    mode: 0644
+  with_items: "{{ icinga2_logos_catalogs }}"
+...
