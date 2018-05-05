@@ -4,11 +4,20 @@
     msg: "Role icinga2 not assigned to host"
   when: '"icinga2" not in roles'
 
-- name: yum install common packages
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ icinga2_common_packages }}"
+- import_tasks: packages.yml
+
+- name: enable service icinga2
+  systemd:
+    name: "icinga2.service"
+    state: started
+    enabled: yes
+
+- name: replace files content in the conf.d
+  copy:
+    dest: "/etc/icinga2/conf.d/{{ item }}"
+    content: "/**/\n"
+  with_items: "{{ icinga2_wipe_confd }}"
+  tags: [ wipe ]
 
 - import_tasks: icingaweb2.yml
   when: icinga2_icingaweb2_node
@@ -18,7 +27,7 @@
     name: "icinga"
     groups: "nagios"
     append: yes
-  notify: service icinga restart
+  notify: service icinga2 restart
 
 - name: copy utils.pm
   copy:
@@ -38,5 +47,18 @@
     accept_hostkey: yes
   ignore_errors: true
 
+- import_tasks: keys.yml
+  when: not icinga2_client_node
+
 - import_tasks: sendxmpp.yml
+  when: not icinga2_client_node
+
+- import_tasks: pgsql.yml
+  when: not icinga2_client_node
+
+- import_tasks: ipmi.yml
+  when: not icinga2_client_node
+
+- import_tasks: wmi.yml
+  when: not icinga2_client_node
 ...

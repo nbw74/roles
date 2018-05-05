@@ -1,0 +1,19 @@
+---
+- name: yum install freeipmi
+  yum:
+    name: "freeipmi"
+    state: present
+  tags: [ ipmi ]
+
+- name: template ipmi auth files
+  template:
+    src: "ipmi.passwd.j2"
+    dest: "/etc/icinga2/{{ item.0.filename }}.passwd"
+    owner: icinga
+    group: icinga
+    mode: 0600
+  with_subelements:
+    - "{{ icinga2_ipmi_auth }}"
+    - auth_data
+  tags: [ ipmi ]
+...

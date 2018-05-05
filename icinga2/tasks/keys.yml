@@ -1,0 +1,76 @@
+---
+- name: create ssh keys dir
+  file:
+    path: "{{ icinga2_home }}/.ssh"
+    state: directory
+    owner: icinga
+    group: icinga
+    mode: 0700
+  tags: [ keys ]
+
+- name: create private keys
+  copy:
+    dest: "{{ icinga2_home }}/.ssh/{{ item.0.filename }}"
+    content: "{{ item.1.private | b64decode }}"
+    owner: icinga
+    group: icinga
+    mode: 0600
+  with_subelements:
+    - "{{ icinga2_ssh_keys }}"
+    - key_data
+  tags: [ keys ]
+
+- name: create public keys
+  copy:
+    dest: "{{ icinga2_home }}/.ssh/{{ item.0.filename }}.pub"
+    content: "{{ item.1.public | b64decode }}"
+    owner: icinga
+    group: icinga
+    mode: 0644
+  with_subelements:
+    - "{{ icinga2_ssh_keys }}"
+    - key_data
+  tags: [ keys ]
+
+- name: populate known_hosts
+  lineinfile:
+    path: "{{ icinga2_home }}/.ssh/known_hosts"
+    create: yes
+    line: "{{ item | b64decode }}"
+    state: present
+    insertafter: EOF
+    owner: icinga
+    group: icinga
+    mode: 0644
+  with_items: "{{ icinga2_known_hosts }}"
+  tags: [ keys ]
+
+- name: put keytabs b64
+  copy:
+    dest: "/etc/icinga2/{{ item.0.name }}.keytab.b64"
+    content: "{{ item.1 }}"
+  with_subelements:
+    - "{{ icinga2_keytabs }}"
+    - data
+  tags: [ keytab ]
+
+- name: decode keytabs
+  shell: "base64 -d /etc/icinga2/{{ item.0.name }}.keytab.b64 > /etc/icinga2/{{ item.0.name }}.keytab"
+  args:
+    creates: "/etc/icinga2/{{ item.0.name }}.keytab"
+  with_subelements:
+    - "{{ icinga2_keytabs }}"
+    - data
+  tags: [ keytab ]
+
+- name: set keytabs permissions
+  file:
+    path: "/etc/icinga2/{{ item.0.name }}.keytab"
+    owner: icinga
+    group: icinga
+    mode: 0600
+  with_subelements:
+    - "{{ icinga2_keytabs }}"
+    - data
+  tags: [ keytab ]
+...

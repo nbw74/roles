@@ -1,0 +1,46 @@
+---
+- name: install pgdg repo
+  yum:
+    name: "{{ icinga2_pgdg_rpm }}"
+    state: present
+  tags: [ pgsql ]
+
+- name: install postgresql
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ icinga2_postgresql_package }}"
+    - "authd"
+  tags: [ pgsql ]
+
+- name: enable authd
+  systemd:
+    name: "auth.socket"
+    state: started
+    enabled: yes
+  tags: [ ident ]
+
+- name: set systemd LogLevel
+  lineinfile:
+    path: "/etc/systemd/system.conf"
+    regexp: 'LogLevel='
+    line: 'LogLevel=info'
+  tags: [ ident ]
+
+- name: authd override dir
+  file:
+    path: "/etc/systemd/system/auth@.service.d"
+    state: directory
+  tags: [ ident ]
+
+- name: disable authd encryption
+  copy:
+    src: "authd.override.conf"
+    dest: "/etc/systemd/system/auth@.service.d/override.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart authd
+  tags: [ ident ]
+...

@@ -9,4 +9,10 @@
 
 - name: pip installed
   command: "pip3 install dnspython sleekxmpp"
+
+- name: restart authd
+  systemd:
+    name: "auth.socket"
+    state: restarted
+    daemon_reload: yes
 ...

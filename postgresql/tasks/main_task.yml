@@ -89,7 +89,7 @@
     src: "pg_hba.conf.j2"
     dest: "{{ postgresql_datadir }}/pg_hba.conf"
     mode: 0600
-  tags: [ initdb ]
+  tags: [ initdb, hba ]
 
 - name: PostgreSQL service enabled and started
   service:

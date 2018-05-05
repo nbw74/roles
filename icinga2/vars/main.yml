@@ -1,6 +1,16 @@
 ---
 icinga2_common_packages:
+  - "icinga2"
+  - "vim-icinga2"
+  - "nagios-plugins-all"
   - "perl-Net-SNMP"
+  - "perl-Number-Format"
+  - "perl-Config-IniFiles"
+  - "perl-DateTime"
+  - "perl-IPC-Run"
+  - "perl-libwww-perl"
+  - "openldap-clients"
+  - "python2-pip"
 
 icinga2_icingaweb2_packages:
   - "icinga-gui"
@@ -14,4 +24,6 @@ icinga2_plugin_opt_repo: "nbw@git.webmechanic.ru:/var/lib/git/nagios-plugins"
 icinga2_logos: "/usr/share/icinga/images/logos"
 
 icinga2_logos_catalogs: [ "equipment", "hardware", "other", "vendors" ]
+
+icinga2_wipe_confd: [ "commands.conf", "downtimes.conf", "groups.conf", "hosts.conf", "notifications.conf", "services.conf", "templates.conf", "timeperiods.conf", "users.conf" ]
 ...

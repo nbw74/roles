@@ -1,0 +1,19 @@
+---
+- name: install atomic repo
+  yum:
+    name: "{{ icinga2_atomic_rpm }}"
+  tags: [ wmi ]
+
+- name: install openvas-smb package
+  yum:
+    name: "openvas-smb"
+    state: present
+  tags: [ wmi ]
+
+- name: template wmi auth file
+  template:
+    src: "wmi.common.auth.j2"
+    dest: "/etc/icinga2/wmi.common.auth"
+    mode: 0644
+  tags: [ wmi ]
+...

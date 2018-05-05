@@ -1,0 +1,21 @@
+---
+- name: install icinga repo
+  yum:
+    name: "{{ icinga2_release_rpm }}"
+    state: present
+
+- name: yum install common packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ icinga2_common_packages }}"
+  tags: [ packages, ident, wmi ]
+
+- name: pip install nagiosplugin
+  command: "pip install {{ item.module }}"
+  args:
+    creates: "{{ item.creates }}"
+  with_items:
+    - { module: 'nagiosplugin', creates: '/usr/lib/python2.7/site-packages/nagiosplugin/summary.py' }
+  tags: [ packages ]
+...
