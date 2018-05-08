@@ -1,7 +1,7 @@
 ---
-- include: selinux.yml
+- import_tasks: selinux.yml
 
-- include: firewalld.yml
+- import_tasks: firewalld.yml
 
 - name: "Check if bitrix-env already installed"
   command: getent passwd bitrix
@@ -28,11 +28,11 @@
 
 - meta: flush_handlers
 
-- include: nginx.yml
+- import_tasks: nginx.yml
 
-# - include: iptables.yml
+# - import_tasks: iptables.yml
 
-- include: php.yml
+- import_tasks: php.yml
 
 - name: "Copy bxinit script"
   copy:
@@ -68,9 +68,9 @@
     mode: 0644
   tags: [bitrix-env]
 
-- include: mail.yml
+- import_tasks: mail.yml
 
-- include: mysqld.yml
+- import_tasks: mysqld.yml
   when: not alien
 
 - name: "Set bash prompt attributes [dev]"

@@ -1,14 +1,15 @@
 ---
-# - name: "Enable PHP modules"
-#   lineinfile:
-#     dest: "{{ item.dest }}"
-#     line: "{{ item.line }}"
-#     state: present
-#     create: yes
-#   with_items:
-#     - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
-#   tags: [php]
-#   Нехуй! Руками включать надо!
+- name: "Enable PHP modules"
+  lineinfile:
+    dest: "{{ item.dest }}"
+    line: "{{ item.line }}"
+    state: present
+    create: yes
+  with_items:
+    - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
+  when: bitrix_curl_enable
+  notify: config restart httpd
+  tags: [ php_modules ]
 
 - name: "Disable pdo_dblib"
   lineinfile:
@@ -18,7 +19,7 @@
   with_items:
     - { dest: '/etc/php.d/pdo_dblib.ini', regexp: '^extension=pdo_dblib.so' }
   notify: pdo_dblib chattr
-  tags: [php]
+  tags: [ php_modules ]
 
 - meta: flush_handlers
 

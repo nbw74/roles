@@ -16,5 +16,5 @@ nginx_allow_status_list: # default: <RFC-1918 network list> Список адр�
   - "ipv4"               # обращение к странице статуса Nginx
 ```
 ## Tags
-`bitrix-env` `hosts` `iptables` `mail` `mail_alias` `nginx_status` `packages` `passwd` `php` `prompt` `scripts` `selinux`
+`bitrix-env` `hosts` `iptables` `mail` `mail_alias` `nginx_status` `packages` `passwd` `php_modules` `prompt` `scripts` `selinux`
 
