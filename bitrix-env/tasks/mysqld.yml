@@ -1,5 +1,5 @@
 ---
-- name: MySQLd disabled
+- name: "MySQLd disabled (sysVinit)"
   service:
     name: "{{ item }}"
     state: stopped
@@ -8,13 +8,21 @@
     - mariadb
     - mysqld
     - mysql
+  when: ansible_distribution_major_version|int < 7
   ignore_errors: true
+  tags: [ services ]
 
-- name: MySQLd service masked
-  command: "systemctl mask {{ item }}.service"
+- name: "MySQLd masked (systemd)"
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
   with_items:
     - mariadb
     - mysqld
     - mysql
+  when: ansible_distribution_major_version|int >= 7
   ignore_errors: true
+  tags: [ services ]
 ...

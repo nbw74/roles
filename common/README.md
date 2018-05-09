@@ -31,10 +31,10 @@ common_icinga2_enable: bool # default: true :Регистрировать ли �
 common_icinga2_master: "host" # default: none :Хост кластера icinga2, на каотором хранится конфигурация зон
 common_icinga2_master_zone: "string" # default: none :Мастер-зона icinga2
 common_icinga2_master_zone_net_list: # default: none :Сети для автоопределения занесения хоста в мастер-зону
-  - "ipv4"
+  - "ipv4/prefix"
 common_icinga2_satellite_zone: "string" # default: none :Сателлит-зона icinga2
-common_icinga2_satellite_zone_net_list: # default: none :Сеть для автоопределения занесения хоста в сателлит-зону
-  - "ipv4"
+common_icinga2_satellite_zone_net_list: # default: none :Сети для автоопределения занесения хоста в сателлит-зону
+  - "ipv4/prefix"
 
 common_icinga2_conf:
   host_main_template: "string" # default: "centos-host" :Основной шаблон хоста (первый import)
@@ -48,5 +48,5 @@ common_icinga2_freeform: # default:none :Любая конфигурация
 ```
 
 ## Tags
-`colorize` `console` `domain` `hostname` `icinga2` `ifcfg` `ipset` `iptables` `journald` `kvm` `logrotate` `mail` `ntp` `packages` `porntube` `rsyslog` `services` `snmpd` `sudo` `tuned` `update` `vmware` `xt_recent`
+`colorize` `console` `domain` `hostname` `icinga2` `ifcfg` `ipset` `iptables` `journald` `kvm` `logrotate` `mail` `ntp` `packages` `porntube` `rsyslog` `services` `snmp` `sudo` `tuned` `update` `vmware` `xt_recent`
 

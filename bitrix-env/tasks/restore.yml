@@ -1,0 +1,17 @@
+---
+- name: restore normal system state
+  import_role:
+    name: common
+  vars:
+    pkgupdate: false
+
+- name: configure firewalld
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  with_items: [ ntp, snmp, http ]
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ firewalld ]
+...

@@ -7,7 +7,11 @@ port {{ bx_msmtp_port }}
 {% if alien %}
 from {{ bx_msmtp_user }}
 {% else %}
-from no_reply@{{ ansible_fqdn }}
+{% if 'deff' in ansible_domain %}
+from no_reply@{{ bx_msmtp_domain|default(ansible_fqdn) }}
+{% else %}
+from no_reply@{{ bx_msmtp_domain|default(ansible_fqdn|regex_replace('^([-a-zA-Z0-9]+).*(\.[a-zA-Z]+)$', '\\1\\2')) }}
+{% endif %}
 {% endif %}
 keepbcc on
 auth on

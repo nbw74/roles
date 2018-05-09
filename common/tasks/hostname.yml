@@ -16,7 +16,9 @@
 
 - name: "Run hostnamectl"
   command: "hostnamectl set-hostname {{ ansible_fqdn }}"
-  when: ansible_fqdn not in common_check_hostname.stdout
+  when:
+    - ansible_distribution_major_version|int >= 7
+    - ansible_fqdn not in common_check_hostname.stdout
   tags: [ hostname ]
 
 - meta: flush_handlers

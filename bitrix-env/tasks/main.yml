@@ -8,7 +8,7 @@
   register: getent_bitrix
   changed_when: false
   failed_when: false
-  tags: [bitrix-env]
+  tags: [ bitrix-env ]
 
 # Install Bitrix-env
 - name: "Download {{ bitrix_sh }}"
@@ -18,19 +18,19 @@
     url: "http://repos.1c-bitrix.ru/yum/{{ bitrix_sh }}"
     mode: 0755
   when: getent_bitrix.stdout.find('bitrix') == -1
-  tags: [bitrix-env]
+  tags: [ bitrix-env ]
 
 - name: "Run {{ bitrix_sh }}"
   shell: "/var/local/{{ bitrix_sh }}"
   when: getent_bitrix.stdout.find('bitrix') == -1
   notify: set bitrix password
-  tags: [bitrix-env]
+  tags: [ bitrix-env ]
 
 - meta: flush_handlers
 
-- import_tasks: nginx.yml
+- import_tasks: restore.yml
 
-# - import_tasks: iptables.yml
+- import_tasks: nginx.yml
 
 - import_tasks: php.yml
 
@@ -44,9 +44,9 @@
     mode: 0744
   with_items:
     - "{{ bxinit_sh }}"
-  tags: [scripts]
+  tags: [ scripts ]
 
-- name: "Template bxmult scripts"
+- name: "Template bxmult script"
   template:
     src: "{{ item }}.j2"
     dest: "/usr/local/bin/{{ item }}"
@@ -56,7 +56,7 @@
     mode: 0744
   with_items:
     - "{{ bxmult_sh }}"
-  tags: [scripts]
+  tags: [ scripts ]
 
 - name: "Copy .gitignore"
   copy:
@@ -66,7 +66,7 @@
     owner: bitrix
     group: bitrix
     mode: 0644
-  tags: [bitrix-env]
+  tags: [ bitrix-env ]
 
 - import_tasks: mail.yml
 
@@ -82,8 +82,8 @@
   with_items:
     - { regexp: '^PR_HOST=', line: 'PR_HOST=${PR_GREEN}' }
     - { regexp: '^PR_ATTRIB=', line: 'PR_ATTRIB=VM' }
-  when: "'dev' in ansible_domain"
-  tags: [prompt]
+  when: "'deff' in ansible_domain"
+  tags: [ prompt ]
 
 - name: "Set bash prompt attributes [prod]"
   lineinfile:
@@ -94,18 +94,13 @@
   with_items:
     - { regexp: '^PR_HOST=', line: 'PR_HOST=${PR_RED}' }
     - { regexp: '^PR_ATTRIB=', line: 'PR_ATTRIB=VM' }
-  when: "'dev' not in ansible_domain"
-  tags: [prompt]
+  when: "'deff' not in ansible_domain"
+  tags: [ prompt ]
 
 - name: "Add domain in /etc/hosts"
   lineinfile:
     dest: /etc/hosts
     line: "127.0.1.1\t{{ ansible_fqdn }}"
     state: present
-  tags: [hosts]
-
-- name: "Print message"
-  debug:
-    msg: "PLEASE EDIT DOMAIN NAME IN /etc/msmtprc"
-  when: "'dev' not in ansible_domain"
+  tags: [ hosts ]
 ...

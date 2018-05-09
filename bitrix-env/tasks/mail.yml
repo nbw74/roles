@@ -1,15 +1,10 @@
 ---
-- name: Postfix installed
-  yum:
-    name: postfix
-    state: latest
-  tags: [ packages, mail ]
-
 - name: "Template msmtprc"
   template:
     dest: "/etc/msmtprc"
     src: msmtprc.j2
     force: yes
+    backup: yes
     # notify: link template msmtprc
   tags: [ mail ]
 
@@ -20,6 +15,14 @@
   notify: config newaliases
   when: bx_mail_alias is defined
   tags: [ mail, mail_alias ]
+
+- name: create msmtp log file
+  copy:
+    dest: "/var/log/msmtp.log"
+    content: ""
+    force: no
+    mode: 0666
+  tags: [ mail ]
 
 - meta: flush_handlers
 ...

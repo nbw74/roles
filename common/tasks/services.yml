@@ -1,14 +1,31 @@
 ---
 - name: "Stop and disable some services"
-  service: name={{ item }} enabled=no state=stopped
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
   with_items:
     - NetworkManager
-    - firewalld
     - chronyd
   when: (( ansible_distribution == "Fedora" ) or
         ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 ))
   ignore_errors: yes
-  tags: [services]
+  tags: [ services ]
+
+- name: "Stop and disable firewalld"
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
+  with_items:
+    - firewalld
+  when: 
+    - ansible_distribution_major_version|int >= 7
+    - '"bitrix-env" not in roles'
+  ignore_errors: yes
+  tags: [ services ]
 
 - name: "Reconfigure Journald"
   ini_file:
@@ -20,16 +37,15 @@
     - { option: 'Storage', value: 'persistent' }
     - { option: 'Compress', value: 'yes' }
   notify: config restart journald
-  when: (( ansible_distribution == "Fedora" ) or
-        ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 ))
-  tags: [services,journald]
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ services, journald ]
 
 - name: "Reconfigure logrotate"
   replace:
     dest: /etc/logrotate.conf
     regexp: '^#\s*compress'
     replace: 'compress'
-  tags: [logrotate]
+  tags: [ logrotate ]
 
 - name: "Reconfigure sudo"
   replace:
@@ -37,7 +53,7 @@
     regexp: '^(Defaults\s+always_set_home)'
     replace: '# \1'
     validate: 'visudo -cf %s'
-  tags: [sudo]
+  tags: [ sudo ]
 
 - include_tasks: ipset.yml
 
@@ -48,7 +64,7 @@
 - name: "Enable and start network service"
   service: name=network enabled=yes state=started
   ignore_errors: yes
-  tags: [services]
+  tags: [ services ]
 
 - name: "Qemu-GA enabled and started (6)"
   service:
@@ -60,7 +76,7 @@
     - 'ansible_virtualization_role == "guest"'
     - 'ansible_distribution_major_version == "6"'
     - not alien
-  tags: [services,kvm]
+  tags: [ services, kvm ]
 
 - name: "Qemu-GA enabled and started (7)"
   service:
@@ -73,19 +89,26 @@
     - 'ansible_distribution_major_version == "7"'
     - not alien
   ignore_errors: yes
-  tags: [services,kvm]
+  tags: [ services, kvm ]
 
 - name: "Enable and start vmtoolsd service"
   service: name=vmtoolsd enabled=yes state=started
   when: ansible_product_name == "VMware Virtual Platform"
-  tags: [services,vmware]
+  tags: [ services, vmware ]
+
+- name: "Enable and start iptables service"
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+    - iptables
+  when: '"bitrix-env" not in roles'
+  tags: [ services, iptables ]
 
 - name: "Enable and start other services"
   service: name={{ item }} enabled=yes state=started
   with_items:
     - ntpd
-    - iptables
-    - snmpd
     - rsyslog
-  tags: [services]
+    - postfix
+    - snmpd
+  tags: [ services, snmp ]
 ...

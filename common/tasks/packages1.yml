@@ -9,7 +9,7 @@
     - { option: 'fastestmirror', value: 'True' }
     - { option: 'timeout', value: '4' }
   when: ansible_distribution == "Fedora"
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Update all packages (YUM)"
   yum:
@@ -30,7 +30,7 @@
     - 'ansible_distribution == "Fedora"'
     - pkgupdate is defined
     - pkgupdate
-  tags: [packages,update]
+  tags: [ packages, update ]
 # -------------------------------------------------------------
 - name: "Install required packages (YUM)"
   yum:
@@ -40,7 +40,18 @@
     - '{{ common_required_base_packages }}'
     - '{{ common_centos_specific_packages }}'
   when: ansible_distribution == "CentOS"
-  tags: [packages]
+  tags: [ packages, snmp ]
+
+- name: "Install required packages (YUM 7)"
+  yum:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - '{{ common_required_base_packages_7 }}'
+  when:
+    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version|int >= 7
+  tags: [ packages, snmp ]
 
 - name: "Install SELinux packages (YUM)"
   yum:
@@ -52,7 +63,7 @@
   when:
     - ansible_distribution == "CentOS"
     - selinux_state != "disabled"
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Remove SELinux packages (YUM)"
   yum:
@@ -64,7 +75,7 @@
   when:
     - ansible_distribution == "CentOS"
     - selinux_state == "disabled"
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Install required FreeIPA packages (YUM)"
   yum:
@@ -75,7 +86,7 @@
   when:
     - ansible_distribution == "CentOS"
     - not alien
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Install EPEL packages (YUM)"
   yum:
@@ -83,7 +94,7 @@
     name: "{{ item }}"
   with_items: '{{ common_required_epel_packages }}'
   when: ansible_distribution == "CentOS"
-  tags: [packages]
+  tags: [ packages ]
 # -------------------------------------------------------------
 - name: "Install required packages (DNF)"
   dnf:
@@ -93,7 +104,7 @@
     - '{{ common_required_base_packages }}'
     - '{{ common_required_epel_packages }}' 
   when: ansible_distribution == "Fedora"
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Install required SELinux packages (DNF)"
   dnf:
@@ -105,7 +116,7 @@
   when:
     - ansible_distribution == "Fedora"
     - selinux_state != "disabled"
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Install required FreeIPA packages (DNF)"
   dnf:
@@ -116,12 +127,12 @@
   when:
     - ansible_distribution == "Fedora"
     - not alien
-  tags: [packages]
+  tags: [ packages ]
 # -------------------------------------------------------------
 - name: "Install open-vm-tools"
   action: '{{ ansible_pkg_mgr }} name="open-vm-tools" state=latest'
   when: 'ansible_virtualization_type == "VMware"'
-  tags: [packages,vmware]
+  tags: [ packages, vmware ]
 
 - name: "Install qemu-guest-agent"
   action: '{{ ansible_pkg_mgr }} name="qemu-guest-agent" state=latest'
@@ -129,7 +140,7 @@
     - 'ansible_virtualization_type == "kvm"'
     - 'ansible_virtualization_role == "guest"'
     - not alien
-  tags: [packages,kvm]
+  tags: [ packages, kvm ]
 
 - name: "Install iptables-services package (YUM)"
   yum:
@@ -138,18 +149,18 @@
   when:
     - 'ansible_distribution == "CentOS"'
     - ansible_distribution_major_version|int >= 7
-  tags: [packages,iptables]
+  tags: [ packages, iptables ]
 
 - name: "Remove unnecessary packages"
   action: '{{ ansible_pkg_mgr }} name="{{ item }}" state=absent'
   with_items: "{{ common_virt_unnecessary_packages }}"
   when: 'ansible_virtualization_role == "guest"'
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Install tuned"
   action: '{{ ansible_pkg_mgr }} name="tuned" state=latest'
   notify: config tuned
-  tags: [packages,tuned]
+  tags: [ packages, tuned ]
 
 - meta: flush_handlers
 ...

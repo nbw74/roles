@@ -1,18 +1,25 @@
 ---
-- name: Iptables-service disabled
-  service:
-    name: iptables
+- name: Iptables services disabled
+  systemd:
+    name: "{{ item }}.service"
     enabled: no
     state: stopped
+  with_items: [ iptables, ipset ]
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ services, firewalld ]
 
 - name: Firewalld installed
   yum:
     name: firewalld
     state: latest
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ services, firewalld ]
 
 - name: Firewalld enabled
   service:
     name: firewalld
     enabled: yes
     state: started
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ services, firewalld ]
 ...

@@ -21,7 +21,6 @@ common_required_base_packages:
   - gdisk
   - git
   - ipset
-  - ipset-service
   - libselinux-python
   - mailx
   - man
@@ -34,6 +33,9 @@ common_required_base_packages:
   - vim
   - yum-utils
   - zsh
+
+common_required_base_packages_7:
+  - ipset-service
 
 common_required_base_packages_selinux:
   - setroubleshoot-server

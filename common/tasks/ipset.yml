@@ -14,5 +14,7 @@
     state: started
   with_items:
     - ipset
+  when: 
+    - '"bitrix-env" not in roles'
   tags: [ services, ipset ]
 ...
