@@ -1,19 +1,23 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 object Host "{{ ansible_fqdn }}" {
     import "{{ common_icinga2_conf['host_main_template']|default('centos-host') }}"
+{% if common_icinga2_conf['host_templates'] is defined %}
 {% for item in common_icinga2_conf['host_templates'] %}
     import "{{ item }}"
 {% endfor %}
+{% endif %}
     address = "{{ common_icinga2_conf['ip_address']|default(common_ipv4_private) }}"
     display_name = "{{ common_icinga2_conf['display_name']|default(ansible_hostname) }}"
-{% set common_icinga2_standard_if_name = 'eth' %}
+{% set common_icinga2_standard_int_name = 'eth' %}
 {% if ansible_virtualization_type == 'VMware' %}
 {% if ansible_distribution_major_version|int >= 7 %}
-{% set common_icinga2_standard_if_name = 'ens' %}
+{% set common_icinga2_standard_int_name = 'ens' %}
 {% endif %}
 {% endif %}
     vars.int_name = "{{ common_icinga2_conf['int_name']|default(common_icinga2_standard_int_name) }}"
+{% if common_icinga2_freeform is defined %}
 {% for item in common_icinga2_freeform %}
     {{ item }}
 {% endfor %}
+{% endif %}
 }

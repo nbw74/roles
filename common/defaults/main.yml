@@ -2,4 +2,6 @@
 alien: false
 selinux_state: "enforcing"
 common_icinga2_enable: true
+common_icinga2_conf:
+  - ""
 ...

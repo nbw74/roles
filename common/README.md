@@ -30,9 +30,11 @@ common_ssh_direct_list: # Список адресов, с которых мож�
 common_icinga2_enable: bool # default: true :Регистрировать ли хост в мониторинге
 common_icinga2_master: "host" # default: none :Хост кластера icinga2, на каотором хранится конфигурация зон
 common_icinga2_master_zone: "string" # default: none :Мастер-зона icinga2
-common_icinga2_master_zone_net: "ipv4" # default: none :Сеть для автоопределения занесения хоста в мастер-зону
+common_icinga2_master_zone_net_list: # default: none :Сети для автоопределения занесения хоста в мастер-зону
+  - "ipv4"
 common_icinga2_satellite_zone: "string" # default: none :Сателлит-зона icinga2
-common_icinga2_satellite_zone_net: "ipv4" # default: none :Сеть для автоопределения занесения хоста в сателлит-зону
+common_icinga2_satellite_zone_net_list: # default: none :Сеть для автоопределения занесения хоста в сателлит-зону
+  - "ipv4"
 
 common_icinga2_conf:
   host_main_template: "string" # default: "centos-host" :Основной шаблон хоста (первый import)
