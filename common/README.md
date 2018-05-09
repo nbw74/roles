@@ -5,6 +5,8 @@
 ```yaml
 alien: bool # default: true :Указывает на то, что хост не принадлежит к сети организации
 
+selinux_state: bool # default: "enforcing"
+
 common_aliases_root: "string" # Почтовый адрес для пересылки почты суперпользователя
 common_selinux_alert_recipients: "string" # Почтовый адрес для отсылки уведомлений SELinux
 
@@ -24,8 +26,25 @@ common_snmp_syscontact: "string" # System contact for snmpd.conf
 
 common_ssh_direct_list: # Список адресов, с которых можно открывать неограниченное
   - "ipv4"              # кол-во соединений к SSHd в единицу времени
+
+common_icinga2_enable: bool # default: true :Регистрировать ли хост в мониторинге
+common_icinga2_master: "host" # default: none :Хост кластера icinga2, на каотором хранится конфигурация зон
+common_icinga2_master_zone: "string" # default: none :Мастер-зона icinga2
+common_icinga2_master_zone_net: "ipv4" # default: none :Сеть для автоопределения занесения хоста в мастер-зону
+common_icinga2_satellite_zone: "string" # default: none :Сателлит-зона icinga2
+common_icinga2_satellite_zone_net: "ipv4" # default: none :Сеть для автоопределения занесения хоста в сателлит-зону
+
+common_icinga2_conf:
+  host_main_template: "string" # default: "centos-host" :Основной шаблон хоста (первый import)
+  host_templates: [ 'string', ... ] # default: none :Дополнительные шаблоны
+  ip_address: "ipv4" # default: autodetect
+  display_name: "string" # default: ansible_hostname
+  int_name: "string" # default: autodetect :Шаблон имени сетевых интерфейсов (eth, ens, eno, ...)
+
+common_icinga2_freeform: # default:none :Любая конфигурация
+  - "string [string ...]"
 ```
 
 ## Tags
-`colorize` `console` `domain` `hostname` `ifcfg` `ipset` `iptables` `journald` `kvm` `logrotate` `mail` `ntp` `packages` `porntube` `rsyslog` `services` `snmpd` `sudo` `tuned` `update` `vmware` `xt_recent`
+`colorize` `console` `domain` `hostname` `icinga2` `ifcfg` `ipset` `iptables` `journald` `kvm` `logrotate` `mail` `ntp` `packages` `porntube` `rsyslog` `services` `snmpd` `sudo` `tuned` `update` `vmware` `xt_recent`
 

@@ -1,32 +1,30 @@
 ---
-- include_tasks: packages1.yml
+- import_tasks: packages1.yml
 
-- include_tasks: hostname.yml
+- import_tasks: hostname.yml
 
-- include_tasks: porntube.yml
-  tags: [ porntube ]
+- import_tasks: porntube.yml
 
-- include_tasks: ifcfg.yml
+- import_tasks: ifcfg.yml
 
-- include_tasks: ntp.yml
-  tags: [ ntp ]
+- import_tasks: ntp.yml
 
-- include_tasks: snmpd.yml
+- import_tasks: snmpd.yml
 
-- include_tasks: rsyslog.yml
+- import_tasks: rsyslog.yml
 
-- include_tasks: mail.yml
+- import_tasks: mail.yml
 
-- include_tasks: services.yml
+- import_tasks: services.yml
 
-- include_tasks: console.yml
+- import_tasks: console.yml
   when:
     - 'ansible_virtualization_role == "guest"'
     - not alien
 
-- include_tasks: packages2.yml
+- import_tasks: packages2.yml
 
-- include_tasks: colorize.yml
+- import_tasks: colorize.yml
 
 - name: "Check if already enrolled"
   shell: "getent group sysadmins || :"
@@ -34,9 +32,20 @@
   changed_when: false
   tags: [domain]
 
-- include_tasks: domain.yml
+- import_tasks: domain.yml
   when:
     - common_getent_sysadmins.stdout.find('sysadmins') == -1
     - not alien
-  tags: [domain]
+
+- name: get first private address
+  set_fact:
+    common_ipv4_private: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
+  when:
+    - not alien
+  tags: [ icinga2 ]
+
+- import_tasks: icinga2.yml
+  when:
+    - common_icinga2_enable
+    - not alien
 ...

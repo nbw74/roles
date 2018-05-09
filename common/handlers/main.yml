@@ -89,6 +89,15 @@
   tags: [services,ntp]
 
 #####
+# Icinga2 reload
+#
+- name: config reload icinga2
+  systemd:
+    name: "icinga2.service"
+    state: reloaded
+    delegate_to: "{{ common_icinga2_master }}"
+
+#####
 # newaliases
 #
 - name: config newaliases

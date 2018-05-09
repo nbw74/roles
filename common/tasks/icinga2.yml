@@ -1,0 +1,21 @@
+---
+- name: set icinga2 master zone
+  set_fact:
+    common_icinga2_zone: "{{ common_icinga2_master_zone }}"
+  when: common_ipv4_private | ipaddr(common_icinga2_master_zone_net)
+  tags: [ icinga2 ]
+
+- name: set icinga2 satellite zone
+  set_fact:
+    common_icinga2_zone: "{{ common_icinga2_satellite_zone }}"
+  when: common_ipv4_private | ipaddr(common_icinga2_satellite_zone_net)
+  tags: [ icinga2 ]
+
+- name: Template host config to icinga2 master
+  template:
+    src: "icinga2.j2"
+    dest: "/etc/icinga2/zones.d/{{ common_icinga2_zone }}/{{ ansible_fqdn }}.conf"
+    delegate_to: "{{ common_icinga2_master }}"
+  notify: config reload icinga2
+  tags: [ icinga2 ]
+...

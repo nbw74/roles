@@ -1,4 +1,5 @@
 ---
 alien: false
 selinux_state: "enforcing"
+common_icinga2_enable: true
 ...
