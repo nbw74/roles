@@ -1,0 +1,131 @@
+---
+- name: manage user
+  user:
+    name: "{{ item.user|d(item.name) }}"
+    shell: "/bin/bash"
+    home: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}"
+    generate_ssh_key: yes
+    ssh_key_type: "{{ item.key_type|d('ed25519') }}"
+    state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
+    remove: no
+    force: yes
+  register: vhost_user
+  with_items: "{{ servers }}"
+  tags: [ user ]
+
+- name: copy pubkey to authorized_keys
+  copy:
+    src: "{{ item.ssh_key_file }}.pub"
+    dest: "{{ item.home }}/.ssh/authorized_keys"
+    remote_src: yes
+    force: no
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: 0600
+  when:
+    - item.changed
+    - item.state == 'present'
+  with_items: "{{ vhost_user.results }}"
+  loop_control:
+    label: "copy pubkey for user {{ item.name }}"
+  tags: [ user ]
+
+- name: add web-server users to the new user group
+  user:
+    name: "{{ item[0] }}"
+    append: yes
+    groups: "{{ item[1].name }}"
+  when:
+    - item[1].changed
+    - item[1].state == 'present'
+  with_nested:
+    - [ '{{ vhost_frontuser }}', '{{ vhost_backuser }}' ]
+    - "{{ vhost_user.results }}"
+  loop_control:
+    label: "add {{ item[0] }} in {{ item[1].name }} group"
+  tags: [ user ]
+
+- name: remove unused groups
+  group:
+    name: "{{ item.name }}"
+    state: absent
+  when:
+    - item.changed
+    - item.state == 'absent'
+  with_items: "{{ vhost_user.results }}"
+  loop_control:
+    label: "remove {{ item.name }} group"
+  tags: [ user ]
+
+- name: manage common directories
+  file:
+    state: directory
+    path: "{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[0] }}"
+    owner: "{{ item[1].user|d(item[1].name) }}"
+    group: "{{ item[1].user|d(item[1].name) }}"
+    mode: 0775
+  when:
+    - item[1].state|d(true)
+  with_nested:
+    - [ 'tmp', 'log' ]
+    - "{{ servers }}"
+  loop_control:
+    label: "{{ item[0] }} directory for {{ item[1].user|d(item[1].name) }} user"
+  tags: [ user ]
+
+- name: manage webroot directory
+  file:
+    state: directory
+    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}"
+    owner: "{{ item.user|d(item.name) }}"
+    group: "{{ item.user|d(item.name) }}"
+    mode: 0755
+  when:
+    - item.state|d(true)
+  with_items: "{{ servers }}"
+  loop_control:
+    label: "webroot for user {{ item.user|d(item.name) }}"
+  tags: [ user ]
+
+- name: check if homedir exists
+  stat:
+    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}"
+  register: vhost_reg_home
+  when:
+    - item.changed
+    - item.state == 'absent'
+  with_items: "{{ vhost_user.results }}"
+  loop_control:
+    label: "stat {{ item.name }} user"
+  tags: [ archive ]
+
+- name: archive homedir
+  archive:
+    path:
+      - "{{ item.stat.path }}"
+    dest: "{{ vhost_preserve }}/{{ item.stat.path|basename }}-{{ vhost_timestamp }}.tar.gz"
+    format: gz
+    exclude_path:
+      - "{{ item.stat.path }}/tmp/*"
+      - "{{ item.stat.path }}/log/*"
+      - "{{ item.stat.path }}/*.tar*"
+      - "{{ item.stat.path }}/*.gz"
+      - "{{ item.stat.path }}/*.zip"
+      - "{{ item.stat.path }}/*.bz2"
+      - "*.log"
+  when: not item.skipped|d()
+  with_items: "{{ vhost_reg_home.results }}"
+  loop_control:
+    label: "{{ item.item.name }} homedir archive"
+  tags: [ archive ]
+
+- name: remove homedir
+  file:
+    path: "{{ item.stat.path }}"
+    state: absent
+  when: not item.skipped|d()
+  with_items: "{{ vhost_reg_home.results }}"
+  loop_control:
+    label: "{{ item.item.name }} homedir archive"
+  tags: [ archive ]
+...

@@ -1,0 +1,8 @@
+{% if item.listen is defined %}
+{% for home in item.listen %}
+    listen		{{ home.ipaddr }}:{{ home.port|d('80') }};
+{% endfor %}
+{% else %}
+    listen		{{ vhost_default_ipaddr }}:80;
+{% endif %}
+

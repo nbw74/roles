@@ -1,0 +1,54 @@
+---
+- name: get first public address
+  set_fact:
+    vhost_default_ipaddr: "{{ ansible_all_ipv4_addresses | ipaddr('public') | first | d('empty') }}"
+  tags: [ conf ]
+
+- name: get first private address
+  set_fact:
+    vhost_default_ipaddr: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
+  when: vhost_default_ipaddr == 'empty'
+  tags: [ conf ]
+
+- name: get nginx version
+  shell: "nginx -V 2>&1 | awk '/nginx version:/ { print $3 }'"
+  register: vhost_reg_nginx_ver
+  changed_when: no
+  tags: [ version ]
+
+- name: get php version
+  shell: "php -v | awk '/PHP .* \\(cli\\)/ { print $2 }'"
+  register: vhost_reg_php_ver
+  changed_when: no
+  tags: [ version ]
+
+- name: get apache version
+  shell: "httpd -V | awk '/Server version:/ { print $3 }'"
+  register: vhost_reg_apache_ver
+  when: vhost_backend == 'apache'
+  changed_when: no
+  tags: [ version ]
+
+- name: set nginx and php version facts
+  set_fact:
+    vhost_nginx_version: "{{ vhost_reg_nginx_ver.stdout }}"
+    vhost_php_version: "php/{{ vhost_reg_php_ver.stdout }}"
+  tags: [ version ]
+
+- name: set apache version fact
+  set_fact:
+    vhost_apache_version: "{{ vhost_reg_apache_ver.stdout }}"
+  when: vhost_backend == 'apache'
+  tags: [ version ]
+
+- name: get timestamp
+  command: "date '+%FT%H%M'"
+  register: vhost_get_time
+  changed_when: no
+  tags: [ archive ]
+
+- name: set timestamp
+  set_fact:
+    vhost_timestamp: "{{ vhost_get_time.stdout }}"
+  tags: [ archive ]
+...

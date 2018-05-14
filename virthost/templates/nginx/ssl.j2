@@ -1,0 +1,4 @@
+    ssl_certificate	/etc/pki/tls/certs/{{ item.name }}.crt;
+    ssl_certificate_key	/etc/pki/tls/private/{{ item.name }}.key;
+    include		/etc/nginx/include.d/ssl_common.conf;
+

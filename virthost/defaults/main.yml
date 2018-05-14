@@ -1,0 +1,8 @@
+---
+vhost_backend: "php-fpm"
+vhost_basedir: "/var/www"
+vhost_frontuser: "nginx"
+vhost_backuser: "apache"
+vhost_logbuffer: "128k"
+
+...

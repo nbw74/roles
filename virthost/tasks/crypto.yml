@@ -1,0 +1,60 @@
+---
+- name: copy certificates
+  copy:
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.name }}.crt"
+    dest: "/etc/pki/tls/certs/"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - item.crypto|d('none') != 'none'
+    - item.state|d(true)
+  with_items: "{{ servers }}"
+  notify: validate nginx
+  tags: [ crypto ]
+
+- name: copy keys
+  copy:
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.name }}.key"
+    dest: "/etc/pki/tls/private/"
+    owner: root
+    group: root
+    mode: 0400
+  when:
+    - item.crypto|d('none') != 'none'
+    - item.state|d(true)
+  with_items: "{{ servers }}"
+  notify: validate nginx
+  tags: [ crypto ]
+
+- name: copy mobile certificates
+  copy:
+    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.name }}.crt"
+    dest: "/etc/pki/tls/certs/"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - item.crypto|d('none') != 'none'
+    - item.state|d(true)
+    - item.mobile|d()
+  with_items: "{{ servers }}"
+  notify: validate nginx
+  tags: [ crypto ]
+
+- name: copy mobile keys
+  copy:
+    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.name }}.key"
+    dest: "/etc/pki/tls/private/"
+    owner: root
+    group: root
+    mode: 0400
+  when:
+    - item.crypto|d('none') != 'none'
+    - item.state|d(true)
+    - item.mobile|d()
+  with_items: "{{ servers }}"
+  notify: validate nginx
+  tags: [ crypto ]
+
+...

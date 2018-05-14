@@ -1,0 +1,22 @@
+---
+- import_tasks: init.yml
+
+- import_tasks: user.yml
+
+- import_tasks: crypto.yml
+
+- import_tasks: nginx.yml
+
+- import_tasks: db.yml
+
+- import_tasks: wiki.yml
+
+# - debug:
+#     msg: "USER ADDED"
+#   when:
+#     - item.changed
+#     - item.state == 'present'
+#   with_items: "{{ vhost_user.results }}"
+#   loop_control:
+#     label: "{{ item.name }}"
+...

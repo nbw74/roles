@@ -1,0 +1,34 @@
+; THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+; vim: ft=dosini:
+[{{ item.user|d(item.name) }}]
+prefix = {{ vhost_basedir }}/$pool
+user = apache
+group = {{ item.user|d(item.name) }}
+listen = 127.0.0.1:{{ item.fpm.port }}
+listen.allowed_clients = 127.0.0.1
+pm = {{ item.fpm.pm|d('ondemand') }}
+pm.max_children = {{ item.fpm.max_children|d('40') }}
+{% if item.fpm.pm|d('ondemand') == 'dynamic' %}
+pm.start_servers = {{ item.fpm.start_servers|d('5') }}
+pm.min_spare_servers = {{ item.fpm.min_spare_servers|d('5') }}
+pm.max_spare_servers = {{ item.fpm.pm.max_spare_servers|d('35') }}
+{% elif item.fpm.pm|d('ondemand') == 'ondemand' %}
+pm.process_idle_timeout = {{ item.fpm.process_idle_timeout|d('10s') }}
+{% endif %}
+pm.max_requests = {{ item.fpm.max_requests|d('0') }}
+access.log = log/fpm-access.log
+access.format = "%R - %u %t \"%m %r\" %s"
+slowlog = /var/log/php-fpm/www-slow.log
+request_slowlog_timeout = 10s
+php_admin_value[error_log] = log/fpm-error.log
+php_admin_flag[log_errors] = on
+{% if item.save_handler|d('files') == 'files' %}
+php_value[session.save_handler] = files
+php_value[session.save_path]    = {{ vhost_basedir }}/$pool/tmp
+{% elif item.save_handler|d('files') == 'memcached' %}
+php_value[session.save_handler] = memcached
+php_value[session.save_path]    = {{ item.memcached.server1|d('localhost4') }}:{{ item.memcached.port1|d('11211') }}{% if item.memcached.server2 is defined %},{{ item.memcached.server2 }}:{{ item.memcached.port2|d('11211') }}
+{% endif %}
+
+{% endif %}
+php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache

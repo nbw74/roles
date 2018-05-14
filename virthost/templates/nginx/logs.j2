@@ -1,0 +1,3 @@
+    access_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-access.log combined buffer={{ vhost_logbuffer }};
+    error_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-error.log;
+

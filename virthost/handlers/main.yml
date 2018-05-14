@@ -1,0 +1,19 @@
+---
+- name: validate nginx
+  command: "nginx -t"
+  notify: reload nginx
+
+- name: reload nginx
+  systemd:
+    name: "nginx.service"
+    state: reloaded
+
+- name: validate php-fpm
+  command: "/sbin/php-fpm -t"
+  notify: reload php-fpm
+
+- name: reload php-fpm
+  systemd:
+    name: "php-fpm.service"
+    state: reloaded
+...

@@ -1,0 +1,59 @@
+---
+- name: "fetch new user's private key for lookup"
+  fetch:
+    src: "{{ item[1].ssh_key_file }}"
+    dest: "/tmp/vhost_{{ item[0].name }}_{{ item[1].ssh_key_file|basename }}"
+    flat: yes
+  when:
+    - item[1].changed
+    - item[1].state == 'present'
+  with_together:
+    - "{{ servers }}"
+    - "{{ vhost_user.results }}"
+  loop_control:
+    label: "{{ item[0].name }}"
+  tags: [ wiki ]
+
+- name: template wiki page
+  template:
+    src: "wiki.j2"
+    dest: "/tmp/vhost_{{ item[0].name }}.txt"
+  when:
+    - item[1].changed
+    - item[1].state == 'present'
+  with_together:
+    - "{{ servers }}"
+    - "{{ vhost_user.results }}"
+  delegate_to: localhost
+  become: no
+  loop_control:
+    label: "{{ item[0].name }}"
+  tags: [ wiki ]
+
+- name: "delete new user's private key"
+  file:
+    state: absent
+    path: "/tmp/vhost_{{ item[0].name }}_{{ item[1].ssh_key_file|basename }}"
+  when:
+    - item[1].changed
+    - item[1].state == 'present'
+  with_together:
+    - "{{ servers }}"
+    - "{{ vhost_user.results }}"
+  loop_control:
+    label: "{{ item[0].name }}"
+  tags: [ wiki ]
+
+- name: print a path of the wiki file
+  debug:
+    msg: "Wiki content placed in /tmp/vhost_{{ item[0].name }}.txt"
+  when:
+    - item[1].changed
+    - item[1].state == 'present'
+  with_together:
+    - "{{ servers }}"
+    - "{{ vhost_user.results }}"
+  loop_control:
+    label: "{{ item[0].name }}"
+  tags: [ wiki ]
+...

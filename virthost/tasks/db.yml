@@ -1,0 +1,32 @@
+---
+- name: manage mysql database
+  mysql_db:
+    name: "{{ item.db.name }}"
+    state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
+    encoding: "{{ item.db.encoding|d('utf8') }}"
+    collation: "{{ item.db.collation|d('utf8_general_ci') }}"
+    login_host: "{{ item.db.host }}"
+    login_port: "{{ item.db.port|d('3306') }}"
+    login_user: "{{ vhost_db_mysql_admin_user }}"
+    login_password: "{{ vhost_db_mysql_admin_pass }}"
+  when:
+    - item.db.type == 'mysql'
+  with_items: "{{ servers }}"
+  tags: [ db ]
+
+- name: manage mysql user
+  mysql_user:
+    name: "{{ item.db.name }}"
+    password: "{{ item.db.pass }}"
+    host: "%"
+    priv: "{{ item.db.name }}.*:ALL"
+    state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
+    login_host: "{{ item.db.host }}"
+    login_port: "{{ item.db.port|d('3306') }}"
+    login_user: "{{ vhost_db_mysql_admin_user }}"
+    login_password: "{{ vhost_db_mysql_admin_pass }}"
+  when:
+    - item.db.type == 'mysql'
+  with_items: "{{ servers }}"
+  tags: [ db ]
+...

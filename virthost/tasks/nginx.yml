@@ -1,0 +1,43 @@
+---
+- name: template nginx vhost config
+  template:
+    src: "nginx.j2"
+    dest: "/etc/nginx/conf.d/{{ item.name }}.conf"
+    mode: 0644
+    backup: yes
+  when: item.state|d(true)
+  with_items: "{{ servers }}"
+  notify: validate nginx
+  tags: [ conf ]
+
+- name: remove nginx vhost config
+  file:
+    path: "/etc/nginx/conf.d/{{ item.name }}.conf"
+    state: absent
+    backup: yes
+  when: not item.state|d(true)
+  with_items: "{{ servers }}"
+  notify: validate nginx
+  tags: [ conf ]
+
+- name: template php-fpm vhost config
+  template:
+    src: "php-fpm.j2"
+    dest: "/etc/php-fpm.d/{{ item.name }}.conf"
+    mode: 0644
+    backup: yes
+  when: item.state|d(true)
+  with_items: "{{ servers }}"
+  notify: validate php-fpm
+  tags: [ conf ]
+
+- name: remove php-fpm vhost config
+  file:
+    path: "/etc/php-fpm.d/{{ item.name }}.conf"
+    state: absent
+    backup: yes
+  when: not item.state|d(true)
+  with_items: "{{ servers }}"
+  notify: validate php-fpm
+  tags: [ conf ]
+...
