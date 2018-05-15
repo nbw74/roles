@@ -1,10 +1,11 @@
 ---
 - name: create git repo
-  command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.name }}'"
+  command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.repo.name|d(item.name) }}'"
   args:
-    creates: "{{ vhost_git_path }}/{{ item.name }}/HEAD"
+    creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name) }}/HEAD"
   when:
-    - item.repo|d('none') == 'git'
+    - item.repo is defined
+    - item.repo.type|d('none') == 'git'
     - item.state|d(true)
   with_items: "{{ vhost }}"
   delegate_to: "{{ vhost_git_server }}"

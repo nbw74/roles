@@ -12,6 +12,11 @@ vhost_db_mysql_admin_pass: "string"   # mandatory if use mysql
 vhost_git_server: "string"            # mandatory if use git
 vhost_git_path: "filesystem_path"     # default is "/var/lib/git"
 vhost_git_group: "string"             # default is "developers"
+vhost_ddns_server: "string"           # mandatory if use ddns
+vhost_default_ddns_zone: "string"     # mandatory if use ddns
+vhost_ddns_key_name: "string"         # default is "ddns_key"
+vhost_ddns_key_algorithm: "string"    # default is "hmac-md5"
+vhost_ddns_key_secret: "string"       # mandatory if use ddns
 
 vhost:
   - name: example.org # mandatory
@@ -27,7 +32,9 @@ vhost:
     index: "myindex.php" # optional; default is "index.php"
     mobile: yes|no # optional; default is 'no'; enable mobile version config with same site root
     crypto: none|redirect|both # optional; default is "none"
-    repo: git|svn # default: none
+    repo: # default: none
+      type: git|svn
+      name: example.org
     fpm: # mandatory if use php-fpm
       port: 9001 # mandatory; next free port
       pm: static|dynamic|ondemand # optional; default is "ondemand"
@@ -53,6 +60,13 @@ vhost:
       bouncer: pgbouncer.example.org # optional if use postgresql
       encoding: "utf8" # optional; default is "utf8" for mysql
       collation: "utf8_general_ci" # optional; default is "utf8_general_ci" for mysql
+    ddns: # optional
+      enable: yes|no # default is 'no'
+      zone: string # default is vhost_default_ddns_zone
+      record: string # default is vhost.name minus vhost_default_ddns_zone
+      type: A|CNAME|... # default is CNAME
+      value: string # default is ansible_fqdn.
+
 ```
 ## Tags
 `` `` `` `` `` `` `` `` `` ``

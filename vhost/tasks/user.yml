@@ -30,6 +30,18 @@
     label: "copy pubkey for user {{ item.name }}"
   tags: [ user ]
 
+- name: set homedir mode
+  file:
+    path: "{{ item.home }}"
+    state: directory
+    mode: 0750
+  when:
+    - item.state == 'present'
+  with_items: "{{ vhost_user.results }}"
+  loop_control:
+    label: "{{ item.name }} homedir mode"
+  tags: [ user ]
+
 - name: add web-server users to the new user group
   user:
     name: "{{ item[0] }}"

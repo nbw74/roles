@@ -1,4 +1,23 @@
 ---
+- name: dump mysql database
+  mysql_db:
+    state: dump
+    name: "{{ item[0].db.name }}"
+    target: "{{ vhost_preserve }}/{{ item[0].db.name }}-{{ vhost_timestamp }}.sql.bz2"
+    login_host: "{{ item[0].db.host }}"
+    login_port: "{{ item[0].db.port|d('3306') }}"
+    login_user: "{{ vhost_db_mysql_admin_user }}"
+    login_password: "{{ vhost_db_mysql_admin_pass }}"
+  when:
+    - item[1].changed
+    - item[1].state == 'absent'
+  with_together:
+    - "{{ vhost }}"
+    - "{{ vhost_user.results }}"
+  loop_control:
+    label: "{{ item[0].db.name }} dump"
+  tags: [ db ]
+
 - name: manage mysql database
   mysql_db:
     name: "{{ item.db.name }}"
@@ -10,6 +29,7 @@
     login_user: "{{ vhost_db_mysql_admin_user }}"
     login_password: "{{ vhost_db_mysql_admin_pass }}"
   when:
+    - item.db is defined
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
   tags: [ db ]
@@ -26,6 +46,7 @@
     login_user: "{{ vhost_db_mysql_admin_user }}"
     login_password: "{{ vhost_db_mysql_admin_pass }}"
   when:
+    - item.db is defined
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
   tags: [ db ]
