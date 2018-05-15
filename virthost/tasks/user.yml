@@ -84,48 +84,21 @@
     - item.state|d(true)
   with_items: "{{ servers }}"
   loop_control:
-    label: "webroot for user {{ item.user|d(item.name) }}"
+    label: "{{ item.user|d(item.name) }} webroot"
   tags: [ user ]
 
-- name: check if homedir exists
-  stat:
-    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}"
-  register: vhost_reg_home
+- name: temporary index file
+  copy:
+    src: "index.php"
+    dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"
+    owner: "{{ item.user|d(item.name) }}"
+    group: "{{ item.user|d(item.name) }}"
+    mode: 0644
+    force: no
   when:
-    - item.changed
-    - item.state == 'absent'
-  with_items: "{{ vhost_user.results }}"
+    - item.state|d(true)
+  with_items: "{{ servers }}"
   loop_control:
-    label: "stat {{ item.name }} user"
-  tags: [ archive ]
-
-- name: archive homedir
-  archive:
-    path:
-      - "{{ item.stat.path }}"
-    dest: "{{ vhost_preserve }}/{{ item.stat.path|basename }}-{{ vhost_timestamp }}.tar.gz"
-    format: gz
-    exclude_path:
-      - "{{ item.stat.path }}/tmp/*"
-      - "{{ item.stat.path }}/log/*"
-      - "{{ item.stat.path }}/*.tar*"
-      - "{{ item.stat.path }}/*.gz"
-      - "{{ item.stat.path }}/*.zip"
-      - "{{ item.stat.path }}/*.bz2"
-      - "*.log"
-  when: not item.skipped|d()
-  with_items: "{{ vhost_reg_home.results }}"
-  loop_control:
-    label: "{{ item.item.name }} homedir archive"
-  tags: [ archive ]
-
-- name: remove homedir
-  file:
-    path: "{{ item.stat.path }}"
-    state: absent
-  when: not item.skipped|d()
-  with_items: "{{ vhost_reg_home.results }}"
-  loop_control:
-    label: "{{ item.item.name }} homedir archive"
-  tags: [ archive ]
+    label: "{{ item.user|d(item.name) }} temp index"
+  tags: [ user ]
 ...

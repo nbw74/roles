@@ -44,9 +44,9 @@
     label: "{{ item[0].name }}"
   tags: [ wiki ]
 
-- name: print a path of the wiki file
+- name: print a path to the wiki file
   debug:
-    msg: "Wiki content placed in /tmp/vhost_{{ item[0].name }}.txt"
+    msg: "Wiki content /tmp/vhost_{{ item[0].name }}.txt | Репозиторий: %{color:ForestGreen}@git.webmechanic.ru:/var/lib/git/{{ item[0].name }}@%"
   when:
     - item[1].changed
     - item[1].state == 'present'

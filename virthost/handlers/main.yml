@@ -16,4 +16,14 @@
   systemd:
     name: "php-fpm.service"
     state: reloaded
+
+- name: repo git created
+  shell: "cd {{ vhost_git_path }}/{{ item.name }}/hooks && ln -sv post-update.sample post-update && git update-server-info"
+  args:
+    creates: "{{ vhost_git_path }}/{{ item.name }}/hooks/post-update"
+  when:
+    - item.repo|d('none') == 'git'
+    - item.state|d(true)
+  with_items: "{{ servers }}"
+  delegate_to: "{{ vhost_git_server }}"
 ...

@@ -4,5 +4,7 @@ vhost_basedir: "/var/www"
 vhost_frontuser: "nginx"
 vhost_backuser: "apache"
 vhost_logbuffer: "128k"
+vhost_git_path: "/var/lib/git"
+vhost_git_group: "developers"
 
 ...
