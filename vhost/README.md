@@ -13,7 +13,7 @@ vhost_git_server: "string"            # mandatory if use git
 vhost_git_path: "filesystem_path"     # default is "/var/lib/git"
 vhost_git_group: "string"             # default is "developers"
 
-servers:
+vhost:
   - name: example.org # mandatory
     state: yes|no # optional; default is 'yes'
     user: example # optional; default is "name" value

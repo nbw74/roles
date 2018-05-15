@@ -1,0 +1,4 @@
+    access_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-access.log combined{% if vhost_logbuffer == 'none' %};{% else %} buffer={{ vhost_logbuffer }};
+{% endif %}
+    error_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-error.log;
+
