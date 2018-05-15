@@ -6,7 +6,7 @@
     mode: 0644
     backup: yes
   when: item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate nginx
   tags: [ conf ]
 
@@ -16,7 +16,7 @@
     state: absent
     backup: yes
   when: not item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate nginx
   tags: [ conf ]
 
@@ -27,7 +27,7 @@
     mode: 0644
     backup: yes
   when: item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate php-fpm
   tags: [ conf ]
 
@@ -37,7 +37,7 @@
     state: absent
     backup: yes
   when: not item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate php-fpm
   tags: [ conf ]
 ...

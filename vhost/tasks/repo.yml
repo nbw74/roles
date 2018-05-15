@@ -6,7 +6,7 @@
   when:
     - item.repo|d('none') == 'git'
     - item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   delegate_to: "{{ vhost_git_server }}"
   notify: repo git created
   tags: [ repo ]

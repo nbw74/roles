@@ -9,7 +9,7 @@
   when:
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate nginx
   tags: [ crypto ]
 
@@ -23,7 +23,7 @@
   when:
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate nginx
   tags: [ crypto ]
 
@@ -38,7 +38,7 @@
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
     - item.mobile|d()
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate nginx
   tags: [ crypto ]
 
@@ -53,7 +53,7 @@
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
     - item.mobile|d()
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   notify: validate nginx
   tags: [ crypto ]
 

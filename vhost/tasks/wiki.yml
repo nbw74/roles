@@ -8,7 +8,7 @@
     - item[1].changed
     - item[1].state == 'present'
   with_together:
-    - "{{ servers }}"
+    - "{{ vhost }}"
     - "{{ vhost_user.results }}"
   loop_control:
     label: "{{ item[0].name }}"
@@ -22,7 +22,7 @@
     - item[1].changed
     - item[1].state == 'present'
   with_together:
-    - "{{ servers }}"
+    - "{{ vhost }}"
     - "{{ vhost_user.results }}"
   delegate_to: localhost
   become: no
@@ -38,7 +38,7 @@
     - item[1].changed
     - item[1].state == 'present'
   with_together:
-    - "{{ servers }}"
+    - "{{ vhost }}"
     - "{{ vhost_user.results }}"
   loop_control:
     label: "{{ item[0].name }}"
@@ -51,7 +51,7 @@
     - item[1].changed
     - item[1].state == 'present'
   with_together:
-    - "{{ servers }}"
+    - "{{ vhost }}"
     - "{{ vhost_user.results }}"
   loop_control:
     label: "{{ item[0].name }}"

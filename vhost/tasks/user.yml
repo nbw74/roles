@@ -10,7 +10,7 @@
     remove: no
     force: yes
   register: vhost_user
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   tags: [ user ]
 
 - name: copy pubkey to authorized_keys
@@ -68,7 +68,7 @@
     - item[1].state|d(true)
   with_nested:
     - [ 'tmp', 'log' ]
-    - "{{ servers }}"
+    - "{{ vhost }}"
   loop_control:
     label: "{{ item[0] }} directory for {{ item[1].user|d(item[1].name) }} user"
   tags: [ user ]
@@ -82,7 +82,7 @@
     mode: 0755
   when:
     - item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }} webroot"
   tags: [ user ]
@@ -97,7 +97,7 @@
     force: no
   when:
     - item.state|d(true)
-  with_items: "{{ servers }}"
+  with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }} temp index"
   tags: [ user ]
