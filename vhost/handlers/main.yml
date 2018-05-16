@@ -18,10 +18,9 @@
     state: reloaded
 
 - name: config reload icinga2
-  shell: "true"
-#   systemd:
-#     name: "icinga2.service"
-#     state: reloaded
+  systemd:
+    name: "icinga2.service"
+    state: reloaded
   delegate_to: "{{ common_icinga2_master }}"
 
 - name: repo git created

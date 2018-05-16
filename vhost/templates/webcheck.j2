@@ -4,10 +4,10 @@
 {% else %}
     vars.www_tls["{{ item.name }}"] = {
 {% endif %}
-        http_string = "{{ (item.webcheck|default(dict(http_string='Site content for domain')))['http_string']|d('Site content for domain') }}"
+        http_string = "{{ (item.webcheck|default(dict(content='Site content for domain')))['content']|d('Site content for domain') }}"
 {% if item.webcheck is defined %}
-{% if item.webcheck.notification_entity is defined %}
-        notification_entity = "{{ item.webcheck.notification_entity }}"
+{% if item.webcheck.notify is defined %}
+        notification_entity = "{{ item.webcheck.notify }}"
 {% endif %}
 {% endif %}
     }

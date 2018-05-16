@@ -5,7 +5,7 @@
     dest: "/etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone) }}/http/{{ item.name }}.conf"
   when:
     - item.state|d(true)
-    - ( item.webcheck is not defined and vhost_circuit_prod|d() ) or (item.webcheck|default(dict(enable=false)))['enable']|d()
+    - ( item.webcheck is not defined and vhost_circuit_prod|d() ) or (item.webcheck|default(dict(enable=false)))['enable']|d(true)
   with_items: "{{ vhost }}"
   delegate_to: "{{ common_icinga2_master }}"
   notify: config reload icinga2

@@ -68,9 +68,9 @@ vhost:
       value: string # default is ansible_fqdn.
     webcheck: # optional
       enable: yes|no # default is circuit-dependent
+      content: "string" # mandatory if use webcheck
+      notify: "string" # optional
       zone: "string" # default is common_icinga2_satellite_zone value
-      http_string: "string" # mandatory if use webcheck
-      notification_entity: "string" # optional
 
 ```
 ## Tags
