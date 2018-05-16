@@ -17,6 +17,13 @@
     name: "php-fpm.service"
     state: reloaded
 
+- name: config reload icinga2
+  shell: "true"
+#   systemd:
+#     name: "icinga2.service"
+#     state: reloaded
+  delegate_to: "{{ common_icinga2_master }}"
+
 - name: repo git created
   shell: "cd {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/hooks && ln -sv post-update.sample post-update && git update-server-info"
   args:

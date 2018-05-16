@@ -66,6 +66,11 @@ vhost:
       record: string # default is vhost.name minus vhost_default_ddns_zone
       type: A|CNAME|... # default is CNAME
       value: string # default is ansible_fqdn.
+    webcheck: # optional
+      enable: yes|no # default is circuit-dependent
+      zone: "string" # default is common_icinga2_satellite_zone value
+      http_string: "string" # mandatory if use webcheck
+      notification_entity: "string" # optional
 
 ```
 ## Tags

@@ -1,0 +1,14 @@
+/* THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST */
+{% if item.crypto|d('none') == 'none' %}
+    vars.www["{{ item.name }}"] = {
+{% else %}
+    vars.www_tls["{{ item.name }}"] = {
+{% endif %}
+        http_string = "{{ (item.webcheck|default(dict(http_string='Site content for domain')))['http_string']|d('Site content for domain') }}"
+{% if item.webcheck is defined %}
+{% if item.webcheck.notification_entity is defined %}
+        notification_entity = "{{ item.webcheck.notification_entity }}"
+{% endif %}
+{% endif %}
+    }
+/* EOF */

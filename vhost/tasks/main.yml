@@ -17,5 +17,7 @@
 
 - import_tasks: repo.yml
 
+- import_tasks: webcheck.yml
+
 - import_tasks: wiki2.yml
 ...
