@@ -10,6 +10,8 @@
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate nginx
   tags: [ crypto ]
 
@@ -24,6 +26,8 @@
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate nginx
   tags: [ crypto ]
 
@@ -39,6 +43,8 @@
     - item.state|d(true)
     - item.mobile|d()
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate nginx
   tags: [ crypto ]
 
@@ -54,7 +60,8 @@
     - item.state|d(true)
     - item.mobile|d()
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate nginx
   tags: [ crypto ]
-
 ...

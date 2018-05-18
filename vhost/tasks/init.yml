@@ -61,6 +61,8 @@
     - item.db is defined
     - item.db.type == 'postgresql'
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   changed_when: no
   tags: [ db ]
 
@@ -68,10 +70,10 @@
   command: "date '+%FT%H%M'"
   register: vhost_get_time
   changed_when: no
-  tags: [ archive ]
+  tags: [ archive, db ]
 
 - name: set timestamp
   set_fact:
     vhost_timestamp: "{{ vhost_get_time.stdout }}"
-  tags: [ archive ]
+  tags: [ archive, db ]
 ...

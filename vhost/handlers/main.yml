@@ -23,13 +23,50 @@
     state: reloaded
   delegate_to: "{{ common_icinga2_master }}"
 
+- name: config reload postgresql
+  systemd:
+    name: "postgresql-{{ item[1].stdout | regex_replace('.*(\\d+\\.\\d+).*', '\\1') }}.service"
+    state: reloaded
+  delegate_to: "{{ item[0].db.host }}"
+  when:
+    - item[0].db is defined
+    - item[0].db.type == 'postgresql'
+    - item[2].changed
+  with_together:
+    - "{{ vhost }}"
+    - "{{ vhost_pgsql_datadir.results }}"
+    - "{{ vhost_pgsql_hba_line.results }}"
+  loop_control:
+    label: "{{ item[0].name }}"
+  run_once: true
+
+- name: config reload pgbouncer
+  systemd:
+    name: "pgbouncer.service"
+    state: reloaded
+  delegate_to: "{{ item[0].db.pgbouncer.host }}"
+  when:
+    - item[0].db is defined
+    - item[0].db.type == 'postgresql'
+    - item[0].db.pgbouncer is defined
+    - item[1].changed or item[2].changed
+  with_together:
+    - "{{ vhost }}"
+    - "{{ vhost_pgsql_ini_line.results }}"
+    - "{{ vhost_pgsql_txt_line.results }}"
+  loop_control:
+    label: "{{ item[0].name }}"
+  run_once: true
+
 - name: repo git created
   shell: "cd {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/hooks && ln -sv post-update.sample post-update && git update-server-info"
   args:
     creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/hooks/post-update"
+  delegate_to: "{{ vhost_git_server }}"
   when:
     - item.repo.type|d('none') == 'git'
     - item.state|d(true)
   with_items: "{{ vhost }}"
-  delegate_to: "{{ vhost_git_server }}"
+  loop_control:
+    label: "{{ item.name }}"
 ...

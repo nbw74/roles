@@ -57,9 +57,14 @@ vhost:
       port: 1234 # optional; default is 3306 if use mysql and 5432 if use postgresql
       name: exampleorg # mandatory
       pass: password # mandatory
-      bouncer: pgbouncer.example.org # optional if use postgresql
       encoding: "utf8" # optional; default is "utf8" for mysql
       collation: "utf8_general_ci" # optional; default is "utf8_general_ci" for mysql
+      pgbouncer: # optional if use postgresql
+        host: pgbouncer.example.org # mandatory if use pgbouncer
+        port: 6432 # optinal
+        db_host: 127.0.0.1 # optional (host= in pgbouncer.ini)
+        pool_size: 40 # optional (pgbouncer.ini)
+        ip: 127.0.0.1/32 # optional (pgbouncer address in pg_hba.conf)
     ddns: # optional
       enable: yes|no # default is 'no'
       zone: string # default is vhost_default_ddns_zone
@@ -75,4 +80,5 @@ vhost:
 
 ```
 ## Tags
-`` `` `` `` `` `` `` `` `` ``
+`archive` `conf` `crypto` `db` `ddns` `repo` `user` `version` `webcheck` `wiki`
+

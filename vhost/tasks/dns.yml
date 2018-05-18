@@ -14,5 +14,7 @@
     - item.ddns is defined
     - item.ddns.enable|d()
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ ddns ]
 ...

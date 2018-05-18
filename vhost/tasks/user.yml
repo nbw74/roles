@@ -11,6 +11,8 @@
     force: yes
   register: vhost_user
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ user, db ]
 
 - name: copy pubkey to authorized_keys
@@ -27,7 +29,7 @@
     - item.state == 'present'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "copy pubkey for user {{ item.name }}"
+    label: "{{ item.name }}"
   tags: [ user, db ]
 
 - name: set homedir mode
@@ -39,7 +41,7 @@
     - item.state == 'present'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name }} homedir mode"
+    label: "{{ item.name }}"
   tags: [ user, db ]
 
 - name: add web-server users to the new user group
@@ -54,7 +56,7 @@
     - [ '{{ vhost_frontuser }}', '{{ vhost_backuser }}' ]
     - "{{ vhost_user.results }}"
   loop_control:
-    label: "add {{ item[0] }} in {{ item[1].name }} group"
+    label: "{{ item[0] }}, {{ item[1].name }}"
   tags: [ user, db ]
 
 - name: remove unused groups
@@ -66,7 +68,7 @@
     - item.state == 'absent'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "remove {{ item.name }} group"
+    label: "{{ item.name }}"
   tags: [ user, db ]
 
 - name: manage common directories
@@ -82,7 +84,7 @@
     - [ 'tmp', 'log' ]
     - "{{ vhost }}"
   loop_control:
-    label: "{{ item[0] }} directory for {{ item[1].user|d(item[1].name) }} user"
+    label: "{{ item[0] }}, {{ item[1].user|d(item[1].name) }}"
   tags: [ user, db ]
 
 - name: manage webroot directory
@@ -96,7 +98,7 @@
     - item.state|d(true)
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.user|d(item.name) }} webroot"
+    label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
 
 - name: temporary index file
@@ -111,6 +113,6 @@
     - item.state|d(true)
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.user|d(item.name) }} temp index"
+    label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
 ...

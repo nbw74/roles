@@ -7,6 +7,8 @@
     backup: yes
   when: item.state|d(true)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate nginx
   tags: [ conf ]
 
@@ -17,6 +19,8 @@
     backup: yes
   when: not item.state|d(true)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate nginx
   tags: [ conf ]
 
@@ -28,6 +32,8 @@
     backup: yes
   when: item.state|d(true)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate php-fpm
   tags: [ conf ]
 
@@ -38,6 +44,8 @@
     backup: yes
   when: not item.state|d(true)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: validate php-fpm
   tags: [ conf ]
 ...

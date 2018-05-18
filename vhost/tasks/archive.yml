@@ -8,7 +8,7 @@
     - item.state == 'absent'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "stat {{ item.name }} user"
+    label: "{{ item.name }}"
   tags: [ archive ]
 
 - name: archive homedir
@@ -28,7 +28,7 @@
   when: not item.skipped|d()
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
-    label: "{{ item.item.name }} homedir archive"
+    label: "{{ item.item.name }}"
   tags: [ archive ]
 
 - name: remove homedir
@@ -38,6 +38,6 @@
   when: not item.skipped|d()
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
-    label: "{{ item.item.name }} homedir archive"
+    label: "{{ item.item.name }}"
   tags: [ archive ]
 ...

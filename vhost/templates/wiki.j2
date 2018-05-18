@@ -28,14 +28,18 @@ h3. SSH Access
 h3. Database
 
 *DBMS:* @{{ item[0].db.type }}@
-*DB host:* @{{ item[0].db.bouncer|d(item[0].db.host) }}@
+{% if item[0].db.pgbouncer is defined %}
+*DB host:* @{{ item[0].db.pgbouncer.host }}@
+{% else %}
+*DB host:* @{{ item[0].db.host }}@
+{% endif %}
 {% if item[0].db.type == 'mysql' %}
 *DB port:* @{{ item[0].db.port|d('3306') }}@
 {% elif item[0].db.type == 'postgresql' %}
-{% if item[0].db.bouncer is defined %}
-*DB port:* @6432@
+{% if item[0].db.pgbouncer is defined %}
+*DB port:* @{{ item[0].db.pgbouncer.port|d('6432') }}@
 {% else %}
-*DB port:* @5432@
+*DB port:* @{{ item[0].db.port|d('5432') }}@
 {% endif %}
 {% endif %}
 *DB name:* @{{ item[0].db.name }}@

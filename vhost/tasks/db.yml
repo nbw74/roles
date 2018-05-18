@@ -9,13 +9,15 @@
     login_user: "{{ vhost_db_mysql_admin_user }}"
     login_password: "{{ vhost_db_mysql_admin_pass }}"
   when:
+    - item[0].db is defined
+    - item[0].db.type == 'mysql'
     - item[1].changed
     - item[1].state == 'absent'
   with_together:
     - "{{ vhost }}"
     - "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item[0].db.name }}"
+    label: "{{ item[0].name }}"
   tags: [ db ]
 
 - name: manage mysql database
@@ -32,6 +34,8 @@
     - item.db is defined
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ db ]
 
 - name: manage mysql user
@@ -49,6 +53,8 @@
     - item.db is defined
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ db ]
 
 - name: add postgresql user
@@ -67,6 +73,8 @@
     - item.db.type == 'postgresql'
     - item.state|d(yes)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ db ]
 
 - name: manage postgresql database
@@ -84,6 +92,8 @@
     - item.db is defined
     - item.db.type == 'postgresql'
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ db ]
 
 - name: delete postgresql user
@@ -100,15 +110,19 @@
     - item.db.type == 'postgresql'
     - not item.state|d(yes)
   with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags: [ db ]
 
 - name: line in pg_hba
   lineinfile:
     path: "{{ item[1].stdout }}/pg_hba.conf"
-    line: "host\t{{ item[0].db.name }}\t{{ item[0].db.name }}\t{% if item[0].db.bouncer is defined %}{{ item[0].db.bouncer_ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}\t\tmd5"
-    insertbefore: "## MARK ONE ##"
+    regexp: 'host\s+{{ item[0].db.name }}\s+{{ item[0].db.name }}'
+    line: "host\t{{ item[0].db.name }}\t{{ item[0].db.name }}\t{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}\t\tmd5"
+    insertbefore: '#+\s*ANSIBLE MANAGED'
     state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item[0].db.host }}"
+  register: vhost_pgsql_hba_line
   when:
     - item[0].db is defined
     - item[0].db.type == 'postgresql'
@@ -116,9 +130,48 @@
     - "{{ vhost }}"
     - "{{ vhost_pgsql_datadir.results }}"
   loop_control:
-    label: "{{ item[0].db.name }}"
+    label: "{{ item[0].name }}"
   notify: config reload postgresql
   tags: [ db ]
+
+- name: line in pgbouncer.ini
+  lineinfile:
+    path: "/etc/pgbouncer/pgbouncer.ini"
+    regexp: '{{ item.db.name }}\s+=\s+host'
+    line: "{{ item.db.name }} = host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }} dbname={{ item.db.name }} user={{ item.db.name }} pool_size={{ item.db.pgbouncer.pool_size|d('40') }}"
+    insertbefore: ';+\s*ANSIBLE MANAGED'
+    state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
+  delegate_to: "{{ item.db.pgbouncer.host }}"
+  register: vhost_pgsql_ini_line
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+    - item.db.pgbouncer is defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: config reload pgbouncer
+  tags: [ db ]
+
+- name: line in userlist.txt
+  lineinfile:
+    path: "/etc/pgbouncer/userlist.txt"
+    regexp: '^[ "]*{{ item.db.name }}'
+    line: "\"{{ item.db.name }}\"\t\t\"{{ item.db.pass }}\""
+    insertafter: EOF
+    state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
+  delegate_to: "{{ item.db.pgbouncer.host }}"
+  register: vhost_pgsql_txt_line
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+    - item.db.pgbouncer is defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: config reload pgbouncer
+  tags: [ db ]
+
 ...
 # Create admin users
 #
