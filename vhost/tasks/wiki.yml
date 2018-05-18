@@ -42,7 +42,7 @@
     - "{{ vhost_user.results }}"
   delegate_to: localhost
   loop_control:
-    label: "vhost_{{ item[0].name }}_{{ item[1].ssh_key_file|basename }}"
+    label: "{{ item[0].name }}"
   tags: [ wiki ]
 
 - name: print a path to the wiki file

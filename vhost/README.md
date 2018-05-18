@@ -69,6 +69,7 @@ vhost:
     webcheck: # optional
       enable: yes|no # default is circuit-dependent
       content: "string" # mandatory if use webcheck
+      url: "string" # optional
       notify: "string" # optional
       zone: "string" # default is common_icinga2_satellite_zone value
 

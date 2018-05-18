@@ -27,6 +27,9 @@
     - php-nette-tokenizer
     - php-xml
     - php-xmlrpc
+    - python-psycopg2
+    - MySQL-python
+    - python-dns
   tags: [packages]
 
 - name: Install packages (SELinux)

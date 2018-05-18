@@ -23,6 +23,9 @@
     - php-mbstring
     - php-pecl-crypto
     - php-nette-tokenizer
+    - python-psycopg2
+    - MySQL-python
+    - python-dns
   tags: [ packages ]
 
 - name: Install packages (SELinux)
