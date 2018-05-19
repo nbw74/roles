@@ -3,6 +3,8 @@
 
 - import_tasks: user.yml
 
+- import_tasks: project.yml
+
 - import_tasks: wiki.yml
 
 - import_tasks: archive.yml
@@ -11,9 +13,11 @@
 
 - import_tasks: nginx.yml
 
-- import_tasks: dns.yml
+- import_tasks: ddns.yml
 
-- import_tasks: db.yml
+- import_tasks: mysql.yml
+
+- import_tasks: postgresql.yml
 
 - import_tasks: repo.yml
 

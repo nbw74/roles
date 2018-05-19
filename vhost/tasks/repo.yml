@@ -1,8 +1,8 @@
 ---
 - name: create git repo
-  command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.repo.name|d(item.name) }}'"
+  command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}'"
   args:
-    creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name) }}/HEAD"
+    creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/HEAD"
   when:
     - item.repo is defined
     - item.repo.type|d('none') == 'git'

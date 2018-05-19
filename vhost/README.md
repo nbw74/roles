@@ -1,5 +1,5 @@
 # vhost
-Развёртывание вирт. хоста nginx + php-fpm, nginx + apache, создание базы mysql или postgresql, создание репозитория git
+Развёртывание вирт. хоста nginx + php-fpm, nginx + apache, создание базы mysql или postgresql, создание репозитория git и проекта в redmine
 ## Data structure
 ```yaml
 vhost_backend: "php-fpm|apache"       # default is "php-fpm"
@@ -13,44 +13,16 @@ vhost_git_server: "string"            # mandatory if use git
 vhost_git_path: "filesystem_path"     # default is "/var/lib/git"
 vhost_git_group: "string"             # default is "developers"
 vhost_ddns_server: "string"           # mandatory if use ddns
-vhost_default_ddns_zone: "string"     # mandatory if use ddns
+vhost_default_ddns_zone: "string"     # mandatory if use ddns, git, redmine
 vhost_ddns_key_name: "string"         # default is "ddns_key"
 vhost_ddns_key_algorithm: "string"    # default is "hmac-md5"
 vhost_ddns_key_secret: "string"       # mandatory if use ddns
 
 vhost:
   - name: example.org # mandatory
-    state: yes|no # optional; default is 'yes'
-    user: example # optional; default is "name" value
     alias: # optional
       - nose.example.org
-    listen: # optional; default is first public IP (or private, if no public addresses)
-      - ipaddr: 192.0.2.10
-        port: 80 # optional; default is 80
-        portcrypto: 443 # optional; default is 443
-    webroot: "www/public" # optional; default is "www"
-    index: "myindex.php" # optional; default is "index.php"
-    mobile: yes|no # optional; default is 'no'; enable mobile version config with same site root
     crypto: none|redirect|both # optional; default is "none"
-    repo: # default: none
-      type: git|svn
-      name: example.org
-    fpm: # mandatory if use php-fpm
-      port: 9001 # mandatory; next free port
-      pm: static|dynamic|ondemand # optional; default is "ondemand"
-      max_children: 40 # optional
-      start_servers: 5 # optional
-      min_spare_servers: 5 # optional
-      max_spare_servers: 32 # optional
-      process_idle_timeout: 10s # optional
-      max_requests: 0 # optional
-      include: "myfpm.conf" # optional; default is "fpm.conf"; use if custom fpm configuration needed (in /etc/nginx/include.d/)
-    save_handler: files|memcached # optional; default is "files"
-    memcached: # optional if use memcached
-      server1: address # default is "localhost4"
-      port1: 11211
-      server2: address # default is none
-      port2: 11211
     db:
       type: mysql|postgresql # mandatory if use database
       host: db.example.org # mandatory
@@ -71,14 +43,46 @@ vhost:
       record: string # default is vhost.name minus vhost_default_ddns_zone
       type: A|CNAME|... # default is CNAME
       value: string # default is ansible_fqdn.
+    fpm: # mandatory if use php-fpm
+      port: 9001 # mandatory; next free port
+      pm: static|dynamic|ondemand # optional; default is "ondemand"
+      max_children: 40 # optional
+      start_servers: 5 # optional
+      min_spare_servers: 5 # optional
+      max_spare_servers: 32 # optional
+      process_idle_timeout: 10s # optional
+      max_requests: 0 # optional
+      include: "myfpm.conf" # optional; default is "fpm.conf"; use if custom fpm configuration needed (in /etc/nginx/include.d/)
+    index: "myindex.php" # optional; default is "index.php"
+    listen: # optional; default is first public IP (or private, if no public addresses)
+      - ipaddr: 192.0.2.10
+        port: 80 # optional; default is 80
+        portcrypto: 443 # optional; default is 443
+    memcached: # optional if use memcached
+      server1: address # default is "localhost4"
+      port1: 11211
+      server2: address # default is none
+      port2: 11211
+    mobile: yes|no # optional; default is 'no'; enable mobile version config with same site root
+    redmine: # optional
+      title: "string" # optional; default is "vhost.name" without vhost_default_ddns_zone$
+      description: "string" # mandatory if use redmine
+      id: "[-a-z]+" # optional; default is filtered "vhost.name" s/\./-/g
+    repo: # optional
+      type: git|svn
+      name: example.org
+    save_handler: files|memcached # optional; default is "files"
+    state: yes|no # optional; default is 'yes'
+    user: example # optional; default is "name" value
     webcheck: # optional
       enable: yes|no # default is circuit-dependent
       content: "string" # mandatory if use webcheck
       url: "string" # optional
       notify: "string" # optional
       zone: "string" # default is common_icinga2_satellite_zone value
+    webroot: "www/public" # optional; default is "www"
 
 ```
 ## Tags
-`archive` `conf` `crypto` `db` `ddns` `repo` `user` `version` `webcheck` `wiki`
+`archive` `conf` `crypto` `db` `ddns` `redmine` `repo` `user` `version` `webcheck` `wiki`
 

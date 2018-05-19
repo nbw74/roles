@@ -101,7 +101,7 @@
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
 
-- name: temporary index file
+- name: initial index file
   copy:
     src: "index.php"
     dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"

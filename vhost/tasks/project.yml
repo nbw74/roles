@@ -1,0 +1,27 @@
+---
+- name: create redmine project
+  become: yes
+  become_user: apache
+  shell: > 
+      script/rails runner -e production
+      "Project.create :name => '{{ item[0].redmine.title|d(item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}',
+      :description => '{{ item[0].redmine.description }}{% if item[0].repo is defined %}Репозиторий:
+      %{color:ForestGreen}@{{ vhost_git_server }}:{{ vhost_git_path }}/{{ (item[0].repo|default(dict(name=item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))))['name']|d(item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}@%{% endif %}',
+      :identifier => '{{ item[0].redmine.id|d(item[0].name|regex_replace('\.', '-')) }}',
+      :is_public=>'0', :homepage=>'http://{{ item[0].name }}'" &&
+      touch "creates/{{ item[0].name }}"
+  args:
+    chdir: "/var/www/redmine"
+    creates: "creates/{{ item[0].name }}"
+  delegate_to: "{{ vhost_redmine_server }}"
+  when:
+    - item[0].redmine is defined
+    - item[1].changed
+    - item[1].state == 'present'
+  with_together:
+    - "{{ vhost }}"
+    - "{{ vhost_user.results }}"
+  loop_control:
+    label: "{{ item[0].name }}"
+  tags: [ user, redmine ]
+...
