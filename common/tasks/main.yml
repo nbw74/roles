@@ -46,6 +46,5 @@
 
 - import_tasks: icinga2.yml
   when:
-    - common_icinga2_enable
     - not alien
 ...

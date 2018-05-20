@@ -4,7 +4,7 @@
     src: "ipset.j2"
     dest: "/etc/sysconfig/ipset"
     force: no
-  when: ansible_distribution == "Fedora" or ansible_distribution == "CentOS"
+  when: '"bitrix-env" not in roles'
   tags: [ services, ipset ]
 
 - name: "Enable and start ipset service"
@@ -14,7 +14,6 @@
     state: started
   with_items:
     - ipset
-  when: 
-    - '"bitrix-env" not in roles'
+  when: '"bitrix-env" not in roles'
   tags: [ services, ipset ]
 ...

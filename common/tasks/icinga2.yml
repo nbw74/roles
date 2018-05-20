@@ -2,14 +2,15 @@
 - name: set icinga2 master zone
   set_fact:
     common_icinga2_zone: "{{ common_icinga2_master_zone }}"
-  when: 'common_ipv4_private | ipaddr(item)'
+    common_circuit_prod: true
+  when: common_ipv4_private|ipaddr(item)
   with_items: "{{ common_icinga2_master_zone_net_list }}"
   tags: [ icinga2 ]
 
 - name: set icinga2 satellite zone
   set_fact:
     common_icinga2_zone: "{{ common_icinga2_satellite_zone }}"
-  when: 'common_ipv4_private | ipaddr(item)'
+  when: common_ipv4_private|ipaddr(item)
   with_items: "{{ common_icinga2_satellite_zone_net_list }}"
   tags: [ icinga2 ]
 
@@ -18,6 +19,20 @@
     src: "icinga2.j2"
     dest: "/etc/icinga2/zones.d/{{ common_icinga2_zone }}/hosts/{{ ansible_fqdn }}.conf"
   delegate_to: "{{ common_icinga2_master }}"
+  when:
+    - common_circuit_prod|d() or common_icinga2_enable|d()
+    - ansible_user != 'root'
+  notify: config reload icinga2
+  tags: [ icinga2 ]
+
+- name: delete host config from icinga2 master
+  file:
+    path: "/etc/icinga2/zones.d/{{ common_icinga2_zone }}/hosts/{{ ansible_fqdn }}.conf"
+    state: absent
+  delegate_to: "{{ common_icinga2_master }}"
+  when:
+    - not common_icinga2_enable|d()
+    - ansible_user != 'root'
   notify: config reload icinga2
   tags: [ icinga2 ]
 ...

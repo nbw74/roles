@@ -12,7 +12,9 @@
   with_items:
     - iptables
     - ip6tables
-  when: common_check_iptables.stdout.find('SSH-DIRECT') == -1
+  when:
+    - common_check_iptables.stdout.find('SSH-DIRECT') == -1
+    - '"bitrix-env" not in roles'
   notify: config restart iptables
   tags: [iptables]
 ...
