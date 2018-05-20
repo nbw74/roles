@@ -4,6 +4,7 @@
     name: common
   vars:
     pkgupdate: false
+  when: bx_run_script.changed
 
 - name: configure firewalld
   firewalld:

@@ -3,7 +3,7 @@
 
 - import_tasks: user.yml
 
-- import_tasks: project.yml
+- import_tasks: redmine.yml
 
 - import_tasks: wiki.yml
 

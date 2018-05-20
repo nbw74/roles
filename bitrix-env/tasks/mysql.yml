@@ -1,0 +1,65 @@
+---
+- name: "mysqld disabled (sysVinit)"
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - mariadb
+    - mysqld
+    - mysql
+  when: ansible_distribution_major_version|int < 7
+  ignore_errors: true
+  tags: [ services ]
+
+- name: "mysqld masked (systemd)"
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
+  with_items:
+    - mariadb
+    - mysqld
+    - mysql
+  when: ansible_distribution_major_version|int >= 7
+  ignore_errors: true
+  tags: [ services ]
+
+- name: dump mysql database
+  mysql_db:
+    name: "{{ bxvhost.db['name'] }}"
+    state: dump
+    target: "{{ bx_preserve|d('/var/preserve') }}/{{ bxvhost.db['name'] }}-{{ bx_timestamp }}.sql.bz2"
+    login_host: "{{ bxvhost.db['host'] }}"
+    login_port: "{{ bxvhost.db['port']|d('3306') }}"
+    login_user: "{{ vhost_db_mysql_admin_user }}"
+    login_password: "{{ vhost_db_mysql_admin_pass }}"
+  when: not bxvhost.state|d(true)
+  tags: [ db ]
+
+- name: manage mysql database
+  mysql_db:
+    name: "{{ bxvhost.db['name'] }}"
+    state: "{{ bxvhost['state']|d(true)|ternary('present', 'absent') }}"
+    encoding: "{{ bxvhost.db['encoding']|d('utf8') }}"
+    collation: "{{ bxvhost.db['collation']|d('utf8_general_ci') }}"
+    login_host: "{{ bxvhost.db['host'] }}"
+    login_port: "{{ bxvhost.db['port']|d('3306') }}"
+    login_user: "{{ vhost_db_mysql_admin_user }}"
+    login_password: "{{ vhost_db_mysql_admin_pass }}"
+  tags: [ db ]
+
+- name: manage mysql user
+  mysql_user:
+    name: "{{ bxvhost.db['name'] }}"
+    password: "{{ bxvhost.db['pass'] }}"
+    host: "%"
+    priv: "{{ bxvhost.db['name'] }}.*:ALL"
+    state: "{{ bxvhost['state']|d(true)|ternary('present', 'absent') }}"
+    login_host: "{{ bxvhost.db['host'] }}"
+    login_port: "{{ bxvhost.db['port']|d('3306') }}"
+    login_user: "{{ vhost_db_mysql_admin_user }}"
+    login_password: "{{ vhost_db_mysql_admin_pass }}"
+  tags: [ db ]
+...

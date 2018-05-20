@@ -1,0 +1,18 @@
+---
+- name: create redmine project
+  become: yes
+  become_user: apache
+  shell: > 
+      script/rails runner -e production
+      "Project.create :name => '{{ bxvhost.redmine['title'] }}',
+      :description => '{{ bxvhost.redmine['description'] }}',
+      :identifier => '{{ bxvhost.redmine['id']|d(bxvhost.redmine['title']|regex_replace('\.', '-')) }}',
+      :is_public=>'0', :homepage=>'http://{{ bxvhost.redmine['title'] }}',
+      :enabled_module_names=>['wiki']" &&
+      touch "creates/{{ bxvhost.redmine['title'] }}"
+  args:
+    chdir: "/var/www/redmine"
+    creates: "creates/{{ bxvhost.redmine['title'] }}"
+  delegate_to: "{{ vhost_redmine_server }}"
+  tags: [ redmine ]
+...

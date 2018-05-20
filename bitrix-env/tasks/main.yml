@@ -23,6 +23,7 @@
 - name: "Run {{ bitrix_sh }}"
   shell: "/var/local/{{ bitrix_sh }}"
   when: getent_bitrix.stdout.find('bitrix') == -1
+  register: bx_run_script
   notify: set bitrix password
   tags: [ bitrix-env ]
 
@@ -70,7 +71,9 @@
 
 - import_tasks: mail.yml
 
-- import_tasks: mysqld.yml
+- import_tasks: init.yml
+
+- import_tasks: mysql.yml
   when: not alien
 
 - name: "Set bash prompt attributes [dev]"
@@ -103,4 +106,14 @@
     line: "127.0.1.1\t{{ ansible_fqdn }}"
     state: present
   tags: [ hosts ]
+
+- import_tasks: user.yml
+
+- import_tasks: wiki.yml
+
+- import_tasks: redmine.yml
+
+# - import_tasks: webcheck.yml
+
+- import_tasks: wiki2.yml
 ...

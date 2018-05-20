@@ -1,0 +1,41 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+# vim: ft=textile:
+# =================================== CUT ===================================
+
+h3. Web
+
+{% if bx_circuit_prod|d() %}
+*URI:* http://{{ bxvhost.redmine['title'] }}
+{% if bxvhost.mobile|d() %}
+*URI (mob):* http://m.{{ bxvhost.redmine['title'] }}
+*URI (internal):* http://{{ ansible_fqdn }}
+{% endif %}
+{% else %}
+*URI:* http://{{ ansible_fqdn }}
+{% endif %}
+*Software versions:* @{{ bx_nginx_version }}, {{ bx_php_version }}, {{ bx_apache_version }}, {{ bx_bxenv_version }}@
+
+h3. SSH Access
+
+*Host:* @{{ ansible_fqdn }}@
+*User:* @bitrix@
+{%- raw %}
+*Private Key:* {{collapse
+<pre>
+{% endraw %}
+{{ lookup('file', '/tmp/bx_' + ansible_fqdn + '_' + bx_user.ssh_key_file|basename) }}
+{%- raw %}
+</pre>
+}}
+{% endraw %}
+
+h3. Database
+
+*DBMS:* @mysql@
+*DB host:* @{{ bxvhost.db['host'] }}@
+*DB port:* @{{ bxvhost.db['port']|d('3306') }}@
+*DB name:* @{{ bxvhost.db['name'] }}@
+*DB user:* @{{ bxvhost.db['name'] }}:{{ bxvhost.db['pass'] }}@
+
+# =================================== CUT ===================================
+
