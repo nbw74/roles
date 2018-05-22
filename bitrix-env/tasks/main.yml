@@ -1,4 +1,9 @@
 ---
+- name: Check if role assigned to host
+  fail:
+    msg: "Role 'bitrix-env' is not assigned to this host"
+    when: "'bitrix-env' not in roles"
+
 - import_tasks: selinux.yml
 
 - import_tasks: firewalld.yml
@@ -112,8 +117,6 @@
 - import_tasks: wiki.yml
 
 - import_tasks: redmine.yml
-
-# - import_tasks: webcheck.yml
 
 - import_tasks: wiki2.yml
 ...

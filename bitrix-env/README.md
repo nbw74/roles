@@ -23,7 +23,7 @@ bxvhost:
     port: "int" # optional; default is '3306'
     name: "string" # mandatory
     pass: "string" # mandatory
-  mobile: bool # optional
+  mobile: bool # optional; used for wiki page only
   redmine:
     title: "string" # mandatory
     description: "string" # mandatory
