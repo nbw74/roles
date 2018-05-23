@@ -1,15 +1,16 @@
+
     location ~* \.(jpg|jpeg|gif|png|css|eot|woff|svg|ttf|js|zip|tgz|gz|rar|bz2|doc|xls|exe|pdf|ppt|tar|wav|bmp|rtf|swf|ico|flv|txt|docx|xlsx)$ {
-        root                {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }};
-        index               {{ item.index|d('index.php') }};
-        expires             30d;
+        root		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }};
+        index		{{ item.index|d('index.php') }};
+        expires		30d;
     }
 
     location ~ /\.ht {
-        deny                all;
+        deny		all;
     }
 
     location / {
-        proxy_pass          http://127.0.0.1:{{ (item.apache|default(dict(port='8888')))['port']|d('8888') }};
+        proxy_pass			http://127.0.0.1:{{ (item.apache|default(dict(port='8888')))['port']|d('8888') }};
 {% include "nginx/proxy.j2" %}
     }
 

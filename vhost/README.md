@@ -1,15 +1,19 @@
 <!-- vim: set ft=ansible: -->
 # vhost
 Deploy website virtual host configuration:
-+ Nginx/php-fpm
-+ Nginx/Apache
-+ Nginx reverse-proxy
-+ MySQL database
-+ PostgreSQL database
-+ DDNS record
-+ Git repository
-+ Redmine project
-## Data structure
++ create website configuration files:
+  + Nginx vhost (frontend)
+  + Apache vhost (PHP backend)
+  + PHP-FPM pool (PHP backend)
+  + reverse-proxy Nginx vhost
++ create database for website:
+  + MySQL
+  + PostgreSQL
+    + pgbouncer configuraton
++ add DDNS record
++ create Git repository
++ create Redmine project
+## Common host variables
 ```yaml
 vhost_backend: "php-fpm|apache|reverse-proxy"   # default is "php-fpm"
 vhost_basedir: "filesystem_path"                # default is "/var/www"
@@ -26,7 +30,9 @@ vhost_default_ddns_zone: "string"               # mandatory if use ddns, git, re
 vhost_ddns_key_name: "string"                   # default is "ddns_key"
 vhost_ddns_key_algorithm: "string"              # default is "hmac-md5"
 vhost_ddns_key_secret: "string"                 # mandatory if use ddns
-
+```
+## Virtual host data structure
+```yaml
 vhost:
   - name: example.org # mandatory
     alias: # optional
@@ -103,6 +109,13 @@ Nginx website configuration for use with php-fpm PHP backend. Currently supporte
 + generic (default)
 + opencart
 + `filename.conf` (your custom configuration file placed in `/etc/nginx/include.d/`)
+## Required OS
+CentOS 7
+## Required packages
++ bzip2
++ python-dns
++ python-psycopg2
++ MySQL-python
 ## Tags
 `archive` `conf` `crypto` `db` `ddns` `redmine` `repo` `user` `version` `webcheck` `wiki`
 

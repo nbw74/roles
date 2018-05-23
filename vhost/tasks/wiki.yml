@@ -47,8 +47,7 @@
 
 - name: print a path to the wiki file
   debug:
-    msg: >
-      Wiki content /tmp/vhost_{{ item[0].name }}.txt
+    msg: "Wiki content /tmp/vhost_{{ item[0].name }}.txt"
   when:
     - item[1].changed
     - item[1].state == 'present'
