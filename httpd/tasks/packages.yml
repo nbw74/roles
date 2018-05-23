@@ -37,5 +37,6 @@
   with_items:
     - libsemanage-python        # this packages required by selinux.xml
     - policycoreutils-python    #
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [packages,selinux]
 ...

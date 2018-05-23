@@ -10,7 +10,7 @@
     - httpd_can_network_connect_db
     - httpd_can_sendmail
     - httpd_setrlimit
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux]
 
 - name: "Add SELinux ports"
@@ -22,14 +22,14 @@
   with_items:
     - { port: '8888', type: 'http_port_t' }
     - { port: '6432', type: 'postgresql_port_t' }
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux,selinux_ports]
 
 - name: "Add fcontext httpd_log_t"
   command: "semanage fcontext -a -t httpd_log_t {{ item }}"
   with_items:
     - '/var/www/[-a-zA-Z0-9\.]+/log(/.*)?'
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux]
 
 - name: "Add fcontext httpd_sys_rw_content_t"
@@ -50,7 +50,7 @@
     - '/var/www/[-a-zA-Z0-9\.]+/www/_synchro/templates_c(/.*)?'
     - '/var/www/[-a-zA-Z0-9\.]+/www/bootstrap/cache(/.*)?'
     - '/var/www/[-a-zA-Z0-9\.]+/www/public/photos(/.*)?'
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux]
 
 - name: "Add fcontext httpd_cache_t"
@@ -62,18 +62,18 @@
     - '/var/www/[-a-zA-Z0-9\.]+/www/engine/cache(/.*)?'
     - '/var/www/[-a-zA-Z0-9\.]+/tmp(/.*)?'
     - '/var/cache/nginx(/.*)?'
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux]
 
 - name: "Add fcontext ssh_home_t"
   command: "semanage fcontext -a -t ssh_home_t {{ item }}"
   with_items:
     - '/var/www/[-a-zA-Z0-9\.]+/\.ssh(/.*)?'
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux]
 
 - name: "restorecon /var/www"
   command: restorecon -R /var/www
-  when: selinux_state != "disabled"
+  when: selinux_state|d('disabled') != 'disabled'
   tags: [selinux]
 ...

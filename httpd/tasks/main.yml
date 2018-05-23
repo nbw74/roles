@@ -14,24 +14,6 @@
 
 - include: selinux.yml
 
-# CONFIGURATION
-- name: "Copy TEMPLATE_NG_A2(_SSL)"
-  copy:
-    dest: "{{ confd }}"
-    src: "{{ item }}"
-    force: yes
-  with_items:
-    - TEMPLATE_NG_A2
-    - TEMPLATE_NG_A2_SSL
-  tags: [conf,templates]
-
-- name: "Copy TEMPLATE_A2"
-  copy:
-    dest: "{{ a2d }}"
-    src: TEMPLATE_A2
-    force: yes
-  tags: [conf,templates]
-
 - name: "Set Listen directive"
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf

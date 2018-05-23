@@ -7,13 +7,14 @@
     owner: root
     group: root
     mode: 0644
-  tags: [logrotate]
+  tags: [ logrotate ]
 
-- name: Ensures nginx-prerotate dir exists
+- name: Create nginx-prerotate dir
   file:
     path: "/etc/logrotate.d/nginx-prerotate"
     state: directory
-  tags: [logrotate]
+  when: awstats_enable|d()
+  tags: [ awstats, logrotate ]
 
 - name: "logrotate nginx site logs (prerotate)"
   copy:
@@ -23,5 +24,13 @@
     owner: root
     group: root
     mode: 0754
-  tags: [logrotate]
+  when: awstats_enable|d()
+  tags: [ awstats, logrotate ]
+
+- name: remove prerotate ansible config
+  file:
+    path: "/etc/logrotate.d/nginx-prerotate/awstats"
+    state: absent
+  when: not awstats_enable|d()
+  tags: [ awstats, logrotate ]
 ...

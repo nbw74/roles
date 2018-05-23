@@ -4,8 +4,9 @@
     src: "awstats.pl.patch"
     dest: "/var/local/"
     force: no
+  when: awstats_enable|d()
   notify: awstats patch
-  tags: [awstats]
+  tags: [ awstats ]
 
 - meta: flush_handlers
 
@@ -16,18 +17,22 @@
     owner: root
     mode: 0644
     force: no
-  tags: [awstats]
+  when: awstats_enable|d()
+  tags: [ awstats ]
 
 - name: "Check if awstats.conf exists"
   stat: path=/etc/awstats/awstats.conf
   register: awstatsconf
-  tags: [awstats]
+  when: awstats_enable|d()
+  tags: [ awstats ]
 
 - name: "Create symlink awstats.conf"
   shell: cd /etc/awstats && ln -s awstats.localhost.localdomain.conf awstats.conf
   ignore_errors: true
-  when: awstatsconf.stat.exists == False
-  tags: [awstats]
+  when:
+    - awstats_enable|d()
+    - awstatsconf.stat.exists == False
+  tags: [ awstats ]
 
 - name: "Copy awstats.TEMPLATE"
   copy:
@@ -36,5 +41,15 @@
     owner: root
     mode: 0644
     force: yes
-  tags: [awstats,templates]
+  when: awstats_enable|d()
+  tags: [ awstats, templates ]
+
+- name: Disable awstats
+  lineinfile:
+    path: "/etc/cron.hourly/awstats"
+    regexp: '.*(exec.*awstats.*)'
+    line: '# \1'
+    backrefs: yes
+  when: not awstats_enable|d()
+  tags: [ awstats ]
 ...

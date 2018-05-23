@@ -3,13 +3,6 @@
   file: path={{ included }} state=directory mode=0755
   tags: [ nginx ]
 
-- name: "Copy configs to include.d"
-  copy: src={{ item }} dest={{ included }} force=yes
-  with_items:
-    - proxy_common.conf
-    - ssl_common.conf
-  tags: [ nginx ]
-
 - name: "Template config to include.d"
   template:
     src: "allow_status.conf.j2"

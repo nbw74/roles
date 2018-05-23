@@ -6,5 +6,6 @@
     owner: root
     mode: 0644
     force: no
+  when: awstats_enable|d()
   tags: [awstats]
 ...

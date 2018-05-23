@@ -6,6 +6,7 @@
     owner: root
     mode: 0644
     force: yes
+  when: awstats_enable|d()
   tags: [awstats]
 
 - name: "Template 91-awstats.j2"
@@ -15,5 +16,6 @@
     owner: root
     mode: 0644
     force: yes
+  when: awstats_enable|d()
   tags: [awstats]
 ...

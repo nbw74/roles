@@ -20,30 +20,12 @@
     force: yes
   tags: [conf]
 
-- name: "Copy TEMPLATEs"
-  copy:
-    dest: "{{ confd }}"
-    src: "{{ item }}"
-    force: yes
-  with_items:
-    - TEMPLATE_NG_FP
-    - TEMPLATE_NG_FP_SSL
-    - TEMPLATE_UPSTREAM
-  tags: [templates]
-
 - name: "Template 10-cgi-bin.j2"
   template:
     dest: "{{ confd }}/10-cgi-bin.conf"
     src: 10-cgi-bin.j2
     force: yes
   tags: [conf]
-
-- name: "TEMPLATE_FPM"
-  template:
-    src: "TEMPLATE_FPM.j2"
-    dest: "{{ fpmd }}/TEMPLATE_FPM"
-    force: "{{ php_fpm_force_templates|ternary('yes','no') }}"
-  tags: [templates,memcached]
 
 - name: "Copy index.php"
   copy:
