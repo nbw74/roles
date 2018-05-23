@@ -1,14 +1,14 @@
 <!-- vim: set ft=ansible: -->
 # vhost
 Deploy website virtual host configuration:
-** Nginx/php-fpm
-** Nginx/Apache
-** Nginx reverse-proxy
-** MySQL database
-** PostgreSQL database
-** DDNS record
-** Git repository
-** Redmine project
++ Nginx/php-fpm
++ Nginx/Apache
++ Nginx reverse-proxy
++ MySQL database
++ PostgreSQL database
++ DDNS record
++ Git repository
++ Redmine project
 ## Data structure
 ```yaml
 vhost_backend: "php-fpm|apache|reverse-proxy"   # default is "php-fpm"
@@ -100,9 +100,9 @@ vhost:
 ```
 ### fpm['template']
 Nginx website configuration for use with php-fpm PHP backend. Currently supported:
-** generic (default)
-** opencart
-** `filename.conf` (your custom configuration file placed in `/etc/nginx/include.d/`)
++ generic (default)
++ opencart
++ `filename.conf` (your custom configuration file placed in `/etc/nginx/include.d/`)
 ## Tags
 `archive` `conf` `crypto` `db` `ddns` `redmine` `repo` `user` `version` `webcheck` `wiki`
 
