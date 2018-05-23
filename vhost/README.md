@@ -13,6 +13,7 @@ Deploy website virtual host configuration:
 + add DDNS record
 + create Git repository
 + create Redmine project
++ create Icinga2 webcheck configuration
 ## Common host variables
 ```yaml
 vhost_backend: "php-fpm|apache|reverse-proxy"   # default is "php-fpm"
@@ -20,6 +21,8 @@ vhost_basedir: "filesystem_path"                # default is "/var/www"
 vhost_frontuser: "string"                       # default is "nginx"
 vhost_backuser: "string"                        # default is "apache"
 vhost_logbuffer: "intUNIT"                      # default is "128k"
+vhost_db_pgsql_admin_user: "string"             # mandatory if use postgresql
+vhost_db_pgsql_admin_pass: "string"             # mandatory if use postgresql
 vhost_db_mysql_admin_user: "string"             # mandatory if use mysql
 vhost_db_mysql_admin_pass: "string"             # mandatory if use mysql
 vhost_git_server: "string"                      # mandatory if use git
