@@ -1,6 +1,19 @@
+
+{% if vhost_backend == 'reverse-proxy' %}
+    access_log		/var/log/nginx/{{ item.name }}-access.log combined
+{%- if vhost_logbuffer == 'none' %}
+;
+{% else %}
+ buffer={{ vhost_logbuffer }};
+{% endif %}
+    error_log		/var/log/nginx/{{ item.name }}-error.log;
+{% else %}
     access_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-access.log combined
-{%- if vhost_logbuffer == 'none' %};
-{% else %} buffer={{ vhost_logbuffer }};
+{%- if vhost_logbuffer == 'none' %}
+;
+{% else %}
+ buffer={{ vhost_logbuffer }};
 {% endif %}
     error_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-error.log;
+{% endif %}
 

@@ -1,27 +1,36 @@
 ---
 - import_tasks: init.yml
 
-- import_tasks: user.yml
+- include_tasks: user.yml
+  when: vhost_backend != 'reverse-proxy'
 
-- import_tasks: redmine.yml
+- include_tasks: redmine.yml
+  when: vhost_backend != 'reverse-proxy'
 
-- import_tasks: wiki.yml
+- include_tasks: wiki.yml
+  when: vhost_backend != 'reverse-proxy'
 
-- import_tasks: archive.yml
+- include_tasks: archive.yml
+  when: vhost_backend != 'reverse-proxy'
 
 - import_tasks: crypto.yml
 
 - import_tasks: nginx.yml
 
-- import_tasks: ddns.yml
+- include_tasks: ddns.yml
+  when: vhost_backend != 'reverse-proxy'
 
-- import_tasks: mysql.yml
+- include_tasks: mysql.yml
+  when: vhost_backend != 'reverse-proxy'
 
-- import_tasks: postgresql.yml
+- include_tasks: postgresql.yml
+  when: vhost_backend != 'reverse-proxy'
 
-- import_tasks: repo.yml
+- include_tasks: repo.yml
+  when: vhost_backend != 'reverse-proxy'
 
 - import_tasks: webcheck.yml
 
-- import_tasks: wiki2.yml
+- include_tasks: wiki2.yml
+  when: vhost_backend != 'reverse-proxy'
 ...

@@ -31,6 +31,7 @@
 - name: get php version
   shell: "php -v | awk '/PHP .* \\(cli\\)/ { print $2 }'"
   register: vhost_reg_php_ver
+  when: vhost_backend != 'reverse-proxy'
   changed_when: no
   tags: [ version ]
 
@@ -41,10 +42,15 @@
   changed_when: no
   tags: [ version ]
 
-- name: set nginx and php version facts
+- name: set nginx version fact
   set_fact:
     vhost_nginx_version: "{{ vhost_reg_nginx_ver.stdout }}"
+  tags: [ version ]
+
+- name: set php version fact
+  set_fact:
     vhost_php_version: "php/{{ vhost_reg_php_ver.stdout }}"
+  when: vhost_backend != 'reverse-proxy'
   tags: [ version ]
 
 - name: set apache version fact

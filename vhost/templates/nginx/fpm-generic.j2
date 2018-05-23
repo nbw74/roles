@@ -1,0 +1,30 @@
+    set $root_path	'{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}';
+    set $fpmport	{{ item.fpm.port }};
+    root		$root_path;
+    index		{{ item.index|d('index.php') }};
+    charset		utf-8;
+
+    location / {
+	try_files	$uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+	include				/etc/nginx/fastcgi_params;
+	try_files			$uri =404;
+	fastcgi_split_path_info		^(.+\.php)(/.+)$;
+	fastcgi_intercept_errors	on;
+	fastcgi_param			SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	fastcgi_pass			fpm$fpmport;
+{% include "nginx/proxy.j2" %}
+    }
+
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf)$ {
+	try_files	$uri $uri/ /index.php?$args;
+	expires		30d;
+	log_not_found	off;
+    }
+
+    location ~ /\.(ht|svn|git) {
+	deny		all;
+    }
+

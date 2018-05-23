@@ -1,0 +1,47 @@
+    set $root_path	'{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}';
+    set $fpmport	{{ item.fpm.port }};
+    root		$root_path;
+    index		{{ item.index|d('index.php') }};
+    charset		utf-8;
+    rewrite 		/admin$ $scheme://$host$uri/ permanent;
+
+    location / {
+	try_files	$uri @opencart;
+    }
+
+    location @opencart {
+	rewrite		^/(.+)$ /index.php?_route_=$1 last;
+    }
+
+    location /admin {
+	index		index.php;
+    }
+
+    rewrite		^/sitemap.xml$      /index.php?route=feed/google_sitemap last;
+    rewrite		^/googlebase.xml$   /index.php?route=feed/google_base last;
+    rewrite		^/download/(.*)     /index.php?route=error/not_found last;
+
+    sendfile		off;
+
+    location ~ \.php$ {
+	fastcgi_split_path_info		^(.+\.php)(/.+)$;
+	fastcgi_pass			fpm$fpmport;
+	fastcgi_index			index.php;
+	include				/etc/nginx/fastcgi_params;
+	fastcgi_param			SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	fastcgi_intercept_errors	off;
+	fastcgi_buffer_size		16k;
+	fastcgi_buffers			4 16k;
+{% include "nginx/proxy.j2" %}
+    }
+
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf)$ {
+	try_files	$uri @opencart;
+	expires		30d;
+	log_not_found	off;
+    }
+
+    location ~ /\.(ht|svn|git) {
+	deny		all;
+    }
+

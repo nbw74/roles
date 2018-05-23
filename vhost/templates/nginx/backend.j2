@@ -1,0 +1,18 @@
+{% if vhost_backend == 'php-fpm' %}
+{% if item.fpm.template|d('generic') == 'generic' %}
+{% include "nginx/fpm-generic.j2" %}
+{% elif item.fpm.template|d('generic') == 'opencart' %}
+{% include "nginx/fpm-opencart.j2" %}
+{% else %}
+    include /etc/nginx/include.d/fpm-{{ item.fpm.template }}.conf
+{% endif %}
+{% elif vhost_backend == 'apache' %}
+{% include "nginx/apache-generic.j2" %}
+{% elif vhost_backend == 'reverse-proxy' %}
+
+    location / {
+	proxy_pass			{{ item.proxy_pass }};
+{% include "nginx/proxy.j2" %}
+    }
+{% endif %}
+

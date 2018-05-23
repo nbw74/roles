@@ -4,8 +4,8 @@
   notify: reload nginx
 
 - name: reload nginx
-  systemd:
-    name: "nginx.service"
+  service:
+    name: "nginx"
     state: reloaded
 
 - name: validate php-fpm
@@ -15,6 +15,15 @@
 - name: reload php-fpm
   systemd:
     name: "php-fpm.service"
+    state: reloaded
+
+- name: validate apache
+  command: "apachectl configtest"
+  notify: reload apache
+
+- name: reload apache
+  systemd:
+    name: "httpd.service"
     state: reloaded
 
 - name: config reload icinga2

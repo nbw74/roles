@@ -1,6 +1,0 @@
-    set $root_path	'{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}';
-    set $fpmport	{{ item.fpm.port }};
-    root		$root_path;
-    index		{{ item.index|d('index.php') }};
-    include		/etc/nginx/include.d/{{ item.fpm.include|d('fpm.conf') }};
-

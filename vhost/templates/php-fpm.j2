@@ -27,8 +27,15 @@ php_value[session.save_handler] = files
 php_value[session.save_path]    = {{ vhost_basedir }}/$pool/tmp
 {% elif item.save_handler|d('files') == 'memcached' %}
 php_value[session.save_handler] = memcached
-php_value[session.save_path]    = {{ item.memcached.server1|d('localhost4') }}:{{ item.memcached.port1|d('11211') }}{% if item.memcached.server2 is defined %},{{ item.memcached.server2 }}:{{ item.memcached.port2|d('11211') }}
+php_value[session.save_path]    = {{ item.memcached.server1|d('localhost4') }}:{{ item.memcached.port1|d('11211') }}
+{%- if item.memcached.server2 is defined %}
+,{{ item.memcached.server2 }}:{{ item.memcached.port2|d('11211') }}
 {% endif %}
 
 {% endif %}
 php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache
+{% if item.php_value is defined %}
+{% for value in item.php_value %}
+php_value[{{ value['key'] }}] = {{ value['value'] }}
+{% endfor %}
+{% endif %}

@@ -1,4 +1,6 @@
-    ssl_certificate	/etc/pki/tls/certs/m.{{ item.name }}.crt;
-    ssl_certificate_key	/etc/pki/tls/private/m.{{ item.name }}.key;
-    include		/etc/nginx/include.d/ssl_common.conf;
+
+    ssl_certificate		/etc/pki/tls/certs/m.{{ item.name }}.crt;
+    ssl_certificate_key		/etc/pki/tls/private/m.{{ item.name }}.key;
+    ssl_protocols		TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers	on;
 

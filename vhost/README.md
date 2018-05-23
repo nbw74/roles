@@ -1,27 +1,38 @@
+<!-- vim: set ft=ansible: -->
 # vhost
-Развёртывание вирт. хоста nginx + php-fpm, nginx + apache, создание базы mysql или postgresql, создание репозитория git и проекта в redmine
+Deploy website virtual host configuration:
+** Nginx/php-fpm
+** Nginx/Apache
+** Nginx reverse-proxy
+** MySQL database
+** PostgreSQL database
+** DDNS record
+** Git repository
+** Redmine project
 ## Data structure
 ```yaml
-vhost_backend: "php-fpm|apache"       # default is "php-fpm"
-vhost_basedir: "filesystem_path"      # default is "/var/www"
-vhost_frontuser: "string"             # default is "nginx"
-vhost_backuser: "string"              # default is "apache"
-vhost_logbuffer: "intUNIT"            # default is "128k"
-vhost_db_mysql_admin_user: "string"   # mandatory if use mysql
-vhost_db_mysql_admin_pass: "string"   # mandatory if use mysql
-vhost_git_server: "string"            # mandatory if use git
-vhost_git_path: "filesystem_path"     # default is "/var/lib/git"
-vhost_git_group: "string"             # default is "developers"
-vhost_ddns_server: "string"           # mandatory if use ddns
-vhost_default_ddns_zone: "string"     # mandatory if use ddns, git, redmine
-vhost_ddns_key_name: "string"         # default is "ddns_key"
-vhost_ddns_key_algorithm: "string"    # default is "hmac-md5"
-vhost_ddns_key_secret: "string"       # mandatory if use ddns
+vhost_backend: "php-fpm|apache|reverse-proxy"   # default is "php-fpm"
+vhost_basedir: "filesystem_path"                # default is "/var/www"
+vhost_frontuser: "string"                       # default is "nginx"
+vhost_backuser: "string"                        # default is "apache"
+vhost_logbuffer: "intUNIT"                      # default is "128k"
+vhost_db_mysql_admin_user: "string"             # mandatory if use mysql
+vhost_db_mysql_admin_pass: "string"             # mandatory if use mysql
+vhost_git_server: "string"                      # mandatory if use git
+vhost_git_path: "filesystem_path"               # default is "/var/lib/git"
+vhost_git_group: "string"                       # default is "developers"
+vhost_ddns_server: "string"                     # mandatory if use ddns
+vhost_default_ddns_zone: "string"               # mandatory if use ddns, git, redmine
+vhost_ddns_key_name: "string"                   # default is "ddns_key"
+vhost_ddns_key_algorithm: "string"              # default is "hmac-md5"
+vhost_ddns_key_secret: "string"                 # mandatory if use ddns
 
 vhost:
   - name: example.org # mandatory
     alias: # optional
       - nose.example.org
+    apache:
+      port: 8888 # optional (if use apache as vhost_backend)
     crypto: none|redirect|both # optional; default is "none"
     db:
       type: mysql|postgresql # mandatory if use database
@@ -29,8 +40,8 @@ vhost:
       port: 1234 # optional; default is 3306 if use mysql and 5432 if use postgresql
       name: exampleorg # mandatory
       pass: password # mandatory
-      encoding: "utf8" # optional; default is "utf8" for mysql
-      collation: "utf8_general_ci" # optional; default is "utf8_general_ci" for mysql
+      encoding: utf8 # optional; default is "utf8" for mysql
+      collation: utf8_general_ci # optional; default is "utf8_general_ci" for mysql
       pgbouncer: # optional if use postgresql
         host: pgbouncer.example.org # mandatory if use pgbouncer
         port: 6432 # optinal
@@ -52,7 +63,7 @@ vhost:
       max_spare_servers: 32 # optional
       process_idle_timeout: 10s # optional
       max_requests: 0 # optional
-      include: "myfpm.conf" # optional; default is "fpm.conf"; use if custom fpm configuration needed (in /etc/nginx/include.d/)
+      template: "string" # fpm configuration; see below
     index: "myindex.php" # optional; default is "index.php"
     listen: # optional; default is first public IP (or private, if no public addresses)
       - ipaddr: 192.0.2.10
@@ -64,6 +75,10 @@ vhost:
       server2: address # default is none
       port2: 11211
     mobile: yes|no # optional; default is 'no'; enable mobile version config with same site root
+    php_value: # optional
+      - key: 'string'
+        value: 'string'
+    proxy_pass: "URI" # mandatory if use reverse-proxy vhost_backend
     redmine: # optional
       title: "string" # optional; default is "vhost.name" without vhost_default_ddns_zone$
       description: "string" # mandatory if use redmine
@@ -83,6 +98,11 @@ vhost:
     webroot: "www/public" # optional; default is "www"
 
 ```
+### fpm['template']
+Nginx website configuration for use with php-fpm PHP backend. Currently supported:
+** generic (default)
+** opencart
+** `filename.conf` (your custom configuration file placed in `/etc/nginx/include.d/`)
 ## Tags
 `archive` `conf` `crypto` `db` `ddns` `redmine` `repo` `user` `version` `webcheck` `wiki`
 

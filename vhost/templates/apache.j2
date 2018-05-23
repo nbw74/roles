@@ -1,0 +1,55 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+<VirtualHost 127.0.0.1:{{ (item.apache|default(dict(port='8888')))['port']|d('8888') }}>
+    DocumentRoot {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}
+    ServerAdmin admin@{{ item.name }}
+    ServerName {{ item.name }}
+    ServerAlias www.{{ item.name }}
+{% if item.alias is defined %}
+{% for name in item.alias %}
+    ServerAlias {{ name }}
+    ServerAlias www.{{ name }}
+{% endfor %}
+{% endif %}
+    ErrorLog {{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/apache-error.log
+    CustomLog {{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/apache-access.log combined
+
+    <Directory {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}>
+        Options -ExecCGI -Indexes -Includes +FollowSymLinks
+        AllowOverride All
+
+        <Limit GET POST>
+            Order allow,deny
+            Allow from all
+        </Limit>
+
+        <LimitExcept GET POST>
+            Order deny,allow
+            Deny from all
+        </LimitExcept>
+    </Directory>
+
+    AssignUserId {{ vhost_backuser }} {{ item.user|d(item.name) }}
+
+    php_admin_value open_basedir "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/:."
+    php_admin_value upload_tmp_dir "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/tmp"
+{% if item.save_handler|d('files') == 'files' %}
+    php_admin_value session.save_handler "files"
+    php_admin_value session.save_path "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/tmp"
+{% elif item.save_handler|d('files') == 'memcached' %}
+    php_admin_value session.save_handler "memcached"
+    php_admin_value session.save_path "{{ item.memcached.server1|d('localhost4') }}:{{ item.memcached.port1|d('11211') }}
+{%- if item.memcached.server2 is defined %}
+,{{ item.memcached.server2 }}:{{ item.memcached.port2|d('11211') }}"
+{% else %}
+"
+{% endif %}
+{% endif %}
+    php_admin_value mbstring.internal_encoding "UTF-8"
+{% if item.php_value is defined %}
+{% for value in item.php_value %}
+    php_admin_value {{ value['key'] }} "{{ value['value'] }}"
+{% endfor %}
+{% endif %}
+
+</VirtualHost>

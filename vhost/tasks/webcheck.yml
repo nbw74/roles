@@ -27,5 +27,3 @@
   notify: config reload icinga2
   tags: [ webcheck ]
 ...
-
-# (mydict.nonexistent|default(dict(a='undefined')))['a']

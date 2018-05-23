@@ -1,6 +1,6 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-
 {% if vhost_backend == 'php-fpm' %}
+
 upstream fpm{{ item.fpm.port }} {
     server		127.0.0.1:{{ item.fpm.port }};
 }
@@ -20,13 +20,15 @@ server {
 {% if item.crypto|d('none') == 'none' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
+{% if item.crypto|d('none') == 'both' %}
+{% include "nginx/default-d.j2" %}
+{% endif %}
 {% include "nginx/logs.j2" %}
 {% if item.crypto|d('none') == 'redirect' %}
+
     return		301 https://{{ item.name }}$request_uri;
 {% else %}
-{% if vhost_backend == 'php-fpm' %}
-{% include "nginx/general-fpm.j2" %}
-{% endif %}
+{% include "nginx/backend.j2" %}
 {% endif %}
 }
 
@@ -38,9 +40,7 @@ server {
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl.j2" %}
-{% if vhost_backend == 'php-fpm' %}
-{% include "nginx/general-fpm.j2" %}
-{% endif %}
+{% include "nginx/backend.j2" %}
 }
 
 server {
@@ -49,6 +49,7 @@ server {
 			;
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl.j2" %}
+
     return		301 https://{{ item.name }}$request_uri;
 }
 {% endif %}
@@ -62,13 +63,15 @@ server {
 {% if item.crypto|d('none') == 'none' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
+{% if item.crypto|d('none') == 'both' %}
+{% include "nginx/default-d.j2" %}
+{% endif %}
 {% include "nginx/logs.j2" %}
 {% if item.crypto|d('none') == 'redirect' %}
+
     return		301 https://m.{{ item.name }}$request_uri;
 {% else %}
-{% if vhost_backend == 'php-fpm' %}
-{% include "nginx/general-fpm.j2" %}
-{% endif %}
+{% include "nginx/backend.j2" %}
 {% endif %}
 }
 
@@ -80,9 +83,7 @@ server {
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl-mobile.j2" %}
-{% if vhost_backend == 'php-fpm' %}
-{% include "nginx/general-fpm.j2" %}
-{% endif %}
+{% include "nginx/backend.j2" %}
 }
 
 server {
@@ -91,6 +92,7 @@ server {
 			;
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl-mobile.j2" %}
+
     return		301 https://m.{{ item.name }}$request_uri;
 }
 {% endif %}
