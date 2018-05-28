@@ -14,5 +14,6 @@
     chdir: "/var/www/redmine"
     creates: "creates/{{ bxvhost.redmine['title'] }}"
   delegate_to: "{{ vhost_redmine_server }}"
+  when: bxvhost.redmine is defined
   tags: [ redmine ]
 ...

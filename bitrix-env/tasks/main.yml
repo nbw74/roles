@@ -40,18 +40,6 @@
 
 - import_tasks: php.yml
 
-- name: "Copy bxinit script"
-  copy:
-    src: "{{ item }}"
-    dest: /usr/local/bin/
-    force: yes
-    owner: root
-    group: root
-    mode: 0744
-  with_items:
-    - "{{ bxinit_sh }}"
-  tags: [ scripts ]
-
 - name: "Template bxmult script"
   template:
     src: "{{ item }}.j2"
