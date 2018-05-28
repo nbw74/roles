@@ -2,11 +2,12 @@
 - name: "fetch new user's private key for lookup"
   fetch:
     src: "{{ item[1].ssh_key_file }}"
-    dest: "/tmp/vhost_{{ item[0].name }}_{{ item[1].ssh_key_file|basename }}"
+    dest: "/tmp/vhost_{{ item[0].user|d(item[0].name) }}_{{ item[1].ssh_key_file|basename }}"
     flat: yes
   when:
     - item[1].changed
     - item[1].state == 'present'
+    - not item[0].legacy|d()
   with_together:
     - "{{ vhost }}"
     - "{{ vhost_user.results }}"
@@ -21,6 +22,7 @@
   when:
     - item[1].changed
     - item[1].state == 'present'
+    - not item[0].legacy|d()
   with_together:
     - "{{ vhost }}"
     - "{{ vhost_user.results }}"
@@ -37,6 +39,7 @@
   when:
     - item[1].changed
     - item[1].state == 'present'
+    - not item[0].legacy|d()
   with_together:
     - "{{ vhost }}"
     - "{{ vhost_user.results }}"
@@ -51,6 +54,7 @@
   when:
     - item[1].changed
     - item[1].state == 'present'
+    - not item[0].legacy|d()
   with_together:
     - "{{ vhost }}"
     - "{{ vhost_user.results }}"

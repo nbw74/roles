@@ -26,6 +26,7 @@
   postgresql_user:
     name: "{{ item.db.name }}"
     password: "{{ item.db.pass }}"
+    encrypted: yes
     state: present
     role_attr_flags: LOGIN,NOSUPERUSER
     login_host: "{{ item.db.host }}"
@@ -36,7 +37,7 @@
   when:
     - item.db is defined
     - item.db.type == 'postgresql'
-    - item.state|d(yes)
+    - item.state|d(true)
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -72,7 +73,7 @@
   when:
     - item.db is defined
     - item.db.type == 'postgresql'
-    - not item.state|d(yes)
+    - not item.state|d(true)
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"

@@ -5,6 +5,7 @@
   when:
     - item[1].changed
     - item[1].state == 'present'
+    - not item[0].legacy|d()
   with_together:
     - "{{ vhost }}"
     - "{{ vhost_user.results }}"

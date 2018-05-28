@@ -6,6 +6,7 @@
   when:
     - item.state|d(true)
     - ( item.webcheck is not defined and vhost_circuit_prod|d() ) or (item.webcheck|default(dict(enable=false)))['enable']|d(true)
+    - not item.disable|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -19,7 +20,8 @@
     state: absent
   when: ( item.webcheck is not defined and not vhost_circuit_prod|d() ) or
         not (item.webcheck|default(dict(enable=true)))['enable']|d(true) or
-        not item.state
+        not item.state|d(true) or
+        item.disable|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"

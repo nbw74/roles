@@ -9,6 +9,7 @@
   when:
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
+    - not item.legacy|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -25,6 +26,7 @@
   when:
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
+    - not item.legacy|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -39,9 +41,10 @@
     group: root
     mode: 0644
   when:
-    - item.crypto|d('none') != 'none'
+    - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
     - item.state|d(true)
     - item.mobile|d()
+    - not item.legacy|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -56,9 +59,10 @@
     group: root
     mode: 0400
   when:
-    - item.crypto|d('none') != 'none'
+    - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
     - item.state|d(true)
     - item.mobile|d()
+    - not item.legacy|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"

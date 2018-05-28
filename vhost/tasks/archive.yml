@@ -39,5 +39,6 @@
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
     label: "{{ item.item.name }}"
+  ignore_errors: yes
   tags: [ archive ]
 ...

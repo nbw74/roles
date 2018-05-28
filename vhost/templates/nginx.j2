@@ -60,14 +60,14 @@ server {
     server_name		m.{{ item.name }}
 			www.m.{{ item.name }}
 			;
-{% if item.crypto|d('none') == 'none' %}
+{% if item.crypto_mobile|d(item.crypto|d('none')) == 'none' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
-{% if item.crypto|d('none') == 'both' %}
+{% if item.crypto_mobile|d(item.crypto|d('none')) == 'both' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
 {% include "nginx/logs.j2" %}
-{% if item.crypto|d('none') == 'redirect' %}
+{% if item.crypto_mobile|d(item.crypto|d('none')) == 'redirect' %}
 
     return		301 https://m.{{ item.name }}$request_uri;
 {% else %}
@@ -75,7 +75,7 @@ server {
 {% endif %}
 }
 
-{% if item.crypto|d('none') != 'none' %}
+{% if item.crypto_mobile|d(item.crypto|d('none')) != 'none' %}
 server {
 {% include "nginx/listen-crypto.j2" %}
     server_name		m.{{ item.name }}

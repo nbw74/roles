@@ -1,8 +1,8 @@
 /* THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST */
 {% if item.crypto|d('none') == 'none' %}
-    vars.www["{{ item.name }}"] = {
+    vars.www["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.name) }}"] = {
 {% else %}
-    vars.www_tls["{{ item.name }}"] = {
+    vars.www_tls["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.name) }}"] = {
 {% endif %}
         http_string = "{{ (item.webcheck|default(dict(content='Site content for domain')))['content']|d('Site content for domain') }}"
 {% if item.webcheck is defined %}
@@ -14,4 +14,24 @@
 {% endif %}
 {% endif %}
     }
+{% if item.mobile|d() %}
+
+{% if item.crypto_mobile|d(item.crypto|d('none')) == 'none' %}
+    vars.www["{{ (item.webcheck|default(dict(fqdn_mobile="m." ~ item.name)))['fqdn_mobile']|d('m.' ~ item.name) }}"] = {
+{% else %}
+    vars.www_tls["{{ (item.webcheck|default(dict(fqdn_mobile="m." ~ item.name)))['fqdn_mobile']|d('m.' ~ item.name) }}"] = {
+{% endif %}
+        http_string = "{{ (item.webcheck|default(dict(content_mobile='Site content for domain')))['content_mobile']|d('Site content for domain') }}"
+{% if item.webcheck is defined %}
+{% if item.webcheck.url_mobile is defined %}
+        http_url = "{{ item.webcheck.url_mobile }}"
+{% elif item.webcheck.url is defined %}
+        http_url = "{{ item.webcheck.url }}"
+{% endif %}
+{% if item.webcheck.notify is defined %}
+        notification_entity = "{{ item.webcheck.notify }}"
+{% endif %}
+{% endif %}
+    }
+{% endif %}
 /* EOF */

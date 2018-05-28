@@ -2,9 +2,10 @@
 - name: template nginx vhost config
   template:
     src: "nginx.j2"
-    dest: "/etc/nginx/conf.d/{{ item.name }}.conf"
+    dest: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
     mode: 0644
     backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
   when: item.state|d(true)
   with_items: "{{ vhost }}"
   loop_control:
@@ -14,7 +15,7 @@
 
 - name: remove nginx vhost config
   file:
-    path: "/etc/nginx/conf.d/{{ item.name }}.conf"
+    path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
   when: not item.state|d(true)
@@ -27,9 +28,10 @@
 - name: template php-fpm vhost config
   template:
     src: "php-fpm.j2"
-    dest: "/etc/php-fpm.d/{{ item.name }}.conf"
+    dest: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
     mode: 0644
     backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
   when:
     - vhost_backend == 'php-fpm'
     - item.state|d(true)
@@ -41,7 +43,7 @@
 
 - name: remove php-fpm vhost config
   file:
-    path: "/etc/php-fpm.d/{{ item.name }}.conf"
+    path: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
   when:
@@ -56,9 +58,10 @@
 - name: template apache vhost config
   template:
     src: "apache.j2"
-    dest: "/etc/httpd/conf.d/{{ item.name }}.conf"
+    dest: "/etc/httpd/conf.d/{{ item.user|d(item.name) }}.conf"
     mode: 0644
     backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
   when:
     - vhost_backend == 'apache'
     - item.state|d(true)
@@ -70,7 +73,7 @@
 
 - name: remove apache vhost config
   file:
-    path: "/etc/httpd/conf.d/{{ item.name }}.conf"
+    path: "/etc/httpd/conf.d/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
   when:

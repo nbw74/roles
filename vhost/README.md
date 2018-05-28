@@ -42,7 +42,10 @@ vhost:
       - nose.example.org
     apache:
       port: 8888 # optional (if use apache as vhost_backend)
+    blockinsert: | # insert configuration block before "backend section"
+      block
     crypto: none|redirect|both # optional; default is "none"
+    crypto_mobile: none|redirect|both # optional; default is 'crypto' value
     db:
       type: mysql|postgresql # mandatory if use database
       host: db.example.org # mandatory
@@ -58,11 +61,12 @@ vhost:
         pool_size: 40 # optional (pgbouncer.ini)
         ip: 127.0.0.1/32 # optional (pgbouncer address in pg_hba.conf)
     ddns: # optional
-      enable: yes|no # default is 'no'
+      enable: bool # default is 'no'
       zone: string # default is vhost_default_ddns_zone
       record: string # default is vhost.name minus vhost_default_ddns_zone
       type: A|CNAME|... # default is CNAME
       value: string # default is ansible_fqdn.
+    disable: bool # optional; disable website temporarily (return 503)
     fpm: # mandatory if use php-fpm
       port: 9001 # mandatory; next free port
       pm: static|dynamic|ondemand # optional; default is "ondemand"
@@ -74,6 +78,7 @@ vhost:
       max_requests: 0 # optional
       template: "string" # fpm configuration; see below
     index: "myindex.php" # optional; default is "index.php"
+    legacy: bool # optional; don't force web-server config templates
     listen: # optional; default is first public IP (or private, if no public addresses)
       - ipaddr: 192.0.2.10
         port: 80 # optional; default is 80
@@ -83,7 +88,7 @@ vhost:
       port1: 11211
       server2: address # default is none
       port2: 11211
-    mobile: yes|no # optional; default is 'no'; enable mobile version config with same site root
+    mobile: bool # optional; default is 'no'; enable mobile version config with same site root
     php_value: # optional
       - key: 'string'
         value: 'string'
@@ -96,12 +101,16 @@ vhost:
       type: git|svn
       name: example.org
     save_handler: files|memcached # optional; default is "files"
-    state: yes|no # optional; default is 'yes'
+    state: bool # optional; default is 'yes'
     user: example # optional; default is "name" value
     webcheck: # optional
-      enable: yes|no # default is circuit-dependent
+      enable: bool # default is circuit-dependent
       content: "string" # mandatory if use webcheck
+      content_mobile: "string" # mandatory if use webcheck
       url: "string" # optional
+      url_mobile: "string" # optional
+      fqdn: "string" # optional
+      fqdn_mobile: "string" # optional
       notify: "string" # optional
       zone: "string" # default is common_icinga2_satellite_zone value
     webroot: "www/public" # optional; default is "www"

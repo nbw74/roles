@@ -1,3 +1,6 @@
+{% if item.blockinsert is defined %}
+{{ item.blockinsert }}
+{% endif %}
 {% if vhost_backend == 'php-fpm' %}
 {% if item.fpm.template|d('generic') == 'generic' %}
 {% include "nginx/fpm-generic.j2" %}
