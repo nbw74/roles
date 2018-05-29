@@ -1,6 +1,10 @@
 {% if item.listen is defined %}
 {% for home in item.listen %}
-    listen		{{ home.ipaddr }}:{{ home.portcrypto|d('443') }} ssl http2;
+{% if home.ipaddr == 'all' %}
+    listen		{{ home.port|d('443') }} ssl http2;
+{% else %}
+    listen		{{ home.ipaddr }}:{{ home.port|d('443') }} ssl http2;
+{% endif %}
 {% endfor %}
 {% else %}
     listen		{{ vhost_default_ipaddr }}:443 ssl http2;

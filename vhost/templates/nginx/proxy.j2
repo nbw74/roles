@@ -1,7 +1,12 @@
 	proxy_redirect			off;
 	proxy_set_header		X-Real-IP $remote_addr;
 	proxy_set_header		X-Forwarded-for $remote_addr;
+{% if vhost_backend  == 'reverse-proxy' %}
+	proxy_set_header		Host {{ item.proxy_pass|regex_replace('^\w+://', '') }};
+	proxy_set_header		Wantedhost $host;
+{% else %}
 	proxy_set_header		Host $host;
+{% endif %}
 	proxy_set_header		Connection close;
 	proxy_pass_header		Content-Type;
 	proxy_pass_header		Content-Disposition;

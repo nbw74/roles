@@ -80,9 +80,8 @@ vhost:
     index: "myindex.php" # optional; default is "index.php"
     legacy: bool # optional; don't force web-server config templates
     listen: # optional; default is first public IP (or private, if no public addresses)
-      - ipaddr: 192.0.2.10
-        port: 80 # optional; default is 80
-        portcrypto: 443 # optional; default is 443
+      - ipaddr: 192.0.2.10|all # 'all' is special word
+        port: 80 # optional; default is 80 or 443 if use crypto
     memcached: # optional if use memcached
       server1: address # default is "localhost4"
       port1: 11211
