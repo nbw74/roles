@@ -11,34 +11,21 @@
   notify: config reload nginx
   tags: [ nginx, allow_status ]
 
-- name: "Create listen.conf"
-  lineinfile:
-    dest: "{{ included }}/listen.conf"
-    line: "listen {{ public_ip }}:80;"
-    create: yes
-
-- name: "Create listen_ssl.conf"
-  lineinfile:
-    dest: "{{ included }}/listen_ssl.conf"
-    line: "listen {{ public_ip }}:443 ssl;"
-    create: yes
-
 - name: "Create listen_default.conf"
   lineinfile:
     dest: "{{ included }}/listen_default.conf"
-    line: "listen {{ public_ip }}:80 default_server;"
+    line: "{{ item }}"
     create: yes
+  with_items:
+    - "listen {{ public_ip }}:80 default_server;"
+    - "listen {{ private_ip }}:80 default_server;"
 
 - name: "Create listen_default_ssl.conf"
   lineinfile:
     dest: "{{ included }}/listen_default_ssl.conf"
-    line: "listen {{ public_ip }}:443 default_server ssl;"
+    line: "{{ item }}"
     create: yes
-
-- name: "Create listen_inside.conf"
-  blockinfile:
-    dest: "{{ included }}/listen_inside.conf"
-    block: |
-      listen {{ private_ip }}:80;
-    create: yes
+  with_items:
+    - "listen {{ public_ip }}:443 default_server ssl;"
+    - "listen {{ private_ip }}:443 default_server ssl;"
 ...
