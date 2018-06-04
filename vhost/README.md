@@ -91,6 +91,7 @@ vhost:
     php_value: # optional
       - key: 'string'
         value: 'string'
+    proxy_host_header: external|internal|<string> # default: external
     proxy_pass: "URI" # mandatory if use reverse-proxy vhost_backend
     redmine: # optional
       title: "string" # optional; default is "vhost.name" without vhost_default_ddns_zone$

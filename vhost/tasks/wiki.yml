@@ -46,6 +46,7 @@
   delegate_to: localhost
   loop_control:
     label: "{{ item[0].name }}"
+  become: no
   tags: [ wiki ]
 
 - name: print a path to the wiki file

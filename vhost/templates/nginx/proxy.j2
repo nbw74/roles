@@ -2,7 +2,13 @@
 	proxy_set_header		X-Real-IP $remote_addr;
 	proxy_set_header		X-Forwarded-For $remote_addr;
 {% if vhost_backend  == 'reverse-proxy' %}
+{% if item.proxy_host_header|d('external') == 'external' %}
 	proxy_set_header		Host {{ item.name }};
+{% elif item.proxy_host_header|d('external') == 'internal' %}
+	proxy_set_header		Host {{ item.proxy_pass|regex_replace('(^\w+://|/$)', '') }};
+{% else %}
+	proxy_set_header		Host {{ item.proxy_host_header }};
+{% endif %}
 {% else %}
 	proxy_set_header		Host $host;
 {% endif %}
