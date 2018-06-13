@@ -88,6 +88,7 @@ vhost:
       server2: address # default is none
       port2: 11211
     mobile: bool # optional; default is 'no'; enable mobile version config with same site root
+    password: string # optional; set password for <user> (changed only on_create)
     php_value: # optional
       - key: 'string'
         value: 'string'

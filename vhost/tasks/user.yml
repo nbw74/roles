@@ -15,6 +15,19 @@
     label: "{{ item.name }}"
   tags: [ user, db ]
 
+- name: set password
+  user:
+    name: "{{ item.user|d(item.name) }}"
+    password: "{{ item.password|password_hash('sha512') }}"
+    update_password: on_create
+  when:
+    - item.state|d(true)
+    - item.password is defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: [ user, db, password ]
+
 - name: copy pubkey to authorized_keys
   copy:
     src: "{{ item.ssh_key_file }}.pub"
