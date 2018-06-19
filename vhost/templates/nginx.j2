@@ -55,6 +55,7 @@ server {
 {% endif %}
 
 {% if item.mobile|d() %}
+{% set is_mobile = true %}
 server {
 {% include "nginx/listen-plain.j2" %}
     server_name		m.{{ item.name }}
