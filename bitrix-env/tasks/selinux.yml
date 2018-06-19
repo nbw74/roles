@@ -13,6 +13,7 @@
   register: reboot 
 
 - name: Restart waiting
+  become: no
   local_action: wait_for host={{ inventory_hostname }} \
     port=22 \
     delay=10 \

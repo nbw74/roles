@@ -25,6 +25,7 @@
     state: absent
     path: "/tmp/bx_{{ ansible_fqdn }}_{{ bx_user.ssh_key_file|basename }}"
   delegate_to: localhost
+  become: no
   when:
     - bx_user.changed
     - bx_user.state == 'present'

@@ -11,6 +11,9 @@ h3. Web
 *URI (internal):* http://{{ ansible_fqdn }}
 {% endif %}
 {% else %}
+{% if bxvhost.mobile|d() %}
+*URI (mob):* http://m.{{ ansible_fqdn }}
+{% endif %}
 *URI:* http://{{ ansible_fqdn }}
 {% endif %}
 *Software versions:* @{{ bx_nginx_version }}, {{ bx_php_version }}, {{ bx_apache_version }}, {{ bx_bxenv_version }}@
