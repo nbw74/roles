@@ -7,5 +7,6 @@ vhost_logbuffer: "128k"
 vhost_git_path: "/var/lib/git"
 vhost_git_group: "developers"
 vhost_default_ddns_zone: "deff"
+vhost_apache_port: "8888"
 
 ...

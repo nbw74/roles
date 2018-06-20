@@ -1,6 +1,6 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 
-<VirtualHost 127.0.0.1:{{ (item.apache|default(dict(port='8888')))['port']|d('8888') }}>
+<VirtualHost 127.0.0.1:{{ vhost_apache_port }}>
     DocumentRoot {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}
     ServerAdmin admin@{{ item.name }}
     ServerName {{ item.name }}
