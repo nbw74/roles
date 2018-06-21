@@ -1,3 +1,4 @@
 ---
 vhost_preserve: "/var/preserve"
+vhost_default_content: "missing"
 ...
