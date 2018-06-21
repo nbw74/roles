@@ -16,6 +16,7 @@
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
+  ignore_errors: yes
   tags: [ ddns ]
 
 - name: ddns update mobile
@@ -36,5 +37,6 @@
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
+  ignore_errors: yes
   tags: [ ddns ]
 ...

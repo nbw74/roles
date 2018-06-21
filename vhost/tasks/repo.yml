@@ -13,5 +13,6 @@
     label: "{{ item.name }}"
   delegate_to: "{{ vhost_git_server }}"
   notify: repo git created
+  ignore_errors: yes
   tags: [ repo ]
 ...

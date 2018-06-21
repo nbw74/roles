@@ -59,6 +59,7 @@
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
+  ignore_errors: yes
   tags: [ db ]
 
 - name: delete postgresql user
