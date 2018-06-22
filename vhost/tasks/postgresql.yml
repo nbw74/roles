@@ -78,6 +78,7 @@
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
+  ignore_errors: yes
   tags: [ db ]
 
 - name: line in pg_hba
@@ -138,7 +139,3 @@
   notify: config reload pgbouncer
   tags: [ db ]
 ...
-# Create admin users
-#
-# CREATE ROLE vhost_db_pgsql_admin_user LOGIN SUPERUSER ENCRYPTED PASSWORD 'vhost_db_pgsql_admin_pass';
-# CREATE DATABASE ansible OWNER ansible;

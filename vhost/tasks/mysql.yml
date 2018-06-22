@@ -57,7 +57,3 @@
     label: "{{ item.name }}"
   tags: [ db ]
 ...
-# Create admin users
-#
-# GRANT ALL PRIVILEGES ON *.* TO 'vhost_db_mysql_admin_user'@'%' IDENTIFIED BY 'vhost_db_mysql_admin_pass' WITH GRANT OPTION;
-# FLUSH PRIVILEGES;
