@@ -12,7 +12,7 @@
     permanent: true
     immediate: true
     state: enabled
-  with_items: [ ntp, snmp, http ]
+  with_items: [ ntp, snmp, http, bacula-client ]
   when: ansible_distribution_major_version|int >= 7
   tags: [ firewalld ]
 ...
