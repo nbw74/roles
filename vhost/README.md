@@ -101,7 +101,7 @@ vhost:
     repo: # optional
       type: git|svn
       name: example.org
-    save_handler: files|memcached # optional; default is "files"
+    save_handler: files|memcached|none # optional; default is "files"
     state: bool # optional; default is 'yes'
     user: example # optional; default is "name" value
     webcheck: # optional
