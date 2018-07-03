@@ -12,11 +12,10 @@
       touch "creates/{{ item[0].name }}"
   args:
     chdir: "/var/www/redmine"
-    creates: "creates/{{ item[0].name }}"
+    creates: "creates/{{ item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
   delegate_to: "{{ vhost_redmine_server }}"
   when:
     - item[0].redmine is defined
-    - item[1].changed
     - item[1].state == 'present'
   with_together:
     - "{{ vhost }}"
