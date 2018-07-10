@@ -9,7 +9,7 @@
       %{color:ForestGreen}@{{ vhost_git_server }}:{{ vhost_git_path }}/{{ (item[0].repo|default(dict(name=item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))))['name']|d(item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}@%{% endif %}',
       :identifier => '{{ item[0].redmine.id|d(item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')|regex_replace('\.', '-')) }}',
       :is_public=>'0', :homepage=>'http://{{ item[0].name }}'" &&
-      touch "creates/{{ item[0].name }}"
+      touch "creates/{{ item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
   args:
     chdir: "/var/www/redmine"
     creates: "creates/{{ item[0].name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
