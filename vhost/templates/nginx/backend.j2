@@ -1,5 +1,7 @@
 {% if item.snippet is defined %}
+# SNIPPET BEGIN
 {{ item.snippet }}
+# SNIPPET END
 {% endif %}
 {% if vhost_backend == 'php-fpm' %}
 {% if item.fpm.template|d('generic') == 'generic' %}
