@@ -42,8 +42,6 @@ vhost:
       - nose.example.org
     apache:
       port: 8888 # optional (if use apache as vhost_backend)
-    blockinsert: | # insert configuration block before "backend section"
-      block
     crypto: none|redirect|both # optional; default is "none"
     crypto_mobile: none|redirect|both # optional; default is 'crypto' value
     db:
@@ -102,6 +100,8 @@ vhost:
       type: git|svn
       name: example.org
     save_handler: files|memcached|none # optional; default is "files"
+    snippet: | # insert configuration block into nginx vhost config in the 'server' context (before "backend section")
+      block
     state: bool # optional; default is 'yes'
     user: example # optional; default is "name" value
     webcheck: # optional

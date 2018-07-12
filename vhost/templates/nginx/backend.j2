@@ -1,5 +1,5 @@
-{% if item.blockinsert is defined %}
-{{ item.blockinsert }}
+{% if item.snippet is defined %}
+{{ item.snippet }}
 {% endif %}
 {% if vhost_backend == 'php-fpm' %}
 {% if item.fpm.template|d('generic') == 'generic' %}
