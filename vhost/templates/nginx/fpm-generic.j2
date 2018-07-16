@@ -6,6 +6,10 @@
 
     location / {
 	try_files	$uri $uri/ /index.php?$args;
+{% if (item.nginx_auth_basic|default(dict(enable=false)))['enable']|d(false) %}
+	auth_basic		"{{ item.nginx_auth_basic.string|d('Restricted') }}";
+	auth_basic_user_file	"{{ item.nginx_auth_basic.user_file|d('/etc/nginx/.htpasswd') }}";
+{% endif %}
     }
 
     location ~ \.php$ {

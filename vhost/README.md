@@ -86,6 +86,10 @@ vhost:
     server2: address # default is none
     port2: 11211
   mobile: bool # optional; default is 'no'; enable mobile version config with same site root
+  nginx_auth_basic:
+    enable: bool # default: no
+    string: "string" # default: "Restricted"
+    user_file: "path" # default: "/etc/nginx/.htpasswd"
   nginx_snippet: | # insert configuration block into nginx vhost config in the 'server' context (before "backend section")
     block
   password: string # optional; set password for <user> (changed only on_create)
