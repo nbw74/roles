@@ -1,4 +1,9 @@
 
+{% if item.crypto_wildcard|d() %}
+    ssl_certificate		/etc/pki/tls/certs/{{ item.name|regex_replace('^.*\.([-a-zA-Z0-9]+\.[a-zA-Z]+)$', '_\\1') }}.crt;
+    ssl_certificate_key		/etc/pki/tls/private/{{ item.name|regex_replace('^.*\.([-a-zA-Z0-9]+\.[a-zA-Z]+)$', '_\\1') }}.key;
+{% else %}
     ssl_certificate		/etc/pki/tls/certs/{{ item.name }}.crt;
     ssl_certificate_key		/etc/pki/tls/private/{{ item.name }}.key;
+{% endif %}
 

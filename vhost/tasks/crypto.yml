@@ -10,6 +10,7 @@
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
     - not item.legacy|d()
+    - not item.crypto_wildcard|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -27,6 +28,7 @@
     - item.crypto|d('none') != 'none'
     - item.state|d(true)
     - not item.legacy|d()
+    - not item.crypto_wildcard|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -45,6 +47,7 @@
     - item.state|d(true)
     - item.mobile|d()
     - not item.legacy|d()
+    - not item.crypto_wildcard|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -63,6 +66,43 @@
     - item.state|d(true)
     - item.mobile|d()
     - not item.legacy|d()
+    - not item.crypto_wildcard|d()
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: validate nginx
+  tags: [ crypto ]
+
+- name: copy wildcard certificates
+  copy:
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.name|regex_replace('^.*\\.([-a-zA-Z0-9]+\\.[a-zA-Z]+)$', '_\\1') }}.crt"
+    dest: "/etc/pki/tls/certs/"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - item.crypto|d('none') != 'none'
+    - item.state|d(true)
+    - not item.legacy|d()
+    - item.crypto_wildcard|d()
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: validate nginx
+  tags: [ crypto ]
+
+- name: copy wildcard keys
+  copy:
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.name|regex_replace('^.*\\.([-a-zA-Z0-9]+\\.[a-zA-Z]+)$', '_\\1') }}.key"
+    dest: "/etc/pki/tls/private/"
+    owner: root
+    group: root
+    mode: 0400
+  when:
+    - item.crypto|d('none') != 'none'
+    - item.state|d(true)
+    - not item.legacy|d()
+    - item.crypto_wildcard|d()
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
