@@ -111,6 +111,7 @@ vhost:
   user: example # optional; default is "name" value
   webcheck: # optional
     enable: bool # default is circuit-dependent
+    ignore: bool # don't touch existing Icinga2 http check config
     content: "string" # mandatory if use webcheck
     content_mobile: "string" # mandatory if use webcheck
     url: "string" # optional
