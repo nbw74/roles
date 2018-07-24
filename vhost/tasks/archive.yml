@@ -8,7 +8,7 @@
     - item.state == 'absent'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.name|d('301') }}"
   tags: [ archive ]
 
 - name: remove logs and tmp from homedir
@@ -20,7 +20,7 @@
     - "{{ vhost_reg_home.results }}"
     - [ 'log', 'logs', 'tmp' ]
   loop_control:
-    label: "{{ item.0.item.name }}: {{ item.1 }}"
+    label: "{{ item.0.item.name|d('301') }}: {{ item.1 }}"
   ignore_errors: yes
   tags: [ archive ]
 
@@ -41,7 +41,7 @@
   when: not item.skipped|d()
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
-    label: "{{ item.item.name }}"
+    label: "{{ item.item.name|d('301') }}"
   tags: [ archive ]
 
 - name: remove homedir
@@ -51,7 +51,7 @@
   when: not item.skipped|d()
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
-    label: "{{ item.item.name }}"
+    label: "{{ item.item.name|d('301') }}"
   ignore_errors: yes
   tags: [ archive ]
 ...

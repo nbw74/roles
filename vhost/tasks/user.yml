@@ -10,6 +10,7 @@
     remove: no
     force: yes
   register: vhost_user
+  when: item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -42,7 +43,7 @@
     - item.state == 'present'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.name|d('301') }}"
   tags: [ user, db ]
 
 - name: set homedir mode
@@ -51,11 +52,11 @@
     state: directory
     mode: 0750
   when:
-    - item.state == 'present'
+    - item.state|d('nope') == 'present'
     - not item.legacy|d()
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.name|d('301') }}"
   tags: [ user, db ]
 
 - name: add web-server users to the new user group
@@ -70,7 +71,7 @@
     - [ '{{ vhost_frontuser }}', '{{ vhost_backuser }}' ]
     - "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item[0] }}, {{ item[1].name }}"
+    label: "{{ item[0] }}, {{ item[1].name|d('301') }}"
   tags: [ user, db ]
 
 - name: remove unused groups
@@ -82,7 +83,7 @@
     - item.state == 'absent'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.name|d('301') }}"
   tags: [ user, db ]
 
 - name: manage common directories
@@ -95,6 +96,7 @@
   when:
     - item[1].state|d(true)
     - not item[1].legacy|d()
+    - item[1].nginx_301_only is not defined
   with_nested:
     - [ 'tmp', 'log' ]
     - "{{ vhost }}"
@@ -111,6 +113,7 @@
     mode: 0755
   when:
     - item.state|d(true)
+    - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
@@ -127,6 +130,7 @@
   when:
     - item.state|d(true)
     - not item.legacy|d()
+    - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"

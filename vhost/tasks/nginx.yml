@@ -1,7 +1,7 @@
 ---
 - name: template nginx vhost config
   template:
-    src: "nginx.j2"
+    src: "nginx{{ (item.nginx_301_only is defined)|ternary('-301', '') }}.j2"
     dest: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
     mode: 0644
     backup: yes
@@ -35,6 +35,7 @@
   when:
     - vhost_backend == 'php-fpm'
     - item.state|d(true)
+    - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -49,6 +50,7 @@
   when:
     - vhost_backend == 'php-fpm'
     - not item.state|d(true)
+    - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -65,6 +67,7 @@
   when:
     - vhost_backend == 'apache'
     - item.state|d(true)
+    - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -79,6 +82,7 @@
   when:
     - vhost_backend == 'apache'
     - not item.state|d(true)
+    - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"

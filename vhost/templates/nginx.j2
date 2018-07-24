@@ -98,3 +98,8 @@ server {
 }
 {% endif %}
 {% endif %}
+{% if item.nginx_http_snippet is defined %}
+# SNIPPET BEGIN
+{{ item.nginx_http_snippet }}
+# SNIPPET END
+{% endif %}

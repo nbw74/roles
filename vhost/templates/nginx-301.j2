@@ -1,0 +1,33 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+{% if item.crypto|d('none') == 'none' %}
+server {
+{% include "nginx/listen-plain.j2" %}
+    server_name		{{ item.name }}
+			www.{{ item.name }}
+{% if item.alias is defined %}
+{% for name in item.alias %}
+			{{ name }}
+			www.{{ name }}
+{% endfor %}
+{% endif %}
+			;
+{% include "nginx/logs.j2" %}
+
+    return		301 {{ item.nginx_301_only }};
+}
+{% endif %}
+
+{% if item.crypto|d('none') != 'none' %}
+server {
+{% include "nginx/listen-crypto.j2" %}
+    server_name		{{ item.name }}
+			www.{{ item.name }}
+			;
+{% include "nginx/logs.j2" %}
+{% include "nginx/ssl.j2" %}
+
+    return		301 {{ item.nginx_301_only }};
+}
+{% endif %}
+

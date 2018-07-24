@@ -1,5 +1,5 @@
 
-{% if vhost_backend == 'reverse-proxy' %}
+{% if vhost_backend == 'reverse-proxy' or item.nginx_301_only is defined %}
     access_log		/var/log/nginx/{{ item.name }}-access.log combined
 {%- if vhost_logbuffer == 'none' %}
 ;

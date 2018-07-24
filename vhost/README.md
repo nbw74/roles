@@ -91,8 +91,11 @@ vhost:
     enable: bool # default: no
     string: "string" # default: "Restricted"
     user_file: "path" # default: "/etc/nginx/.htpasswd"
-  nginx_snippet: | # insert configuration block into nginx vhost config in the 'server' context (before "backend section")
-    block
+  nginx_http_snippet: | # insert configuration block into nginx vhost config
+    block # ... in the 'http' context
+  nginx_server_snippet: | # insert configuration block into nginx vhost config
+    block # ... in the 'server' context (before "backend section")
+  nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
   password: string # optional; set password for <user> (changed only on_create)
   php_value: # optional
     - key: 'string'

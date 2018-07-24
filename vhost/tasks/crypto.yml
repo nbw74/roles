@@ -75,7 +75,7 @@
 
 - name: copy wildcard certificates
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/{{ item.name|regex_replace('^.*\\.([-a-zA-Z0-9]+\\.[a-zA-Z]+)$', '_\\1') }}.crt"
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.name|regex_replace('^(.*\\.)?([-a-zA-Z0-9]+\\.[a-zA-Z]+)$', '_\\2') }}.crt"
     dest: "/etc/pki/tls/certs/"
     owner: root
     group: root
@@ -93,7 +93,7 @@
 
 - name: copy wildcard keys
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/{{ item.name|regex_replace('^.*\\.([-a-zA-Z0-9]+\\.[a-zA-Z]+)$', '_\\1') }}.key"
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.name|regex_replace('^(.*\\.)?([-a-zA-Z0-9]+\\.[a-zA-Z]+)$', '_\\2') }}.key"
     dest: "/etc/pki/tls/private/"
     owner: root
     group: root
