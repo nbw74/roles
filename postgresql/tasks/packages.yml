@@ -2,7 +2,7 @@
 - name: PostgreSQL repo
   yum_repository:
     name: "pgdg{{ postgresql_version_norm }}"
-    description: "PostgreSQL {{postgresql_version_raw}} $releasever - $basearch"
+    description: "PostgreSQL {{ postgresql_version_raw }} $releasever - $basearch"
     baseurl: "https://download.postgresql.org/pub/repos/yum/{{ postgresql_version_raw }}/redhat/rhel-$releasever-$basearch"
     file: "pgdg-{{ postgresql_version_norm }}-centos"
     gpgcheck: yes
