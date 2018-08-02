@@ -23,7 +23,14 @@ bxvhost:
     port: "int" # optional; default is '3306'
     name: "string" # mandatory
     pass: "string" # mandatory
-  mobile: bool # optional; used for wiki page only
+  ddns:
+    enable: bool # optional; default is 'false'
+    zone: string # default is vhost_default_ddns_zone
+    record: string # default is vhost.name minus vhost_default_ddns_zone
+    type: A|CNAME|... # default is CNAME
+    value: string # default is ansible_fqdn.
+  multisite: # optional; currently used for wiki page and ddns
+    - string # third-level domain. e.q. 'm' or 'sale'
   redmine:
     title: "string" # mandatory
     description: "string" # mandatory

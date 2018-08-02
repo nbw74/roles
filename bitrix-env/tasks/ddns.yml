@@ -1,9 +1,9 @@
 ---
-- name: ddns update mobile
+- name: ddns update multisite
   nsupdate:
     server: "{{ vhost_ddns_server }}"
     zone: "{{ bxvhost.ddns.zone|d(vhost_default_ddns_zone) }}"
-    record: "m.{{ bxvhost.ddns.record|d(ansible_fqdn|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}"
+    record: "{{ item }}.{{ bxvhost.ddns.record|d(ansible_fqdn|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}"
     type: "{{ bxvhost.ddns.type|d('CNAME') }}"
     value: "{{ bxvhost.ddns.value|d(ansible_fqdn ~ '.') }}"
     state: "{{ bxvhost.state|d(true)|ternary('present', 'absent') }}"
@@ -13,6 +13,6 @@
   when:
     - bxvhost.ddns is defined
     - bxvhost.ddns.enable|d()
-    - bxvhost.mobile|d()
+  with_items: "{{ bxvhost.multisite|d([]) }}"
   tags: [ ddns ]
 ...

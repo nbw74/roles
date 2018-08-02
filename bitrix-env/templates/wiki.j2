@@ -1,18 +1,21 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-# vim: ft=textile:
 # =================================== CUT ===================================
 
 h3. Web
 
 {% if bx_circuit_prod|d() %}
 *URI:* http://{{ bxvhost.redmine['title'] }}
-{% if bxvhost.mobile|d() %}
-*URI (mob):* http://m.{{ bxvhost.redmine['title'] }}
-*URI (internal):* http://{{ ansible_fqdn }}
+{% if bxvhost.multisite is defined %}
+{% for site in bxvhost.multisite %}
+*URI ({{ site }}):* http://{{ site }}.{{ bxvhost.redmine['title'] }}
+{% endfor %}
 {% endif %}
+*URI (internal):* http://{{ ansible_fqdn }}
 {% else %}
-{% if bxvhost.mobile|d() %}
-*URI (mob):* http://m.{{ ansible_fqdn }}
+{% if bxvhost.multisite is defined %}
+{% for site in bxvhost.multisite %}
+*URI ({{ site }}):* http://{{ site }}.{{ ansible_fqdn }}
+{% endfor %}
 {% endif %}
 *URI:* http://{{ ansible_fqdn }}
 {% endif %}

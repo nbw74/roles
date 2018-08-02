@@ -34,7 +34,7 @@
 
 - name: config reload postgresql
   systemd:
-    name: "postgresql-{{ item[1].stdout | regex_replace('.*(\\d+\\.\\d+).*', '\\1') }}.service"
+    name: "postgresql-{{ item[1].stdout | regex_replace('.*(\\d+\\.?\\d+).*', '\\1') }}.service"
     state: reloaded
   delegate_to: "{{ item[0].db.host }}"
   when:
