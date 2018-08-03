@@ -7,14 +7,14 @@ h3. Web
 *URI:* http://{{ bxvhost.redmine['title'] }}
 {% if bxvhost.multisite is defined %}
 {% for site in bxvhost.multisite %}
-*URI ({{ site }}):* http://{{ site }}.{{ bxvhost.redmine['title'] }}
+*URI (multisite):* http://{{ site.domain }} }}
 {% endfor %}
 {% endif %}
 *URI (internal):* http://{{ ansible_fqdn }}
 {% else %}
 {% if bxvhost.multisite is defined %}
 {% for site in bxvhost.multisite %}
-*URI ({{ site }}):* http://{{ site }}.{{ ansible_fqdn }}
+*URI ({{ site.domain }}):* http://{{ site.domain }}.{{ vhost_default_ddns_zone }}
 {% endfor %}
 {% endif %}
 *URI:* http://{{ ansible_fqdn }}

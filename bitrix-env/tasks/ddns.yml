@@ -3,7 +3,7 @@
   nsupdate:
     server: "{{ vhost_ddns_server }}"
     zone: "{{ bxvhost.ddns.zone|d(vhost_default_ddns_zone) }}"
-    record: "{{ item }}.{{ bxvhost.ddns.record|d(ansible_fqdn|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}"
+    record: "{{ item.domain }}"
     type: "{{ bxvhost.ddns.type|d('CNAME') }}"
     value: "{{ bxvhost.ddns.value|d(ansible_fqdn ~ '.') }}"
     state: "{{ bxvhost.state|d(true)|ternary('present', 'absent') }}"
@@ -14,5 +14,5 @@
     - bxvhost.ddns is defined
     - bxvhost.ddns.enable|d()
   with_items: "{{ bxvhost.multisite|d([]) }}"
-  tags: [ ddns ]
+  tags: [ ddns, multisite ]
 ...

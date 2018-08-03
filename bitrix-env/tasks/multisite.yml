@@ -1,0 +1,10 @@
+---
+- name: create multisite dirs
+  command: "/usr/local/bin/bxmultisite {{ item.domain }}"
+  args:
+    chdir: "/home/bitrix"
+    creates: "{{ item.domain }}"
+  when: not item.adaptive|d(true)
+  with_items: "{{ bxvhost.multisite|d([]) }}"
+  tags: [ multisite ]
+...

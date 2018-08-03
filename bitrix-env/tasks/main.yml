@@ -108,5 +108,7 @@
 
 - import_tasks: ddns.yml
 
+- import_tasks: multisite.yml
+
 - import_tasks: wiki2.yml
 ...
