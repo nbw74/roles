@@ -1,6 +1,6 @@
 ---
 - name: create multisite dirs
-  command: "/usr/local/bin/bxmultisite {{ item.domain }}"
+  command: "/usr/local/bin/{{ bxmult_sh }} {{ item.domain }}"
   args:
     chdir: "/home/bitrix"
     creates: "{{ item.domain }}"
