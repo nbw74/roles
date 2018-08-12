@@ -40,7 +40,7 @@
     - '{{ common_required_base_packages }}'
     - '{{ common_centos_specific_packages }}'
   when: ansible_distribution == "CentOS"
-  tags: [ packages, snmp ]
+  tags: [ packages, snmp, etckeeper ]
 
 - name: "Install required packages (YUM 7)"
   yum:
@@ -51,7 +51,7 @@
   when:
     - ansible_distribution == "CentOS"
     - ansible_distribution_major_version|int >= 7
-  tags: [ packages, snmp ]
+  tags: [ packages, snmp, etckeeper ]
 
 - name: "Install SELinux packages (YUM)"
   yum:

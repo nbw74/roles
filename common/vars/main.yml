@@ -18,6 +18,7 @@ common_required_base_packages:
   - bzip2
   - checkpolicy
   - deltarpm
+  - etckeeper
   - gdisk
   - git
   - ipset

@@ -47,4 +47,6 @@
 - import_tasks: icinga2.yml
   when:
     - not alien
+
+- import_tasks: etckeeper.yml
 ...

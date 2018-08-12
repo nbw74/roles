@@ -1,0 +1,9 @@
+---
+- name: Initialize etckeeper
+  command: "etckeeper init"
+  args:
+    chdir: "/etc"
+    creates: "/etc/.etckeeper"
+  notify: etckeeper commit
+  tags: [ etckeeper ]
+...

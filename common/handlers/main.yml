@@ -133,4 +133,9 @@
     daemon_reload: yes
     name: getty@tty1.service
     state: restarted
+
+####
+# Etckeeper
+- name: etckeeper commit
+  command: 'etckeeper commit "ansible common role installed"'
 ...

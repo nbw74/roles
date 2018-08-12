@@ -48,5 +48,5 @@ common_icinga2_freeform: # default:none :Любая конфигурация
 ```
 
 ## Tags
-`colorize` `console` `domain` `hostname` `icinga2` `ifcfg` `ipset` `iptables` `journald` `kvm` `logrotate` `mail` `ntp` `packages` `porntube` `rsyslog` `services` `snmp` `sudo` `tuned` `update` `vmware` `xt_recent`
+`colorize` `console` `domain` `etckeeper` `hostname` `icinga2` `ifcfg` `ipset` `iptables` `journald` `kvm` `logrotate` `mail` `ntp` `packages` `porntube` `rsyslog` `services` `snmp` `sudo` `tuned` `update` `vmware` `xt_recent`
 
