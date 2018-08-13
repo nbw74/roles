@@ -18,7 +18,6 @@ common_required_base_packages:
   - bzip2
   - checkpolicy
   - deltarpm
-  - etckeeper
   - gdisk
   - git
   - ipset
@@ -43,6 +42,7 @@ common_required_base_packages_selinux:
 
 common_required_epel_packages:
   - ccze
+  - etckeeper
   - htop
   - lbzip2
   - tmux

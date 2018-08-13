@@ -51,7 +51,7 @@
   when:
     - ansible_distribution == "CentOS"
     - ansible_distribution_major_version|int >= 7
-  tags: [ packages, snmp, etckeeper ]
+  tags: [ packages, snmp ]
 
 - name: "Install SELinux packages (YUM)"
   yum:
@@ -94,7 +94,7 @@
     name: "{{ item }}"
   with_items: '{{ common_required_epel_packages }}'
   when: ansible_distribution == "CentOS"
-  tags: [ packages ]
+  tags: [ packages, etckeeper ]
 # -------------------------------------------------------------
 - name: "Install required packages (DNF)"
   dnf:
