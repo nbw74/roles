@@ -54,6 +54,8 @@
               echo "$CMD" > $CMDFILE
               logger -p local2.notice -t zsh -i -- ${LOGNAME}:${stat}:${d}: \($CMD\)
           fi
+
+          vcs_info
       }
-  tags: [ rsyslog ]
+  tags: [ rsyslog, zshrc ]
 
