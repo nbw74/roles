@@ -4,20 +4,20 @@
 h3. Web
 
 {% if bx_circuit_prod|d() %}
-*URI:* http://{{ bxvhost.redmine['title'] }}
+*URI:* http://{{ (bxvhost.redmine|d(dict(title='PLEASE_SET_URI_MANUALLY')))['title']|d('PLEASE_SET_URI_MANUALLY') }}
 {% if bxvhost.multisite is defined %}
 {% for site in bxvhost.multisite %}
-*URI (multisite):* http://{{ site.domain }} }}
+*URI ({{ site.domain }}):* http://{{ site.domain }} }}
 {% endfor %}
 {% endif %}
 *URI (internal):* http://{{ ansible_fqdn }}
 {% else %}
+*URI:* http://{{ ansible_fqdn }}
 {% if bxvhost.multisite is defined %}
 {% for site in bxvhost.multisite %}
 *URI ({{ site.domain }}):* http://{{ site.domain }}.{{ vhost_default_ddns_zone }}
 {% endfor %}
 {% endif %}
-*URI:* http://{{ ansible_fqdn }}
 {% endif %}
 *Software versions:* @{{ bx_nginx_version }}, {{ bx_php_version }}, {{ bx_apache_version }}, {{ bx_bxenv_version }}@
 
