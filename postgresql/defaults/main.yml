@@ -31,4 +31,6 @@ postgresql_conf:
   empty: ""
 
 postgresql_extended_logging: false
+
+postgresql_hba_enable: true
 ...

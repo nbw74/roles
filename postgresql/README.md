@@ -54,6 +54,8 @@ postgresql_ident_local: # peer/ident map
 # для локальных подключений использовать map 'supervisor',
 # для удалённых - 'remote'
 
+postgresql_hba_enable: bool # Включать ли управление файлом pg_hba; default: true
+
 postgresql_hba_tcp: # HBA для удаленных tcp-соединений с аутентификацией md5
   - { db: 'string', user: 'string', address: 'CIDR' }
 
