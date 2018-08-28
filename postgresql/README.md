@@ -49,7 +49,7 @@ postgresql_conf: # Параметры конфигурации СУБД
     log_lock_waits: bool # default: on
     log_temp_files: int # default: 0
 
-postgresql_ident_local: # peer/ident map
+postgresql_ident_local: # peer/ident map для локальных соединений socket
   - { map: 'string', sysuser: 'string', pguser: 'string' }
 # для локальных подключений использовать map 'supervisor',
 # для удалённых - 'remote'

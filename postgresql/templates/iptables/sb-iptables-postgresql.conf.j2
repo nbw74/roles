@@ -1,7 +1,10 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-
-{% if postgresql_hba_tcp is defined %}
+{% if postgresql_hba_tcp is defined and postgresql_hba_tcp|length > 0 %}
+{% set postgresql_hba_tcp_addresses = [] %}
 {% for item in postgresql_hba_tcp %}
-{{ item.address }}
+{% set ignored = postgresql_hba_tcp_addresses.append( item.address ) %}
+{% endfor %}
+{% for address in postgresql_hba_tcp_addresses|unique %}
+{{ address }}
 {% endfor %}
 {% endif %}

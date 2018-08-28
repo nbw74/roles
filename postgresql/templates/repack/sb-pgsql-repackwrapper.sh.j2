@@ -110,7 +110,7 @@ main() {
             # Если эти значения равны друг другу...
             if (( tail_lines_with_last_pid == tail_lines )); then
                 lines_total_prev=$lines_total
-                lines_total=$(wc -l "$LOGERR")
+                lines_total=$(wc -l "$LOGERR"|awk '{ print $1 }')
                 # И если со времени предыдущего убийства кол-во строк в файле изменилось
                 # - прерываем $last_pid
                 if (( lines_total != lines_total_prev )); then
