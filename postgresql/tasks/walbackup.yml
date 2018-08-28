@@ -3,7 +3,7 @@
   file:
     state: directory
     path: "/var/lib/pgsql/{{ postgresql_version_raw }}/pg_archive"
-    user: postgres
+    owner: postgres
     group: postgres
     mode: 0700
 
