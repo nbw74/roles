@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Script for PostgreSQL cluster initialization
+# source: https://wiki.clusterlabs.org/wiki/PgSQL_Replicated_Cluster
+# Southbridge LLC, 2017-2018 A.D.
+#
+
+main() {
+
+    trap 'except $LINENO' ERR
+    # Тут строим простой список нод вида 'node1 node2 node3'
+    local nodelist="$(pcs status nodes | awk '/Online:/ { sub($1, ""); sub(/^\s+/, ""); print $0; exit }')"
+    # Начало записи конфигурации
+    pcs cluster cib PGSQL_CFG
+    # Если нода оказывается вне кворума -- ресурсы останавливаются во избежание split-brain базы
+    pcs -f PGSQL_CFG property set no-quorum-policy="stop"
+    # STONITH тут нам не нужен (ещё ни разу не пригодился)
+    pcs -f PGSQL_CFG property set stonith-enabled="false"
+    # Полный запрет миграции здоровых ресурсов
+    pcs -f PGSQL_CFG resource defaults resource-stickiness="INFINITY"
+    # Не пытаться перезапустить упавший ресурс (предполагаем, что если база навернулась -- то на это есть причина)
+    pcs -f PGSQL_CFG resource defaults migration-threshold="1"
+    # Создаём ресурс для Главного плавающего IP-адреса
+    pcs -f PGSQL_CFG resource create VADDR-MAIN ocf:heartbeat:IPaddr2 \
+       ip="10.0.0.5" \
+       nic="eth0" \
+       cidr_netmask="29" \
+       op start   timeout="60s" interval="0s"  on-fail="restart" \
+       op monitor timeout="60s" interval="10s" on-fail="restart" \
+       op stop    timeout="60s" interval="0s"  on-fail="block"
+    # Создаём ресурс для IP-адреса, к которому цепляются реплики.
+    pcs -f PGSQL_CFG resource create VADDR-REPL ocf:heartbeat:IPaddr2 \
+       ip="10.0.0.6" \
+       nic="eth0" \
+       cidr_netmask="29" \
+       meta migration-threshold="0" \
+       op start   timeout="60s" interval="0s"  on-fail="stop" \
+       op monitor timeout="60s" interval="10s" on-fail="restart" \
+       op stop    timeout="60s" interval="0s"  on-fail="ignore"
+    # Создаём ресурс для СУБД. тут всё достаточно очевидно. Репликацию делаем асинхронную
+    pcs -f PGSQL_CFG resource create PGSQL ocf:southbridge:pgsql \
+       pgctl="/usr/pgsql-10/bin/pg_ctl" \
+       psql="/usr/pgsql-10/bin/psql" \
+       pgdata="/var/lib/pgsql/10/data/" \
+       rep_mode="async" \
+       restore_command="cp /var/lib/pgsql/10/pg_archive/%f %p" \
+       repuser="replicator" \
+       primary_conninfo_opt="keepalives_idle=60 keepalives_interval=5 keepalives_count=5" \
+       tmpdir="/var/lib/pgsql/10/tmp" \
+       master_ip="10.0.0.6" \
+       restart_on_promote='true' \
+       check_wal_receiver='true' \
+       node_list="$nodelist" \
+       op start   timeout="60s" interval="0s" on-fail="restart" \
+       op monitor timeout="60s" interval="4s" on-fail="restart" \
+       op monitor timeout="60s" interval="3s" on-fail="restart" role="Master" \
+       op promote timeout="60s" interval="0s" on-fail="restart" \
+       op demote  timeout="60s" interval="0s" on-fail="stop" \
+       op stop    timeout="60s" interval="0s" on-fail="block" \
+       op notify  timeout="60s" interval="0s"
+    # Создаём ресурс, обозначающий текущий мастер
+    pcs -f PGSQL_CFG resource master PG-MASTER PGSQL \
+       master-max=1 master-node-max=1 clone-max=3 clone-node-max=1 notify=true
+    # Объединяем ресурсы обоих плавающих адресов в группу
+    pcs -f PGSQL_CFG resource group add MASTER-GROUP VADDR-MAIN VADDR-REPL
+    # Указываем, что ресурсы MASTER-GROUP всегда должны жить вместе с мастером СУБД
+    pcs -f PGSQL_CFG constraint colocation add MASTER-GROUP with Master PG-MASTER INFINITY
+    # Обозначаем порядок промоута до мастера и выключения
+    pcs -f PGSQL_CFG constraint order promote PG-MASTER then start MASTER-GROUP symmetrical=false score=INFINITY
+    pcs -f PGSQL_CFG constraint order demote  PG-MASTER then stop  MASTER-GROUP symmetrical=false score=0
+    # Коммит конфигурации
+    pcs cluster cib-push PGSQL_CFG
+
+    chmod a-x "$0"
+}
+
+except() {
+    local ret=$?
+    echo "* FATAL: error occured on line ${1:-UNKNOWN}"
+    exit $ret
+}
+
+main
