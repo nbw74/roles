@@ -53,6 +53,7 @@ vhost:
     pass: password # mandatory
     encoding: utf8 # optional; default is "utf8" for mysql
     collation: utf8_general_ci # optional; default is "utf8_general_ci" for mysql
+    extensions: [ 'string', ... ] # optional if use postgresql
     pgbouncer: # optional if use postgresql
       host: pgbouncer.example.org # mandatory if use pgbouncer
       port: 6432 # optinal
