@@ -37,13 +37,16 @@
     mode: 0750
   tags: [ initdb ]
 
-- name: Custom config directory
-  become: yes
-  become_user: "{{ postgresql_user }}"
+- name: Custom config and WAL backup dirs
   file:
-    path: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}"
+    path: "{{ item }}"
     state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_user }}"
     mode: 0700
+  with_items:
+    - "{{ postgresql_datadir }}/{{ postgresql_include_dir }}"
+    - "{{ postgresql_basedir }}/pg_archive"
   tags: [ initdb ]
 
 - name: Include in postgresql.conf
