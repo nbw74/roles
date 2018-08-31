@@ -77,6 +77,7 @@ vhost:
     process_idle_timeout: 10s # optional
     max_requests: 0 # optional
     template: "string" # fpm configuration; see below
+  idna: bool # Encode server_name in IDNA (Internationalized Domain Names in Applications)
   index: "myindex.php" # optional; default is "index.php"
   legacy: bool # optional; don't force web-server config templates
   listen: # optional; default is first public IP (or private, if no public addresses)

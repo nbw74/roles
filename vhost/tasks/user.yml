@@ -34,7 +34,7 @@
     src: "{{ item.ssh_key_file }}.pub"
     dest: "{{ item.home }}/.ssh/authorized_keys"
     remote_src: yes
-    force: no
+    force: yes
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
     mode: 0600
