@@ -53,6 +53,7 @@ vhost:
     pass: password # mandatory
     encoding: utf8 # optional; default is "utf8" for mysql
     collation: utf8_general_ci # optional; default is "utf8_general_ci" for mysql
+    extensions: [ 'string', ... ] # optional if use postgresql
     pgbouncer: # optional if use postgresql
       host: pgbouncer.example.org # mandatory if use pgbouncer
       port: 6432 # optinal
@@ -76,6 +77,7 @@ vhost:
     process_idle_timeout: 10s # optional
     max_requests: 0 # optional
     template: "string" # fpm configuration; see below
+  idna: bool # Encode server_name in IDNA (Internationalized Domain Names in Applications)
   index: "myindex.php" # optional; default is "index.php"
   legacy: bool # optional; don't force web-server config templates
   listen: # optional; default is first public IP (or private, if no public addresses)

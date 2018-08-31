@@ -3,8 +3,13 @@
 {% if item.crypto|d('none') == 'none' %}
 server {
 {% include "nginx/listen-plain.j2" %}
+{% if item.idna|d() %}
+    server_name		{{ item.name.encode('idna') }}
+			www.{{ item.name.encode('idna') }}
+{% else %}
     server_name		{{ item.name }}
 			www.{{ item.name }}
+{% endif %}
 {% if item.alias is defined %}
 {% for name in item.alias %}
 			{{ name }}
@@ -21,9 +26,15 @@ server {
 {% if item.crypto|d('none') != 'none' %}
 server {
 {% include "nginx/listen-crypto.j2" %}
+{% if item.idna|d() %}
+    server_name		{{ item.name.encode('idna') }}
+			www.{{ item.name.encode('idna') }}
+			;
+{% else %}
     server_name		{{ item.name }}
 			www.{{ item.name }}
 			;
+{% endif %}
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl.j2" %}
 
