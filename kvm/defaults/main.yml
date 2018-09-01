@@ -3,5 +3,7 @@ kvm_accept_existing_disks: false
 kvm_common_case: false
 kvm_leave_hostname: false
 kvm_nested: false
+kvm_pool: []
 kvm_templates_uri: "http://example.com/images"
+kvm_vm: []
 ...

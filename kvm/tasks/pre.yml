@@ -1,0 +1,69 @@
+---
+- name: Get existing VMs
+  virt:
+    command: list_vms
+  register: kvm_existing_vms
+
+- name: Get host CPU model
+  shell: >
+    virsh capabilities
+    | awk '/model/ { gsub(/<\/*[[:alnum:]]*>/, ""); gsub(/[[:space:]]/, ""); print; exit }'
+  register: kvm_host_cpu_model
+  changed_when: false
+
+# Extract pool 'path' and 'pool type' fields from pool XML-file,
+# located in the /etc/libvirt/storage, and store these values in
+# the kvm_pool_result.results.stdout_lines
+- name: Get pool path
+  shell: >
+    awk '/path/ { gsub(/<\/*[[:alnum:]]*>/, ""); gsub(/[[:space:]]/, ""); path=$0 };
+    /pool type/ { match($0, /dir|logical/); type=substr($0, RSTART, RLENGTH) };
+    END { print path; print type }' /etc/libvirt/storage/{{ item.pool_name }}.xml
+  when: >
+    (item.name not in kvm_existing_vms.list_vms and item.state|d('running') != 'undefined') or
+    (item.name in kvm_existing_vms.list_vms and item.state|d('running') == 'undefined')
+  with_items: "{{ kvm_vm }}"
+  loop_control:
+    label: "{{ item.pool_name }}"
+  register: kvm_pool_result
+  changed_when: kvm_pool_result.stdout_lines is defined
+
+# - name: Get pool path (xml)
+#   xml: 
+#     path: "/etc/libvirt/storage/{{ item.pool_name }}.xml"
+#     xpath: "/pool/target/path"
+#     content: text
+#   when: >
+#     item.name not in kvm_existing_vms.list_vms
+#   with_items: "{{ kvm_vm }}"
+#   loop_control:
+#     label: "{{ item.pool_name }}"
+#   register: kvm_pool_xml_path
+# 
+# - name: Get pool type (xml)
+#   xml: 
+#     path: "/etc/libvirt/storage/{{ item.pool_name }}.xml"
+#     xpath: "/pool"
+#     content: attribute
+#     attribute: type
+#   when: >
+#     item.name not in kvm_existing_vms.list_vms
+#   with_items: "{{ kvm_vm }}"
+#   loop_control:
+#     label: "{{ item.pool_name }}"
+#   register: kvm_pool_xml_type
+# 
+# - debug:
+#     msg: "{{ item.matches[0].path }}"
+#   when: item.matches is defined
+#   with_items: "{{ kvm_pool_xml_path.results }}"
+# 
+# - debug:
+#     msg: "{{ item.matches[0].pool.type }}"
+#   when: item.matches is defined
+#   with_items: "{{ kvm_pool_xml_type.results }}"
+# 
+# - debug:
+#     msg: "{{ item }}"
+#   with_items: "{{ kvm_pool_result.results }}"
+...

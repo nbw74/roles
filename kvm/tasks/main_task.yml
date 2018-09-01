@@ -28,17 +28,21 @@
     state: directory
   delegate_to: localhost
 
-- name: Import management settings
-  import_tasks: admins.yml
+- import_tasks: admins.yml
 
-- name: Import network configuration tasks
-  import_tasks: net.yml
+- import_tasks: net.yml
 
-- name: Import storage pools configuration tasks
-  import_tasks: pool.yml
-  when: kvm_pool is defined
+- import_tasks: pool.yml
+  when: kvm_pool|length > 0
 
-- name: Import VM management tasks
-  include: pre_vm.yml
-  when: kvm_vm is defined
+- block:
+  - import_tasks: pre.yml
+
+  - include_tasks: virt.yml
+    when:
+      - kvm_pool_result.results is defined
+      - kvm_pool_result.changed
+
+  - import_tasks: state.yml
+  when: kvm_vm|length > 0
 ...

@@ -1,5 +1,5 @@
 ---
-- name: "Copy console override file"
+- name: Copy console override file
   copy:
     src: "{{ item }}"
     dest: "{{ kvm_templates_path }}/{{ item }}"
@@ -8,7 +8,7 @@
   loop_control:
     label: "{{ item }}"
 
-- name: "Copy ansible config files (I)"
+- name: Template  ansible config files (I)
   template:
     src: "{{ item.src }}"
     dest: "{{ kvm_templates_path }}/{{ item.dest }}"
@@ -22,7 +22,7 @@
   loop_control:
     label: "{{ item.dest }}"
 
-- name: "Copy ansible config files (II)"
+- name: Copy ansible config files (II)
   copy:
     src: "{{ item.src }}"
     dest: "{{ kvm_templates_path_bis }}/{{ item.dest }}"
@@ -34,18 +34,18 @@
   loop_control:
     label: "{{ item.dest }}"
 
-- name: "Create temporary file (I)"
+- name: Create temporary file (I)
   tempfile:
     state: file
   register: kvm_sysprep_tmp_1
 
-- name: "Create temporary file (II)"
+- name: Create temporary file (II)
   tempfile:
     state: file
     suffix: ".sh"
   register: kvm_sysprep_tmp_2
 
-- name: "Sysprep customize operations script (I)"
+- name: Sysprep customize operations script (I)
   blockinfile:
     path: "{{ kvm_sysprep_tmp_2.path }}"
     block: |
@@ -72,12 +72,11 @@
       fi
       {% endif %}
 
-- name: "Sysprep customize operations script (II)"
+- name: Sysprep customize operations script (II)
   lineinfile:
     path: "{{ kvm_sysprep_tmp_2.path }}"
     regexp: '^# BEGIN'
     state: absent
-  when: not kvm_common_case
 
 - name: Sysprep customize operations file
   blockinfile:
@@ -112,4 +111,41 @@
   with_items: "{{ kvm_get_templates.results }}"
   loop_control:
     label: "{{ item.dest|d('null') }}"
+
+- name: Create temp dir for ifcfg files
+  file:
+    path: "{{ kvm_templates_path }}/{{ item.item.name }}"
+    state: directory
+  when:
+    - item.item.name not in kvm_existing_vms.list_vms
+    - item.item.state|d('running') != 'undefined'
+  with_items:
+    - "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Touch placeholder in temp dir
+  file:
+    path: "{{ kvm_templates_path }}/{{ item.item.name }}/placeholder.bak"
+    state: touch
+  when:
+    - item.item.name not in kvm_existing_vms.list_vms
+    - item.item.state|d('running') != 'undefined'
+  with_items:
+    - "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Create ifcfg files from template
+  template:
+    src: "vm_ifcfg.j2"
+    dest: "{{ kvm_templates_path }}/{{ item.0.item.name }}/ifcfg-{{ item.1.dev }}"
+  when:
+    - item.0.item.name not in kvm_existing_vms.list_vms
+    - item.0.item.state|d('running') != 'undefined'
+  with_subelements:
+    - "{{ kvm_pool_result.results }}"
+    - item.sysprep_ifcfg
+    - flags:
+      skip_missing: true
 ...

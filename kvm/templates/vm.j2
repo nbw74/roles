@@ -2,7 +2,7 @@
   <name>{{ item.item.name }}</name>
   <memory unit='MiB'>{{ item.item.memory_mb|d('1024') }}</memory>
   <currentMemory unit='MiB'>{{ item.item.memory_mb|d('1024') }}</currentMemory>
-  <vcpu placement='static'>{{ item.item.cpu_count|d('2') }}</vcpu>
+  <vcpu placement='static'>{{ item.item.cpu_count|d('1') }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
     <boot dev='hd'/>

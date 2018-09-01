@@ -13,7 +13,9 @@
     dest: "{{ kvm_templates_path }}/{{ item.item.template_name }}.bz2"
     mode: 0640
     force: no
-  when: item.item.name not in kvm_existing_vms.list_vms
+  when:
+    - item.item.name not in kvm_existing_vms.list_vms
+    - item.item.state|d('running') != 'undefined'
   with_items: "{{ kvm_pool_result.results }}"
   register: kvm_get_templates
   loop_control:
