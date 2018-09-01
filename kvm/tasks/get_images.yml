@@ -9,17 +9,17 @@
 
 - name: Get VM templates
   get_url:
-    url: "{{ kvm_templates_uri }}/{{ item.item.template_name }}.bz2"
-    dest: "{{ kvm_templates_path }}/{{ item.item.template_name }}.bz2"
+    url: "{{ kvm_templates_uri }}/{{ item.template_name }}.bz2"
+    dest: "{{ kvm_templates_path }}/{{ item.template_name }}.bz2"
     mode: 0640
     force: no
   when:
-    - item.item.name not in kvm_existing_vms.list_vms
-    - item.item.state|d('running') != 'undefined'
-  with_items: "{{ kvm_pool_result.results }}"
+    - item.name not in kvm_existing_vms.list_vms
+    - item.state|d('running') != 'undefined'
+  with_items: "{{ kvm_vm }}"
   register: kvm_get_templates
   loop_control:
-    label: "{{ item.item.name }}:{{ item.item.template_name|d('null') }}"
+    label: "{{ item.name }}:{{ item.template_name|d('null') }}"
 
 - name: VM templates uncompressed
   command: "lbzip2 -fd {{ item.dest }}"

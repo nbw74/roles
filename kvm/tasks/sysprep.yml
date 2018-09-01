@@ -114,38 +114,38 @@
 
 - name: Create temp dir for ifcfg files
   file:
-    path: "{{ kvm_templates_path }}/{{ item.item.name }}"
+    path: "{{ kvm_templates_path }}/{{ item.name }}"
     state: directory
   when:
-    - item.item.name not in kvm_existing_vms.list_vms
-    - item.item.state|d('running') != 'undefined'
+    - item.name not in kvm_existing_vms.list_vms
+    - item.state|d('running') != 'undefined'
   with_items:
-    - "{{ kvm_pool_result.results }}"
+    - "{{ kvm_vm }}"
   loop_control:
-    label: "{{ item.item.name }}"
+    label: "{{ item.name }}"
 
 - name: Touch placeholder in temp dir
   file:
-    path: "{{ kvm_templates_path }}/{{ item.item.name }}/placeholder.bak"
+    path: "{{ kvm_templates_path }}/{{ item.name }}/placeholder.bak"
     state: touch
   when:
-    - item.item.name not in kvm_existing_vms.list_vms
-    - item.item.state|d('running') != 'undefined'
+    - item.name not in kvm_existing_vms.list_vms
+    - item.state|d('running') != 'undefined'
   with_items:
-    - "{{ kvm_pool_result.results }}"
+    - "{{ kvm_vm }}"
   loop_control:
-    label: "{{ item.item.name }}"
+    label: "{{ item.name }}"
 
 - name: Create ifcfg files from template
   template:
     src: "vm_ifcfg.j2"
-    dest: "{{ kvm_templates_path }}/{{ item.0.item.name }}/ifcfg-{{ item.1.dev }}"
+    dest: "{{ kvm_templates_path }}/{{ item.0.name }}/ifcfg-{{ item.1.dev }}"
   when:
-    - item.0.item.name not in kvm_existing_vms.list_vms
-    - item.0.item.state|d('running') != 'undefined'
+    - item.0.name not in kvm_existing_vms.list_vms
+    - item.0.state|d('running') != 'undefined'
   with_subelements:
-    - "{{ kvm_pool_result.results }}"
-    - item.sysprep_ifcfg
+    - "{{ kvm_vm }}"
+    - sysprep_ifcfg
     - flags:
       skip_missing: true
 ...

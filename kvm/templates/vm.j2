@@ -1,8 +1,8 @@
 <domain type='kvm'>
-  <name>{{ item.item.name }}</name>
-  <memory unit='MiB'>{{ item.item.memory_mb|d('1024') }}</memory>
-  <currentMemory unit='MiB'>{{ item.item.memory_mb|d('1024') }}</currentMemory>
-  <vcpu placement='static'>{{ item.item.cpu_count|d('1') }}</vcpu>
+  <name>{{ item[0].name }}</name>
+  <memory unit='MiB'>{{ item[0].memory_mb|d('1024') }}</memory>
+  <currentMemory unit='MiB'>{{ item[0].memory_mb|d('1024') }}</currentMemory>
+  <vcpu placement='static'>{{ item[0].cpu_count|d('1') }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
     <boot dev='hd'/>
@@ -11,9 +11,9 @@
     <acpi/>
     <apic/>
   </features>
-  {% if item.item.cpu_custom|d() %}
+  {% if item[0].cpu_custom|d() %}
   <cpu mode='custom' match='exact'>
-    <model fallback='allow'>{{ kvm_host_cpu_model.stdout }}</model>
+    <model fallback='allow'>{{ kvm_host_cpu_model.matches[0].model }}</model>
   </cpu>
   {% else %}
   <cpu mode='host-model'>
@@ -34,10 +34,10 @@
   </pm>
   <devices>
     <emulator>/usr/libexec/qemu-kvm</emulator>
-    <disk type='{% if item.stdout_lines[1] == "logical" %}block{% elif item.stdout_lines[1] == "dir" %}file{% endif %}' device='disk'>
-      <driver name='qemu' type='{{ item.item.disk_format|d('raw') }}' cache='none' io='native'/>
-      <source {% if item.stdout_lines[1] == "logical" %}dev{% elif item.stdout_lines[1] == "dir" %}file{% endif %}='{{ item.stdout_lines[0] }}/vm_{{ item.item.name }}'/>
-      <target dev='vda' bus='{{ item.item.disk_bus|default('virtio') }}'/>
+    <disk type='{% if item[2].matches[0].pool.type == "logical" %}block{% elif item[2].matches[0].pool.type == "dir" %}file{% endif %}' device='disk'>
+      <driver name='qemu' type='{{ item[0].disk_format|d('raw') }}' cache='none' io='native'/>
+      <source {% if item[2].matches[0].pool.type == "logical" %}dev{% elif item[2].matches[0].pool.type == "dir" %}file{% endif %}='{{ item[1].matches[0].path }}/vm_{{ item[0].name }}'/>
+      <target dev='vda' bus='{{ item[0].disk_bus|default('virtio') }}'/>
     </disk>
     <controller type='usb' index='0' model='ich9-ehci1'>
     </controller>
@@ -54,8 +54,8 @@
     <controller type='virtio-serial' index='0'>
     </controller>
     <interface type='bridge'>
-      <source bridge='{{ item.item.nic_bridge }}'/>
-      <model type='{{ item.item.nic_model|default('virtio') }}'/>
+      <source bridge='{{ item[0].nic_bridge }}'/>
+      <model type='{{ item[0].nic_model|default('virtio') }}'/>
     </interface>
     <serial type='pty'>
       <target port='0'/>

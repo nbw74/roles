@@ -33,13 +33,13 @@ kvm_vm:
   nic_model: "string" # (default: virtio) модель виртуальной сетевой карты (virtio|e1000|rtl8139)
   pool_name: "string" # (mandatory) Используемый пул хранения
   state: "string" # (default: running) Состояние ВМ (running|shutdown|destroyed|paused)
+  sysprep_domain: "string" # Доменное имя для sysprep (по-умолчанию выделяется из ansible_nodename)
   sysprep_ifcfg: # (optional) Конфигурация интерфейсов.
     - dev: "eth0" # Имя интерфейса
       bootproto: "static" # Протокол загрузки (static|dhcp)
       address: "198.51.100.10/28" # IP-адрес (для static)
       peer: "198.51.100.1" # Указание peer (для p2p, как в Хетцнере)
       gateway: "198.51.100.1" # Шлюз по-умолчанию
-      domain: "string" # Доменное имя для sysprep (по-умолчанию выделяется из ansible_nodename)
   sysprep_root_pass: # (optional) Пароль root
   template_name: "vm_template_c7_sb.qcow2" # (mandatory) Имя файла образа-шаблона
 
