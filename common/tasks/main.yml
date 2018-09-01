@@ -12,6 +12,8 @@
 - import_tasks: snmpd.yml
 
 - import_tasks: rsyslog.yml
+  when:
+    - not alien
 
 - import_tasks: mail.yml
 
