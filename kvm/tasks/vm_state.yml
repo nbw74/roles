@@ -2,21 +2,17 @@
 - name: Check VM state
   virt:
     name: "{{ item.name }}"
-    state: "{{ item.state }}"
-  when:
-    - item.state is defined
+    state: "{{ item.state|d('running') }}"
   with_items: "{{ kvm_vm }}"
   loop_control:
-    label: "{{ item.name }}:{{ item.state|d('null') }}"
+    label: "{{ item.name }}:{{ item.state|d('running') }}"
 
 - name: Manage VM autostart
   virt:
     name: "{{ item.name }}"
-    autostart: "{{ (item.state == "running")|ternary('true','false') }}"
-  when:
-    - item.state is defined
+    autostart: "{{ (item.state|d('running') == 'running')|ternary('true','false') }}"
   with_items: "{{ kvm_vm }}"
   loop_control:
-    label: "{{ item.name }}:{{ (item.state|d('null') == "running")|ternary('true','false') }}"
+    label: "{{ item.name }}:{{ (item.state|d('running') == 'running')|ternary('true','false') }}"
   failed_when: false
 ...

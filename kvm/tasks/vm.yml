@@ -2,8 +2,10 @@
 - name: Check if VM disk image already exists
   stat:
     path: "{{ item.stdout_lines[0] }}/vm_{{ item.item.name }}"
-  with_items: "{{ kvm_pool_result.results }}"
   when: item.item.name not in kvm_existing_vms.list_vms
+  with_items: "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
   changed_when: kvm_disk_stat.stat.exists
   register: kvm_disk_stat
 
@@ -17,7 +19,7 @@
     - not kvm_accept_existing_disks
   with_items: "{{ kvm_disk_stat.results }}"
   loop_control:
-    label: "{{ item.stat|d('null') }}"
+    label: "{{ (item.stat|default(dict(path='null')))['path']|d('null') }}"
 
 - name: Include templates delivery
   import_tasks: vm_templates_get.yml
@@ -39,27 +41,31 @@
     - item.stdout_lines[1] == "logical"
   with_items: "{{ kvm_pool_result.results }}"
   loop_control:
-    label: "{{ item.stdout_lines[0]|basename|d('null') }}:{{ item.item.name|d('null') }}"
+    label: "{{ item.item.name|d('null') }}"
 
 - name: Create VM disk from template (with virt-sysprep)
   shell: >
     virt-sysprep --quiet --operations customize,lvm-uuids
-    {{ kvm_leave_hostname|ternary('','--hostname ' ~ item.item.name ~ '.' ~
-    item.item.domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
-    --copy-in {{ kvm_templates_path }}/{{ item.item.name }}:/var/local
-    --run-command 'mv /var/local/{{ item.item.name }}/* /etc/sysconfig/network-scripts'
-    {{ (item.item.sysprep_root_pass is defined)
-    |ternary('--root-password password:' ~ item.item.sysprep_root_pass|d(),'') }}
+    {{ kvm_leave_hostname|ternary('','--hostname ' ~ item[0].item.name ~ '.' ~
+    item[0].item.domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
+    --copy-in {{ kvm_templates_path }}/{{ item[0].item.name }}:/var/local
+    --run-command 'mv /var/local/{{ item[0].item.name }}/* /etc/sysconfig/network-scripts'
+    {{ (item[0].item.sysprep_root_pass is defined)
+    |ternary('--root-password password:' ~ item[0].item.sysprep_root_pass|d(),'') }}
     {{ (kvm_sysprep_root_key is defined)
-    |ternary('--ssh-inject root:string:' ~ kvm_sysprep_root_key|d(),'') }}
-    -a {{ kvm_templates_path }}/{{ item.item.template_name }} &&
-    qemu-img convert -q -O {{ item.item.disk_format|d('raw') }}
-    {{ kvm_templates_path }}/{{ item.item.template_name }}
-    {{ item.stdout_lines[0] }}/vm_{{ item.item.name }}
-  when: item.item.name not in kvm_existing_vms.list_vms
-  with_items: "{{ kvm_pool_result.results }}"
+    |ternary('--ssh-inject "root:string:' ~ kvm_sysprep_root_key ~ '"'|d(),'') }}
+    -a {{ kvm_templates_path }}/{{ item[0].item.template_name }} &&
+    qemu-img convert -q -O {{ item[0].item.disk_format|d('raw') }}
+    {{ kvm_templates_path }}/{{ item[0].item.template_name }}
+    {{ item[0].stdout_lines[0] }}/vm_{{ item[0].item.name }}
+  when:
+    - item[0].item.name not in kvm_existing_vms.list_vms
+    - not item[1].stat.exists
+  with_together:
+    - "{{ kvm_pool_result.results }}"
+    - "{{ kvm_disk_stat.results }}"
   loop_control:
-    label: "{{ item.item.name|d('null') }}"
+    label: "{{ item[0].item.name|d('null') }}"
 
 - name: Include templates removing
   include: vm_templates_del.yml

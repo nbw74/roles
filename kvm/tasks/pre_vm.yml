@@ -21,6 +21,8 @@
     END { print path; print type }' /etc/libvirt/storage/{{ item.pool_name }}.xml
   when: item.name not in kvm_existing_vms.list_vms
   with_items: "{{ kvm_vm }}"
+  loop_control:
+    label: "{{ item.pool_name }}"
   register: kvm_pool_result
   changed_when: kvm_pool_result.stdout_lines is defined
 

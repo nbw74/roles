@@ -4,7 +4,7 @@
     msg: "This role is designed for RHEL/CentOS 7 or above"
   when: ansible_distribution_major_version|int < 7
 
-- name: Presence of the required packages
+- name: Required packages
   yum:
     name: "{{ item }}"
     state: present

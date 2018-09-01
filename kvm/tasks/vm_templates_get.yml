@@ -26,5 +26,5 @@
     - item.dest is defined
   with_items: "{{ kvm_get_templates.results }}"
   loop_control:
-    label: "bzip2:{{ item.dest }}:d"
+    label: "lbzip2:d:{{ item.dest|d('null') }}"
 ...

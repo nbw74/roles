@@ -16,5 +16,3 @@
   loop_control:
     label: "{{ item.0.item.dev }}:{{ item.1|d('null') }}"
 ...
-#   async: 60
-#   poll: 0

@@ -5,6 +5,9 @@
   changed_when: false
   register: kvm_existing_pools
 
+- debug:
+    msg: "{{ kvm_existing_pools }}"
+
 - name: Generate pool template (local)
   become: no
   template:

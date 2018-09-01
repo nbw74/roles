@@ -1,4 +1,13 @@
 ---
+- name: "Copy console override file"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ kvm_templates_path }}/{{ item }}"
+  with_items:
+    - "autologin.conf"
+  loop_control:
+    label: "{{ item }}"
+
 - name: "Copy ansible config files (I)"
   template:
     src: "{{ item.src }}"
@@ -28,14 +37,12 @@
 - name: "Create temporary file (I)"
   tempfile:
     state: file
-  when: not kvm_common_case
   register: kvm_sysprep_tmp_1
 
 - name: "Create temporary file (II)"
   tempfile:
     state: file
     suffix: ".sh"
-  when: not kvm_common_case
   register: kvm_sysprep_tmp_2
 
 - name: "Sysprep customize operations script (I)"
@@ -45,6 +52,8 @@
       #!/bin/sh
       PATH=/bin:/sbin:/usr/bin:/usr/sbin
       setenforce 0
+      systemctl enable --now getty@ttyS0.service
+      {% if not kvm_common_case %}
       sed -r -i "s/^(SELINUX=)enforcing/\1permissive/" /etc/selinux/config
       sleep 60
       yum -q -y clean metadata
@@ -61,7 +70,7 @@
           firewall-cmd --zone=public --add-port=48022/tcp
           firewall-cmd --zone=public --add-port=48022/tcp --permanent
       fi
-  when: not kvm_common_case
+      {% endif %}
 
 - name: "Sysprep customize operations script (II)"
   lineinfile:
@@ -75,6 +84,10 @@
     path: "{{ kvm_sysprep_tmp_1.path }}"
     block: |
       copy-in /etc/resolv.conf:/etc
+      touch /.autorelabel
+      mkdir /etc/systemd/system/getty@ttyS0.service.d
+      copy-in {{ kvm_templates_path }}/autologin.conf:/etc/systemd/system/getty@ttyS0.service.d
+      {% if not kvm_common_case %}
       mkdir /etc/ssh_ansible
       link /usr/sbin/sshd:/usr/sbin/sshd_ansible
       copy-in {{ kvm_templates_path }}/sshd_config:/etc/ssh_ansible
@@ -85,16 +98,14 @@
       copy-in {{ kvm_templates_path_bis }}/ansible-sshd.conf:/etc/logrotate.d
       copy-in {{ kvm_templates_path }}/sshd_ansible.service:/usr/lib/systemd/system
       copy-in {{ kvm_templates_path_bis }}/ansible:/etc/sudoers.d
-      touch /.autorelabel
+      {% endif %}
       firstboot {{ kvm_sysprep_tmp_2.path }}
-  when: not kvm_common_case
 
 - name: Running sysprep on VM templates
   command: >
-    virt-sysprep --quiet
-    --operation {{ kvm_common_case|ternary('','customize,') }}defaults,-lvm-uuids
-    {{ kvm_common_case|ternary('','--commands-from-file ' ~ kvm_sysprep_tmp_1.path) }}
-    -a {{ item.dest | regex_replace('\\.bz2', '') }}
+    virt-sysprep --quiet --operation customize,defaults,-lvm-uuids
+    --commands-from-file {{ kvm_sysprep_tmp_1.path }}
+    -a {{ item.dest | regex_replace('\.bz2', '') }}
   when:
     - item.changed
     - item.dest is defined

@@ -6,6 +6,8 @@
   when: item.item.name not in kvm_existing_vms.list_vms
   with_items:
     - "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
 
 - name: Touch placeholder in temporary dir
   file:
@@ -14,6 +16,8 @@
   when: item.item.name not in kvm_existing_vms.list_vms
   with_items:
     - "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
 
 - name: Create ifcfg files from template
   template:
