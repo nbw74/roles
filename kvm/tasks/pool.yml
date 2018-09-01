@@ -1,0 +1,65 @@
+---
+- name: Check storage pools
+  virt_pool:
+    command: list_pools
+  changed_when: false
+  register: kvm_existing_pools
+
+- name: Generate pool template (local)
+  become: no
+  template:
+    src: "pool.j2"
+    dest: "{{ kvm_tmp_dir }}/{{ ansible_nodename }}-pool-{{ item.name }}.xml.j2"
+  when:
+    - item.name not in kvm_existing_pools.list_pools
+    - 'item.state == "active"'
+  with_items: "{{ kvm_pool }}"
+  loop_control:
+    label: "pool-{{ item.name }}"
+  delegate_to: localhost
+
+- name: Check pool catalog
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - item.name not in kvm_existing_pools.list_pools
+    - 'item.state == "active"'
+    - 'item.type == "dir"'
+  with_items: "{{ kvm_pool }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.path }}"
+
+- name: Define storage pools
+  virt_pool:
+    command: define
+    name: "{{ item.name }}"
+    xml: "{{ lookup('template', kvm_tmp_dir ~ '/' ~ ansible_nodename ~ '-pool-' ~ item.name ~ '.xml.j2') }}"
+  when:
+    - item.name not in kvm_existing_pools.list_pools
+    - 'item.state == "active"'
+  with_items: "{{ kvm_pool }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Pool state
+  virt_pool:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ kvm_pool }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.state }}"
+
+- name: Pool autostart
+  virt_pool:
+    name: "{{ item.name }}"
+    autostart: true
+  when:
+    - 'item.state == "active"'
+  with_items: "{{ kvm_pool }}"
+  loop_control:
+    label: "{{ item.name }}"
+...

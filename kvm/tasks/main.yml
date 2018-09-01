@@ -1,0 +1,11 @@
+---
+- name: Fails if vz7 and kvm role exists
+  fail:
+    msg: "FATAL: Both vz7 and kvm role exists"
+  when:
+    - "'kvm' in roles"
+    - "'vz7' in roles"
+
+- include: main_task.yml
+  when: "'kvm' in roles"
+...

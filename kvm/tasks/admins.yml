@@ -1,0 +1,33 @@
+---
+- name: Admins list (root group)
+  shell: >
+    awk 'BEGIN { FS=":" } $4 ~ "^(10|0)$" { print $1 }' /etc/passwd
+    | egrep -v '{{ kvm_excluded_system_users }}'
+  register: kvm_admins
+  failed_when: false
+  changed_when: false
+
+- name: Admins list (wheel group)
+  shell: >
+    awk 'BEGIN { FS = ":" } $1 == "wheel" { print $NF }' /etc/group
+    | awk '$1=$1' FS="," OFS=" "
+  register: kvm_admins_wheel
+  failed_when: false
+  changed_when: false
+
+- name: Admins is a members of the libvirt group
+  user: 
+    name: "{{ item }}"
+    groups: libvirt
+    append: yes
+  with_items:
+    - "{{ kvm_admins.stdout.split() }}"
+    - "{{ kvm_admins_wheel.stdout.split() }}"
+
+- name: Shell environment variables
+  lineinfile:
+    path: "{{ kvm_shell_variables_file }}"
+    line: "export LIBVIRT_DEFAULT_URI=qemu:///system"
+    state: present
+    create: yes
+...

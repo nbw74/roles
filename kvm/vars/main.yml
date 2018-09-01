@@ -1,0 +1,24 @@
+---
+kvm_pkgs:
+  - qemu-kvm
+  - qemu-img
+  - libvirt
+  - libvirt-client
+  - libvirt-python
+  - virt-install
+  - libguestfs-tools
+  - python-lxml
+  - gdisk
+  - lbzip2
+  - yum-utils
+
+kvm_sysprep_pkgs: "python2-simplejson libselinux-python sudo"
+
+kvm_tmp_dir: "/tmp/ansible-kvm"
+kvm_module_nested_file: "/etc/modprobe.d/kvm.conf"
+kvm_shell_variables_file: "/etc/profile.d/libvirt.sh"
+kvm_excluded_system_users: "root|sync|shutdown|halt|operator|ansible"
+
+kvm_templates_path: "/var/lib/libvirt/templates.tmp"
+kvm_templates_path_bis: "/var/lib/libvirt/templates-bis.tmp"
+...

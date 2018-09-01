@@ -1,0 +1,98 @@
+---
+- name: Check if VM disk image already exists
+  stat:
+    path: "{{ item.stdout_lines[0] }}/vm_{{ item.item.name }}"
+  with_items: "{{ kvm_pool_result.results }}"
+  when: item.item.name not in kvm_existing_vms.list_vms
+  changed_when: kvm_disk_stat.stat.exists
+  register: kvm_disk_stat
+
+- name: Fails is VM disk image already exists
+  fail:
+    msg: "FATAL: VM DISK IMAGE ALREADY EXISTS"
+  when:
+    - kvm_disk_stat is defined
+    - item.changed
+    - item.stat.exists
+    - not kvm_accept_existing_disks
+  with_items: "{{ kvm_disk_stat.results }}"
+  loop_control:
+    label: "{{ item.stat|d('null') }}"
+
+- name: Include templates delivery
+  import_tasks: vm_templates_get.yml
+
+- name: Include virt-sysprep (I-st stage)
+  import_tasks: sysprep.yml
+
+- name: Include virt-sysprep (ifcfg)
+  import_tasks: vm_sysprep_ifcfg.yml
+
+- name: Create LV for VM storage
+  lvol:
+    lv: "vm_{{ item.item.name }}"
+    size: "{{ item.item.disk_gb|d('16') }}G"
+    state: present
+    vg: "{{ item.stdout_lines[0]|basename }}"
+  when:
+    - item.item.name not in kvm_existing_vms.list_vms
+    - item.stdout_lines[1] == "logical"
+  with_items: "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.stdout_lines[0]|basename|d('null') }}:{{ item.item.name|d('null') }}"
+
+- name: Create VM disk from template (with virt-sysprep)
+  shell: >
+    virt-sysprep --quiet --operations customize,lvm-uuids
+    {{ kvm_leave_hostname|ternary('','--hostname ' ~ item.item.name ~ '.' ~
+    item.item.domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
+    --copy-in {{ kvm_templates_path }}/{{ item.item.name }}:/var/local
+    --run-command 'mv /var/local/{{ item.item.name }}/* /etc/sysconfig/network-scripts'
+    {{ (item.item.sysprep_root_pass is defined)
+    |ternary('--root-password password:' ~ item.item.sysprep_root_pass|d(),'') }}
+    {{ (kvm_sysprep_root_key is defined)
+    |ternary('--ssh-inject root:string:' ~ kvm_sysprep_root_key|d(),'') }}
+    -a {{ kvm_templates_path }}/{{ item.item.template_name }} &&
+    qemu-img convert -q -O {{ item.item.disk_format|d('raw') }}
+    {{ kvm_templates_path }}/{{ item.item.template_name }}
+    {{ item.stdout_lines[0] }}/vm_{{ item.item.name }}
+  when: item.item.name not in kvm_existing_vms.list_vms
+  with_items: "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name|d('null') }}"
+
+- name: Include templates removing
+  include: vm_templates_del.yml
+
+- name: Resize VM storage (file)
+  command: >
+    qemu-img resize -q {{ item.stdout_lines[0] }}/vm_{{ item.item.name }}
+    {{ item.item.disk_gb|d('16') }}G
+  when:
+    - item.item.name not in kvm_existing_vms.list_vms
+    - item.stdout_lines[1] == "dir"
+  with_items: "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}:{{ item.item.disk_gb|d('16') }}"
+
+- name: Generate VM XML template (local)
+  become: no
+  template:
+    src: "vm.j2"
+    dest: "{{ kvm_tmp_dir }}/{{ ansible_nodename }}-vm-{{ item.item.name }}.xml.j2"
+  with_items: "{{ kvm_pool_result.results }}"
+  when: item.item.name not in kvm_existing_vms.list_vms
+  loop_control:
+    label: "{{ item.item.name }}"
+  delegate_to: localhost
+
+- name: Define VMs
+  virt:
+    command: define
+    name: "{{ item.item.name }}"
+    xml: "{{ lookup('template',  kvm_tmp_dir ~ '/' ~ ansible_nodename ~ '-vm-' ~ item.item.name ~ '.xml.j2') }}"
+  when: item.item.name not in kvm_existing_vms.list_vms
+  with_items: "{{ kvm_pool_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+...

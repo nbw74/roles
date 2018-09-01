@@ -1,0 +1,28 @@
+---
+- name: Create temporary dir for templates
+  file:
+    path: "{{ kvm_templates_path }}/{{ item.item.name }}"
+    state: directory
+  when: item.item.name not in kvm_existing_vms.list_vms
+  with_items:
+    - "{{ kvm_pool_result.results }}"
+
+- name: Touch placeholder in temporary dir
+  file:
+    path: "{{ kvm_templates_path }}/{{ item.item.name }}/placeholder.bak"
+    state: touch
+  when: item.item.name not in kvm_existing_vms.list_vms
+  with_items:
+    - "{{ kvm_pool_result.results }}"
+
+- name: Create ifcfg files from template
+  template:
+    src: "vm_ifcfg.j2"
+    dest: "{{ kvm_templates_path }}/{{ item.0.item.name }}/ifcfg-{{ item.1.dev }}"
+  when: item.0.item.name not in kvm_existing_vms.list_vms
+  with_subelements:
+    - "{{ kvm_pool_result.results }}"
+    - item.sysprep_ifcfg
+    - flags:
+      skip_missing: true
+...

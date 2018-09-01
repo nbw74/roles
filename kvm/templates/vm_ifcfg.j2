@@ -1,0 +1,14 @@
+DEVICE="{{ item.1.dev }}"
+TYPE="Ethernet"
+ONBOOT="yes"
+BOOTPROTO="{{ item.1.bootproto }}"
+{% if item.1.bootproto == "static" %}
+IPADDR="{{ item.1.address|ipv4('address') }}"
+PREFIX="{{ item.1.address|ipv4('prefix') }}"
+{% if item.1.peer is defined %}
+SCOPE="peer {{ item.1.peer }}"
+{% endif %}
+{% if item.1.gateway is defined %}
+GATEWAY="{{ item.1.gateway }}"
+{% endif %}
+{% endif %}

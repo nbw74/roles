@@ -1,0 +1,17 @@
+---
+- name: Remove temporary dirs for templates
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ kvm_templates_path }}"
+    - "{{ kvm_templates_path_bis }}"
+
+- name: Remove temporary files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ kvm_sysprep_tmp_1.path }}"
+    - "{{ kvm_sysprep_tmp_2.path }}"
+...

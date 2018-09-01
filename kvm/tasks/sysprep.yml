@@ -1,0 +1,104 @@
+---
+- name: "Copy ansible config files (I)"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ kvm_templates_path }}/{{ item.dest }}"
+  when: not kvm_common_case
+  with_items:
+    - { src: "../../ansible-sshd/templates/etc/ssh_ansible/sshd_config", dest: "sshd_config" }
+    - { src: "../../ansible-sshd/templates/etc/pam.d/sshd_ansible", dest: "sshd_ansible" }
+    - { src: "../../ansible-sshd/templates/etc/ansible-sshd-passwd", dest: "ansible-sshd-passwd" }
+    - { src: "../../ansible-sshd/templates/etc/rsyslog.d/ansible-sshd.conf", dest: "ansible-sshd.conf" }
+    - { src: "../../ansible-sshd/templates/etc/systemd/system/sshd_ansible.service", dest: "sshd_ansible.service" }
+  loop_control:
+    label: "{{ item.dest }}"
+
+- name: "Copy ansible config files (II)"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ kvm_templates_path_bis }}/{{ item.dest }}"
+  when: not kvm_common_case
+  with_items:
+    - { src: "../../ansible-sshd/templates/etc/sysconfig/sshd_ansible", dest: "sshd_ansible" }
+    - { src: "../../ansible-sshd/templates/etc/logrotate.d/ansible-sshd.conf", dest: "ansible-sshd.conf" }
+    - { src: "../../ansible-sshd/templates/etc/sudoers.d/ansible", dest: "ansible" }
+  loop_control:
+    label: "{{ item.dest }}"
+
+- name: "Create temporary file (I)"
+  tempfile:
+    state: file
+  when: not kvm_common_case
+  register: kvm_sysprep_tmp_1
+
+- name: "Create temporary file (II)"
+  tempfile:
+    state: file
+    suffix: ".sh"
+  when: not kvm_common_case
+  register: kvm_sysprep_tmp_2
+
+- name: "Sysprep customize operations script (I)"
+  blockinfile:
+    path: "{{ kvm_sysprep_tmp_2.path }}"
+    block: |
+      #!/bin/sh
+      PATH=/bin:/sbin:/usr/bin:/usr/sbin
+      setenforce 0
+      sed -r -i "s/^(SELINUX=)enforcing/\1permissive/" /etc/selinux/config
+      sleep 60
+      yum -q -y clean metadata
+      yum -q -y makecache
+      yum -q -y install epel-release
+      yum -q -y install {{ kvm_sysprep_pkgs }}
+      useradd -g wheel -m -d{{ ansible_home }} ansible
+      mkdir -m 0700 {{ ansible_home }}/{{ ansible_key_dir }}
+      chown ansible {{ ansible_home }}/{{ ansible_key_dir }}
+      echo "{{ ansible_key_data }}" > "{{ ansible_home }}/{{ ansible_key_dir }}/{{ ansible_key_file }}"
+      chown ansible:wheel "{{ ansible_home }}/{{ ansible_key_dir }}/{{ ansible_key_file }}"
+      systemctl enable --now sshd_ansible.service
+      if systemctl is-enabled firewalld.service; then
+          firewall-cmd --zone=public --add-port=48022/tcp
+          firewall-cmd --zone=public --add-port=48022/tcp --permanent
+      fi
+  when: not kvm_common_case
+
+- name: "Sysprep customize operations script (II)"
+  lineinfile:
+    path: "{{ kvm_sysprep_tmp_2.path }}"
+    regexp: '^# BEGIN'
+    state: absent
+  when: not kvm_common_case
+
+- name: Sysprep customize operations file
+  blockinfile:
+    path: "{{ kvm_sysprep_tmp_1.path }}"
+    block: |
+      copy-in /etc/resolv.conf:/etc
+      mkdir /etc/ssh_ansible
+      link /usr/sbin/sshd:/usr/sbin/sshd_ansible
+      copy-in {{ kvm_templates_path }}/sshd_config:/etc/ssh_ansible
+      copy-in {{ kvm_templates_path }}/sshd_ansible:/etc/pam.d
+      copy-in {{ kvm_templates_path_bis }}/sshd_ansible:/etc/sysconfig
+      copy-in {{ kvm_templates_path }}/ansible-sshd-passwd:/etc
+      copy-in {{ kvm_templates_path }}/ansible-sshd.conf:/etc/rsyslog.d
+      copy-in {{ kvm_templates_path_bis }}/ansible-sshd.conf:/etc/logrotate.d
+      copy-in {{ kvm_templates_path }}/sshd_ansible.service:/usr/lib/systemd/system
+      copy-in {{ kvm_templates_path_bis }}/ansible:/etc/sudoers.d
+      touch /.autorelabel
+      firstboot {{ kvm_sysprep_tmp_2.path }}
+  when: not kvm_common_case
+
+- name: Running sysprep on VM templates
+  command: >
+    virt-sysprep --quiet
+    --operation {{ kvm_common_case|ternary('','customize,') }}defaults,-lvm-uuids
+    {{ kvm_common_case|ternary('','--commands-from-file ' ~ kvm_sysprep_tmp_1.path) }}
+    -a {{ item.dest | regex_replace('\\.bz2', '') }}
+  when:
+    - item.changed
+    - item.dest is defined
+  with_items: "{{ kvm_get_templates.results }}"
+  loop_control:
+    label: "{{ item.dest|d('null') }}"
+...

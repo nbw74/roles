@@ -1,0 +1,44 @@
+---
+- name: Abort if system is not RHEL 7 or above
+  fail:
+    msg: "This role is designed for RHEL/CentOS 7 or above"
+  when: ansible_distribution_major_version|int < 7
+
+- name: Presence of the required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ kvm_pkgs }}"
+
+- name: Import services settings
+  import_tasks: services.yml
+
+- name: Nested virtualization support
+  lineinfile:
+    path: "{{ kvm_module_nested_file }}"
+    create: yes
+    line: 'options kvm_intel nested=1'
+    state: present
+  when: kvm_nested
+
+- name: Temporary catalog
+  become: no
+  file:
+    path: "{{ kvm_tmp_dir }}"
+    state: directory
+  delegate_to: localhost
+
+- name: Import management settings
+  import_tasks: admins.yml
+
+- name: Import network configuration tasks
+  import_tasks: net.yml
+
+- name: Import storage pools configuration tasks
+  import_tasks: pool.yml
+  when: kvm_pool is defined
+
+- name: Import VM management tasks
+  include: pre_vm.yml
+  when: kvm_vm is defined
+...

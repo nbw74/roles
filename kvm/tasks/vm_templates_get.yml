@@ -1,0 +1,30 @@
+---
+- name: Create temporary dirs for templates
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ kvm_templates_path }}"
+    - "{{ kvm_templates_path_bis }}"
+
+- name: Get VM templates
+  get_url:
+    url: "{{ kvm_templates_uri }}/{{ item.item.template_name }}.bz2"
+    dest: "{{ kvm_templates_path }}/{{ item.item.template_name }}.bz2"
+    mode: 0640
+    force: no
+  when: item.item.name not in kvm_existing_vms.list_vms
+  with_items: "{{ kvm_pool_result.results }}"
+  register: kvm_get_templates
+  loop_control:
+    label: "{{ item.item.name }}:{{ item.item.template_name|d('null') }}"
+
+- name: VM templates uncompressed
+  command: "lbzip2 -fd {{ item.dest }}"
+  when:
+    - item.changed
+    - item.dest is defined
+  with_items: "{{ kvm_get_templates.results }}"
+  loop_control:
+    label: "bzip2:{{ item.dest }}:d"
+...

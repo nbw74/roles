@@ -1,0 +1,37 @@
+---
+- name: Libvirt daemon enabled and started
+  systemd:
+    name: libvirtd
+    state: started
+    enabled: yes
+  tags: [ services ]
+
+- name: Libvirt-guests service enabled
+  systemd:
+    name: libvirt-guests
+    enabled: yes
+  tags: [ services ]
+
+- name: Libvirt-guests service settings
+  blockinfile:
+    path: "/etc/sysconfig/libvirt-guests"
+    insertafter: EOF
+    block: |
+      ON_BOOT=start
+      START_DELAY=10
+      ON_SHUTDOWN=shutdown
+      PARALLEL_SHUTDOWN=10
+      SHUTDOWN_TIMEOUT=300
+  tags: [ services ]
+
+- name: Check active tuned profile
+  command: "tuned-adm active"
+  changed_when: false
+  register: kvm_tuned_result
+  tags: [ services ]
+
+- name: Set tuned profile
+  command: "tuned-adm profile virtual-host"
+  when: '"virtual-host"|string not in kvm_tuned_result.stdout'
+  tags: [ services ]
+...
