@@ -1,0 +1,54 @@
+---
+- name: Template configuration files for bridge devices
+  template:
+    src: "bridge.j2"
+    dest: "{{ bridge_ifcfg_path }}/ifcfg-{{ item.dev }}"
+  with_items: "{{ bridge_devices }}"
+  loop_control:
+    label: "ifcfg-{{ item.dev }}"
+  register: bridge_result
+
+- name: Template route configuration files
+  template:
+    src: "route.j2"
+    dest: "{{ bridge_ifcfg_path }}/route-{{ item.dev }}"
+  when:
+    - item.routes is defined
+  with_items: "{{ bridge_devices }}"
+  loop_control:
+    label: "route-{{ item.dev }}"
+
+- name: Template configuration files for bridge ports
+  template:
+    src: "bridge_port.j2"
+    dest: "{{ bridge_ifcfg_path }}/ifcfg-{{ item.1 }}"
+  with_subelements:
+   - "{{ bridge_devices }}"
+   - ports
+  loop_control:
+    label: "ifcfg-{{ item.1|d('null') }}"
+
+- name: No route files for bridge ports
+  file:
+    path: "{{ bridge_ifcfg_path }}/route-{{ item.1 }}"
+    state: absent
+  with_subelements:
+   - "{{ bridge_devices }}"
+   - ports
+  loop_control:
+    label: "no route-{{ item.1|d('null') }}"
+
+- name: "Check default route presence in route-*"
+  shell: >
+    awk -v p=default_route_present '/default|0\.0\.0\.0/ { print p }'
+    /etc/sysconfig/network-scripts/route-* 2>/dev/null || :
+  register: bridge_default_route_check
+  changed_when: false
+
+- name: "No GATEWAY= instruction in {{ bridge_network_file_path }}"
+  lineinfile:
+    path: "{{ bridge_network_file_path }}"
+    regexp: '^GATEWAY='
+    state: absent
+  when: bridge_default_route_check.stdout is match ('default_route_present')
+...

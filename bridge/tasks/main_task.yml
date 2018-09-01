@@ -1,0 +1,49 @@
+---
+- name: Abort if system is not RedHat family
+  fail:
+    msg: "System is not RedHat family distro"
+  when: ansible_os_family != "RedHat"
+
+- name: Abort if system is not RedHat family 6 or 7 distro
+  fail:
+    msg: "System is not RedHat family 6 or 7 distro"
+  when:
+    - ansible_distribution_major_version != "6"
+    - ansible_distribution_major_version != "7"
+
+- fail:
+    msg: "{{ item.address }} is not ipv4 address"
+  when:
+    - item.address is defined
+    - not item.address|ipv4
+  with_items: "{{ bridge_devices }}"
+  loop_control:
+    label: "{{ item.address|d('null') }} ipv4 test"
+
+- fail:
+    msg: "{{ item.peer }} is not ipv4 address"
+  when:
+    - item.peer is defined
+    - not item.peer|ipv4
+  with_items: "{{ bridge_devices }}"
+  loop_control:
+    label: "{{ item.peer|d('null') }} ipv4 test"
+
+- name: Presence of required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ bridge_pkgs }}"
+
+- include: nonm.yml
+
+- include: configure.yml
+
+- name: Unwanted files is absent
+  file:
+    path: "{{ bridge_ifcfg_path }}/{{ item }}"
+    state: absent
+  with_items: "{{ bridge_unwanted_files }}"
+
+- include: ifcfg.yml
+...

@@ -1,0 +1,7 @@
+---
+# Network interfaces setup. Inspired by https://github.com/adriagalin/ansible.network_interface
+- include: main_task.yml
+  when:
+    - "'bridge' in roles"
+    - bridge_devices is defined
+...

@@ -1,0 +1,16 @@
+---
+- name: Routes on bridge interfaces
+  shell: >
+    ip route add {{ item.1.network }} via {{ item.1.gateway }}
+    dev {{ item.0.item.dev }} proto static
+    {{ (item.1.metric is defined)|ternary('metric ' ~ item.1.metric|d(),'') }}
+  when:
+    - item.1.network is defined
+  with_subelements:
+    - "{{ bridge_brctl_result.results }}"
+    - item.routes
+    - flags:
+      skip_missing: true
+  loop_control:
+    label: "{{ item.0.item.dev }}:{{ item.1.network|d('null') }}:{{ item.1.gateway|d('null') }}"
+...

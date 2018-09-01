@@ -1,0 +1,61 @@
+---
+- name: Bridge interfaces
+  shell: >
+    brctl addbr {{ item.dev }}
+  when:
+    - item.dev not in ansible_interfaces
+  with_items: "{{ bridge_devices }}"
+  loop_control:
+    label: "brctl addbr {{ item.dev }}"
+  register: bridge_brctl_result
+
+- name: IP address on bridge interfaces
+  shell: >
+    ip address add {{ item.item.address }}
+    dev {{ item.item.dev }}
+  when:
+    - bridge_brctl_result is defined
+    - item.changed
+    - item.item.bootproto == "static"
+  with_items: "{{ bridge_brctl_result.results }}"
+  loop_control:
+    label: "{{ item.item.dev }}:{{ item.item.address|d('null') }}"
+
+# This task should be executed separately. Optimizers, hands off!
+#
+- name: IP address on bridge interfaces (with peer)
+  shell: >
+    ip address add {{ item.item.address }} peer {{ item.item.peer }}
+    dev {{ item.item.dev }}
+  when:
+    - bridge_brctl_result is defined
+    - item.changed
+    - item.item.bootproto == "static"
+    - item.item.peer is defined
+  with_items: "{{ bridge_brctl_result.results }}"
+  loop_control:
+    label: "{{ item.item.dev }}:{{ item.item.address|d('null') }}:{{ item.item.peer|d('null') }}"
+
+- name: Link set up on bridge interfaces
+  shell: >
+    ip link set up dev {{ item.item.dev }}
+  when:
+    - bridge_brctl_result is defined
+    - item.changed
+  with_items: "{{ bridge_brctl_result.results }}"
+  loop_control:
+    label: "set up {{ item.item.dev }}"
+
+- include: route.yml
+  when:
+    - bridge_brctl_result is defined
+    - bridge_brctl_result.changed
+
+# - debug:
+#     var: bridge_brctl_result
+
+- include: ports.yml
+  when:
+    - bridge_brctl_result is defined
+    - bridge_brctl_result.changed
+...

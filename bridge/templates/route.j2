@@ -1,0 +1,5 @@
+# THIS FILE IS ANSIBLE MANAGED.
+# DON'T EVEN TRY TO CHANGE IT!
+{% for i in item.routes %}
+{{ i.network }} via {{ i.gateway }} proto static{{ (i.metric is defined)|ternary(' metric ' ~ i.metric|d(),'') }}
+{% endfor %}

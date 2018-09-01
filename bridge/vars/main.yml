@@ -1,0 +1,14 @@
+---
+bridge_pkgs:
+  - iputils
+  - bridge-utils
+  - libselinux-python
+
+bridge_ifcfg_path: "/etc/sysconfig/network-scripts"
+
+bridge_network_file_path: "/etc/sysconfig/network"
+
+bridge_unwanted_files:
+  - "ifcfg-Wired_connection_1"
+  - "ifcfg-Проводное_соединение_1"
+...

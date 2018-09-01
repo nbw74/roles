@@ -1,0 +1,22 @@
+# THIS FILE IS ANSIBLE MANAGED.
+# DON'T EVEN TRY TO CHANGE IT!
+DEVICE={{ item.dev }}
+TYPE=Bridge
+ONBOOT={{ item.onboot|default('yes') }}
+DELAY={{ item.delay|default('2.0') }}
+STP={{ item.stp|default('off') }}
+{% if item.bootproto == 'none' %}
+BOOTPROTO={{ item.bootproto }}
+{% endif %}
+{% if item.bootproto == 'dhcp' %}
+BOOTPROTO={{ item.bootproto }}
+{% endif %}
+{% if item.bootproto == 'static' %}
+BOOTPROTO={{ item.bootproto }}
+IPADDR={{ item.address|ipv4('address') }}
+PREFIX={{ item.address|ipv4('prefix') }}
+{% if item.peer is defined %}
+SCOPE="peer {{ item.peer }}"
+{% endif %}
+{% endif %}
+NM_CONTROLLED=no
