@@ -6,6 +6,6 @@
     - "'kvm' in roles"
     - "'vz7' in roles"
 
-- include: main_task.yml
+- import_tasks: main_task.yml
   when: "'kvm' in roles"
 ...

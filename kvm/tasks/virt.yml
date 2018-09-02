@@ -25,9 +25,9 @@
   loop_control:
     label: "{{ (item.stat|default(dict(path='null')))['path']|d('null') }}"
 
-- import_tasks: get_images.yml
+- include_tasks: get_images.yml
 
-- import_tasks: sysprep.yml
+- include_tasks: sysprep.yml
 
 - name: Virt undefine
   virt:
@@ -87,7 +87,7 @@
   loop_control:
     label: "{{ item[0].name|d('null') }}"
 
-- include: rm_images.yml
+- include_tasks: rm_images.yml
 
 - name: Resize VM image (file)
   command: >
