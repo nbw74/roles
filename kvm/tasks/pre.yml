@@ -4,19 +4,6 @@
     command: list_vms
   register: kvm_existing_vms
 
-- name: Get host CPU model (I)
-  command: virsh capabilities
-  register: kvm_host_capabilities
-  changed_when: false
-
-- name: Get host CPU model (II)
-  xml:
-    xmlstring: "{{ kvm_host_capabilities.stdout }}"
-    xpath: "/capabilities/host/cpu/model"
-    content: text
-  register: kvm_host_cpu_model
-  changed_when: false
-
 - name: Get pool path (xml)
   xml:
     path: "/etc/libvirt/storage/{{ item.pool_name }}.xml"

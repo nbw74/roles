@@ -10,8 +10,7 @@
     state: present
   with_items: "{{ kvm_pkgs }}"
 
-- name: Import services settings
-  import_tasks: services.yml
+- import_tasks: services.yml
 
 - name: Nested virtualization support
   lineinfile:

@@ -8,7 +8,7 @@
   loop_control:
     label: "{{ item }}"
 
-- name: Template  ansible config files (I)
+- name: Template ansible config files (I)
   template:
     src: "{{ item.src }}"
     dest: "{{ kvm_templates_path }}/{{ item.dest }}"
@@ -138,7 +138,7 @@
 
 - name: Create ifcfg files from template
   template:
-    src: "vm_ifcfg.j2"
+    src: "ifcfg.j2"
     dest: "{{ kvm_templates_path }}/{{ item.0.name }}/ifcfg-{{ item.1.dev }}"
   when:
     - item.0.name not in kvm_existing_vms.list_vms
