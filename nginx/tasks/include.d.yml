@@ -10,22 +10,4 @@
     force: yes
   notify: config reload nginx
   tags: [ nginx, allow_status ]
-
-- name: "Create listen_default.conf"
-  lineinfile:
-    dest: "{{ included }}/listen_default.conf"
-    line: "{{ item }}"
-    create: yes
-  with_items:
-    - "listen {{ public_ip }}:80 default_server;"
-    - "listen {{ private_ip }}:80 default_server;"
-
-- name: "Create listen_default_ssl.conf"
-  lineinfile:
-    dest: "{{ included }}/listen_default_ssl.conf"
-    line: "{{ item }}"
-    create: yes
-  with_items:
-    - "listen {{ public_ip }}:443 default_server ssl;"
-    - "listen {{ private_ip }}:443 default_server ssl;"
 ...

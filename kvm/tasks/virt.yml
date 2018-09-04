@@ -64,7 +64,7 @@
 - name: Create VM disk from template (with virt-sysprep)
   shell: >
     virt-sysprep --quiet --operations customize,lvm-uuids
-    {{ kvm_leave_hostname|ternary('','--hostname ' ~ item[0].name ~ '.' ~
+    {{ kvm_leave_hostname|ternary('','--hostname ' ~ item[0].sysprep_hostname|d(item[0].name) ~ '.' ~
     item[0].sysprep_domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
     --copy-in {{ kvm_templates_path }}/{{ item[0].name }}:/var/local
     --run-command 'mv /var/local/{{ item[0].name }}/* /etc/sysconfig/network-scripts'

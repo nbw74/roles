@@ -3,8 +3,6 @@
 
 - import_tasks: html.yml
 
-- import_tasks: set_if.yml
-
 - import_tasks: default.d.yml
 
 - import_tasks: include.d.yml

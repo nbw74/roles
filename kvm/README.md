@@ -4,7 +4,7 @@
 
 ### Что оно делает
 
-* Конфигурирует хост виртуальных машин
+* Настраивает ноду как хост виртуальных машин
 * Создаёт пулы хранения
 * Скачивает по заданной пользователем ссылке образы-шаблоны виртуальных машин
 * Вносит в них изменения посредством `virt-sysprep`
@@ -23,11 +23,12 @@
 
 * Не изменяет параметры уже созданных виртуальных машин (кол-во CPU, ОЗУ, объём и кол-во дисков, конфигурацию сетевых интерфейсов и проч.)
 
-## Структура данных
+## Структура переменных
 ```yaml
 kvm_accept_existing_disks: bool # (default: false) Не фейлиться, если диск для ВМ уже существует
 kvm_common_case: bool # (default: false) Не выполнять таски, специфичные для Southbridge
 kvm_leave_hostname: bool # (default: false) Не устанавливать sysprep'ом hostname
+kvm_mac_printout: bool # (default: false)
 kvm_nested: bool # (default: false) Включает поддержку вложенной виртуализации
 
 kvm_pool: # Задаёт storage pool
@@ -53,6 +54,7 @@ kvm_vm:
   pool_name: "string" # (mandatory) Используемый пул хранения
   state: "string" # (default: running) Состояние ВМ (running|shutdown|destroyed|paused)
   sysprep_domain: "string" # Доменное имя для sysprep (по-умолчанию выделяется из ansible_nodename)
+  sysprep_hostname: "string" # (default: name)
   sysprep_ifcfg: # (optional) Конфигурация интерфейсов.
     - dev: "eth0" # Имя интерфейса
       bootproto: "static" # Протокол загрузки (static|dhcp)
