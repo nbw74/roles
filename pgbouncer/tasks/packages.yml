@@ -1,0 +1,19 @@
+---
+- name: PostgreSQL RPM repository
+  yum_repository:
+    name: "pgdg{{ postgresql_version_norm }}"
+    description: "PostgreSQL {{ postgresql_version_raw }} $releasever - $basearch"
+    baseurl: "https://download.postgresql.org/pub/repos/yum/{{ postgresql_version_raw }}/redhat/rhel-$releasever-$basearch"
+    file: "pgdg-{{ postgresql_version_norm }}-centos"
+    gpgcheck: yes
+    enabled: yes
+    gpgkey: "http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ postgresql_version_norm }}"
+
+- name: PgBouncer and postgresql packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "pgbouncer"
+    - "postgresql{{ postgresql_version_norm }}"
+...

@@ -106,7 +106,7 @@
 - name: line in pg_hba
   lineinfile:
     path: "{{ item[1].stdout }}/pg_hba.conf"
-    regexp: 'host\s+{{ item[0].db.name }}\s+{{ item[0].db.name }}'
+    regexp: 'host\s+{{ item[0].db.name }}\s+{{ item[0].db.name }}\s+{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d("127.0.0.1/32") }}{% else %}0.0.0.0/0{% endif %}'
     line: "host\t{{ item[0].db.name }}\t{{ item[0].db.name }}\t{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}\t\tmd5"
     insertbefore: '#+\s*ANSIBLE MANAGED'
     state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"

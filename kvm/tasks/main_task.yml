@@ -38,9 +38,11 @@
   - import_tasks: pre.yml
 
   - include_tasks: virt.yml
-    when:
-      - kvm_pool_xml_path.changed
+    when: kvm_pool_xml_path.changed
 
   - import_tasks: state.yml
+
+  - include_tasks: mac.yml
+    when: kvm_mac_printout
   when: kvm_vm|length > 0
 ...

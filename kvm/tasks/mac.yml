@@ -1,0 +1,27 @@
+---
+- virt:
+    guest: "{{ item.name }}"
+    command: get_xml
+  register: kvm_get_xml
+  when: item.state|d('running') != 'undefined'
+  with_items: "{{ kvm_vm }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- xml:
+    xmlstring: "{{ item.get_xml }}"
+    xpath: "/domain/devices/interface/mac"
+    content: attribute
+    attribute: address
+  when: item.get_xml is defined
+  with_items: "{{ kvm_get_xml.results }}"
+  loop_control:
+    label: "{{ item.item.guest|d('null') }}"
+  register: kvm_mac
+
+- name: MAC printout
+  debug:
+    msg: " {{ item.matches[0].mac.address }} : {{ item.item.item.name }} "
+  when: item.matches is defined
+  with_items: "{{ kvm_mac.results }}"
+...

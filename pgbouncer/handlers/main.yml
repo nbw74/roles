@@ -1,0 +1,6 @@
+---
+- name: pgbouncer restart
+  systemd:
+    name: pgbouncer.service
+    state: restarted
+...

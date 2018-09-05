@@ -1,0 +1,4 @@
+---
+- import_tasks: main_task.yml
+  when: "'pgbouncer' in roles"
+...
