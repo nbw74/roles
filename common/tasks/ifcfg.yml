@@ -11,7 +11,7 @@
     - '^PEERROUTES='
     - '^IPV4_FAILURE_FATAL='
     - '^IPV6_'
-  tags: [services,ifcfg]
+  tags: [ services, ifcfg ]
 
 - name: "Edit ifcfg"
   lineinfile:
@@ -21,6 +21,40 @@
   with_items:
     - { regexp: '^IPV6INIT=', line: 'IPV6INIT=no' }
     - { regexp: '^HWADDR=', line: 'HWADDR={{ ansible_default_ipv4.macaddress }}' }
-  tags: [services,ifcfg]
+  tags: [ services, ifcfg ]
   ignore_errors: yes
 
+- name: "lineinfile add in network-scripts/ifcfg-"
+  lineinfile:
+    dest: "{{ common_network_scripts }}/ifcfg-{{ item.0.dev }}"
+    regexp: '^[ #]*{{ item.1.key }}='
+    line: '{{ item.1.key }}="{{ item.1.value }}"'
+    state: "{{ item.1.state|d(true)|ternary('present','absent') }}"
+    create: yes
+  when: common_ifcfg_line is defined
+  with_subelements:
+    - "{{ common_ifcfg_line }}"
+    - variables
+  loop_control:
+    label: "{{ item.0.dev }}:{{ item.1.key }}={{ item.1.value }}"
+  register: common_ifcfg_result
+  tags: [ ifcfg ]
+
+- debug:
+    msg: "{{ lookup('flattened', host_depends|map(attribute=item.item[0])) | map(attribute='dev')|unique|list }}"
+  tags: [ ifcfg ]
+
+# - name: "Up changed interfaces"
+#   shell: >
+#     ifup {{ lookup('flattened', host_depends|map(attribute=item.item[0].dev)) | map(attribute='name')|unique|list }}
+#     ifup {{ item.item[0].dev }}
+#   when:
+#     - item.changed
+#     - not alien
+#   with_items: "{{ common_ifcfg_result.results }}"
+#   loop_control:
+#     label: "{{ item.item[0].dev }}"
+#   ignore_errors: yes
+#   tags: [ ifcfg ]
+
+...

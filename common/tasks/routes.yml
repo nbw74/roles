@@ -1,0 +1,31 @@
+---
+- name: "Add/remove routes into config files with lineinfile"
+  lineinfile:
+    path: "{{ common_network_scripts }}/route-{{ item.0.dev }}"
+    regexp: '^{{ item.1.dest }}'
+    line: "{{ item.1.dest }} via {{ item.1.gw }}"
+    state: "{{ item.1.state|d(true)|ternary('present','absent') }}"
+    create: yes
+  with_subelements:
+    - "{{ common_static_route }}"
+    - routes
+  register: common_static_route_conf_result
+  tags: [ ifcfg ]
+
+- name: "Manage routes with 'ip route' command"
+  command: >
+    ip route {{ (item|json_query('item[*].state')|join()|regex_replace('^$','True')|bool) | ternary('add','del') }}
+    {{ item|json_query('item[*].dest')|join() }} via {{ item|json_query('item[*].gw')|join() }}
+    dev {{ item|json_query('item[*].dev')|join() }}
+  when: item.changed
+  with_items: "{{ common_static_route_conf_result.results }}"
+  loop_control:
+    label: "route {{ item|json_query('item[*].dest')|join() }}"
+  register: common_static_route_ip_result
+  failed_when: >
+    common_static_route_ip_result | failed and
+    ( 'No such process' not in common_static_route_ip_result.stderr
+    and 'File exists' not in common_static_route_ip_result.stderr )
+  ignore_errors: true
+  tags: [ ifcfg ]
+...

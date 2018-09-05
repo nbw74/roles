@@ -1,16 +1,14 @@
 ---
-- name: config reload systemd
-  command: systemctl daemon-reload
-  notify: config restart php-fpm
-
 - name: config restart php-fpm
-  service: name=php-fpm enabled=yes state=restarted
+  systemd:
+    name: php-fpm.service
+    state: restarted
+    daemon_reload: yes
 
-- name: config reboot
-  shell: shutdown -r +1
-  ignore_errors: True
-  async: 0
-  poll: 0
+- name: config reload php-fpm
+  systemd:
+    name: php-fpm.service
+    state: reloaded
 
 #####
 # Remi repo

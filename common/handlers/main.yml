@@ -138,4 +138,13 @@
 # Etckeeper
 - name: etckeeper commit
   command: 'etckeeper commit "ansible common role installed"'
+
+#####
+# Reboot
+- name: config reboot
+  shell: shutdown -r +1
+  ignore_errors: True
+  async: 0
+  poll: 0
+
 ...

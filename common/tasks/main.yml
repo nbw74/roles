@@ -7,13 +7,12 @@
 
 - import_tasks: ifcfg.yml
 
+- include_tasks: routes.yml
+  when: common_static_route is defined
+
 - import_tasks: ntp.yml
 
 - import_tasks: snmpd.yml
-
-- import_tasks: rsyslog.yml
-  when:
-    - not alien
 
 - import_tasks: mail.yml
 
@@ -51,4 +50,8 @@
     - not alien
 
 - import_tasks: etckeeper.yml
+
+- import_tasks: rsyslog.yml
+  when:
+    - not alien
 ...

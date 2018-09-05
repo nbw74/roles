@@ -77,4 +77,6 @@ common_dir_ttyS0_7: "/etc/systemd/system/getty@ttyS0.service.d"
 common_dir_tty1_7: "/etc/systemd/system/getty@tty1.service.d"
 common_file_ttyS0_6: "ttyS0.conf"
 common_file_tty_7: "autologin.conf"
+
+common_network_scripts: "/etc/sysconfig/network-scripts"
 ...

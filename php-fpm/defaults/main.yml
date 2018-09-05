@@ -3,6 +3,8 @@ php_fpm_memcached_client: false
 php_fpm_memcached_default: false
 php_fpm_memcached_nubmer_of_replicas: 1
 php_fpm_force_templates: true
+php_fpm_add_packages: []
+php_fpm_oob: false
 
 selinux_state: "disabled"
 ...

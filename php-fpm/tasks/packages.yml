@@ -1,17 +1,18 @@
 ---
-- name: Install Remi repo
+- name: Remi repo
   yum:
     name: "http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
     state: present
+  when: not php_fpm_oob
   notify: enable remi repo
-  tags: [packages,remi]
+  tags: [ packages,remi ]
 
 - meta: flush_handlers
 
-- name: Install packages
+- name: yum common packages
   yum:
-    state: present
     name: "{{ item }}"
+    state: present
   with_items:
     - php-cli
     - php-fpm
@@ -21,18 +22,35 @@
     - php-intl
     - php-pgsql
     - php-mbstring
-    - php-pecl-crypto
     - php-nette-tokenizer
     - python-psycopg2
     - MySQL-python
     - python-dns
   tags: [ packages ]
 
-- name: Install packages (SELinux)
-  yum: state=present name={{ item }}
+- name: yum Remi packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  when: not php_fpm_oob
+  with_items:
+    - php-pecl-crypto
+  tags: [ packages ]
+
+- name: yum SELinux packages
+  yum:
+    name: "{{ item }}"
+    state: present
   with_items:
     - libsemanage-python        # this packages required by selinux.xml
     - policycoreutils-python    #
   when: selinux_state != "disabled"
   tags: [ packages, selinux ]
+
+- name: yum additional packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ php_fpm_add_packages }}"
+  tags: [ packages ]
 ...

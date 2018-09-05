@@ -7,7 +7,9 @@
 - name: "Check required parameter"
   fail:
     msg: "Please add PHP version parameter (-e remi_php_version=56|70|71)"
-  when: remi_php_version is not defined
+  when:
+    - remi_php_version is not defined
+    - not php_fpm_oob
 
 - include_tasks: packages.yml
 
@@ -42,8 +44,16 @@
     block: |
       [Service]
       UMask=0002
-  notify: config reload systemd
+  notify: config restart php-fpm
   tags: [services]
+
+- name: Set ini ondemand for default pool
+  ini_file:
+    path: "/etc/php-fpm.d/www.conf"
+    section: www
+    option: pm
+    value: ondemand
+  notify: config reload php-fpm
 
 - include_tasks: logrotate.yml
 

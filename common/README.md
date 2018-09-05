@@ -10,6 +10,18 @@ selinux_state: bool # default: "enforcing"
 common_aliases_root: "string" # Почтовый адрес для пересылки почты суперпользователя
 common_selinux_alert_recipients: "string" # Почтовый адрес для отсылки уведомлений SELinux
 
+common_ifcfg_line: # Добавить или удалить переменные в /etc/sysconfig/network-scripts/ifcfg-<dev>.
+  - dev: "device_name" # ...Default: not defined
+    variables:
+      - { key: "VAR_NAME", value: "value"[, state: bool] }
+      - ...
+
+common_static_route: # Добавить статичные маршруты в /etc/sysconfig/network-scripts/route-<dev>,
+  - dev: "device_name" # ...а также "на лету" в таблицу маршрутизации (или удалить их)
+    routes:
+      - { dest: "CIDR", gw: "ipv4_address"[, state: bool] }
+      - ...
+
 common_ntp_servers_list: "string|string|..." # Список локальных/кастомных NTP-серверов
 common_ntp_domains: # Хэш с локальными доменами и обслуживающими их NTP-серверами
   - domain: "fqdn"
