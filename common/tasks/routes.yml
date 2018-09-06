@@ -23,7 +23,7 @@
     label: "route {{ item|json_query('item[*].dest')|join() }}"
   register: common_static_route_ip_result
   failed_when: >
-    common_static_route_ip_result | failed and
+    common_static_route_ip_result is failed and
     ( 'No such process' not in common_static_route_ip_result.stderr
     and 'File exists' not in common_static_route_ip_result.stderr )
   ignore_errors: true
