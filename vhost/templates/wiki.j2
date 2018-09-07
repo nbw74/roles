@@ -29,7 +29,11 @@ h3. Database
 
 *DBMS:* @{{ item[0].db.type }}@
 {% if item[0].db.pgbouncer is defined %}
+{% if item[0].db.pgbouncer.host == ansible_nodename %}
+*DB host:* @localhost4@
+{% else %}
 *DB host:* @{{ item[0].db.pgbouncer.host }}@
+{% endif %}
 {% else %}
 *DB host:* @{{ item[0].db.host }}@
 {% endif %}
