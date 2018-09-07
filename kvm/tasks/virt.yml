@@ -68,6 +68,8 @@
     item[0].sysprep_domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
     --copy-in {{ kvm_templates_path }}/{{ item[0].name }}:/var/local
     --run-command 'mv /var/local/{{ item[0].name }}/* /etc/sysconfig/network-scripts'
+    --firstboot-command 'nmcli con modify eth0 ipv4.dhcp-hostname {{ item[0].sysprep_hostname }}
+    && systemctl is-enabled NetworkManager.service && systemctl restart NetworkManager.service'
     {{ (item[0].sysprep_root_pass is defined)
     |ternary('--root-password password:' ~ item[0].sysprep_root_pass|d(),'') }}
     {{ (kvm_sysprep_root_key is defined)
