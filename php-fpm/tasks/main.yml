@@ -11,9 +11,9 @@
     - remi_php_version is not defined
     - not php_fpm_oob
 
-- include_tasks: packages.yml
+- import_tasks: packages.yml
 
-- include_tasks: selinux.yml
+- import_tasks: selinux.yml
 
 - name: "Copy index.php"
   copy:

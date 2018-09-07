@@ -52,5 +52,6 @@
     name: "{{ item }}"
     state: present
   with_items: "{{ php_fpm_add_packages }}"
+  notify: config reload php-fpm
   tags: [ packages ]
 ...
