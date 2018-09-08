@@ -6,5 +6,9 @@ php_fpm_force_templates: true
 php_fpm_add_packages: []
 php_fpm_oob: false
 
+remi_php_version: 7.2
+remi_php_version_raw: "{{ remi_php_version|string }}"
+remi_php_version_norm: "{{ remi_php_version_raw|regex_replace('\\.', '') }}"
+
 selinux_state: "disabled"
 ...

@@ -1,12 +1,12 @@
 ---
 - name: Check if role assigned to host
   fail:
-    msg: "Role 'php-fpm' is not assigned to this host"
+    msg: "ROLE 'php-fpm' IS NOT ASSIGNED TO THIS HOST"
   when: "'php-fpm' not in roles"
 
-- name: "Check required parameter"
+- name: Check required parameter
   fail:
-    msg: "Please add PHP version parameter (-e remi_php_version=56|70|71)"
+    msg: "Please set PHP version variable)"
   when:
     - remi_php_version is not defined
     - not php_fpm_oob
