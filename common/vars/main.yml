@@ -30,6 +30,7 @@ common_required_base_packages:
   - postfix
   - rsync
   - rsyslog
+  - tuned
   - vim
   - yum-utils
   - zsh

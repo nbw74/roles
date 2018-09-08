@@ -1,9 +1,9 @@
 ---
 alien: false
-selinux_state: "enforcing"
+common_cron_user_tasks: []
+common_icinga2_conf: []
 common_icinga2_enable: true
-common_icinga2_conf:
-  - ""
-roles:
-  - ""
+pkgupdate: false
+roles: []
+selinux_state: "enforcing"
 ...

@@ -54,4 +54,9 @@
 - import_tasks: rsyslog.yml
   when:
     - not alien
+
+- include_tasks: cron.yml
+  when:
+    - common_cron_user_tasks|length > 0
+  tags: [ cron ]
 ...
