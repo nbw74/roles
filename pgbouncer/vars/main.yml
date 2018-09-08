@@ -1,0 +1,5 @@
+---
+pgbouncer_packages:
+  - "pgbouncer"
+  - "postgresql{{ postgresql_version_norm }}"
+...

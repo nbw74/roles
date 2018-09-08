@@ -1,19 +1,15 @@
 ---
 - name: "Install Nginx (YUM)"
   yum:
+    name: "{{ nginx_packages }}"
     state: present
-    name: "{{ item }}"
-  with_items:
-    - '{{ nginx_packages }}'
   when: ansible_distribution == "CentOS"
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Install Nginx (DNF)"
   dnf:
+    name: "{{ nginx_packages }}"
     state: present
-    name: "{{ item }}"
-  with_items:
-    - '{{ nginx_packages }}'
   when: ansible_distribution == "Fedora"
-  tags: [packages]
+  tags: [ packages ]
 ...

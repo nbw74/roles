@@ -11,9 +11,6 @@
 
 - name: PgBouncer and postgresql packages
   yum:
-    name: "{{ item }}"
+    name: "{{ pgbouncer_packages }}"
     state: present
-  with_items:
-    - "pgbouncer"
-    - "postgresql{{ postgresql_version_norm }}"
 ...
