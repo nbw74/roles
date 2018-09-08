@@ -2,4 +2,27 @@
 included: "/etc/nginx/include.d"
 confd: "/etc/nginx/conf.d"
 a2d: "/etc/httpd/conf.d"
+
+httpd_packages:
+  - httpd
+  - httpd-itk
+  - php
+  - php-cli
+  - php-pdo
+  - php-gd
+  - php-intl
+  - php-pgsql
+  - php-mbstring
+  - php-mysqlnd
+  - php-pecl-crypto
+  - php-nette-tokenizer
+  - php-xml
+  - php-xmlrpc
+  - python-psycopg2
+  - MySQL-python
+  - python-dns
+
+httpd_selinux_packages:
+  - libsemanage-python        # this packages required by selinux.xml
+  - policycoreutils-python    #
 ...
