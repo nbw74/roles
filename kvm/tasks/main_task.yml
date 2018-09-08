@@ -6,9 +6,8 @@
 
 - name: Required packages
   yum:
-    name: "{{ item }}"
+    name: "{{ kvm_pkgs }}"
     state: present
-  with_items: "{{ kvm_pkgs }}"
 
 - import_tasks: services.yml
 
