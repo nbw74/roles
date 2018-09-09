@@ -6,8 +6,13 @@
   shell: "hostname {{ ansible_fqdn }}"
 
 #####
-# Porntubeuploader
+# SELinux
 #
+- name: touch autorelabel
+  file:
+    path: "/.autorelabel"
+    state: touch
+
 - name: restorecon ptr_se
   command: restorecon -R /usr/local/bin
   notify: copy ptr_se

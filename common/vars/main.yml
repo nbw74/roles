@@ -40,6 +40,7 @@ common_required_base_packages_7:
 
 common_required_base_packages_selinux:
   - setroubleshoot-server
+  - libsemanage-python
 
 common_required_epel_packages:
   - ccze

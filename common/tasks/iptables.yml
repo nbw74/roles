@@ -8,7 +8,7 @@
   copy:
     src: "{{ item }}"
     dest: /etc/sysconfig
-    force: yes
+    force: "{{ (ansible_user == 'root')|ternary('yes','no') }}"
   with_items:
     - iptables
     - ip6tables

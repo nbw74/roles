@@ -1,0 +1,21 @@
+---
+- name: Set SELinux state
+  selinux:
+    policy: targeted
+    state: "{{ selinux_state }}"
+  notify: touch autorelabel
+
+- name: setroubleshootd fix
+  lineinfile:
+    dest: "/etc/tmpfiles.d/setroubleshoot.conf"
+    line: 'D /var/run/setroubleshoot 0755 setroubleshoot root -'
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - ansible_distribution == 'CentOS'
+    - ansible_distribution_major_version == '7'
+  tags: [selinux]
+
+...
