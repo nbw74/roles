@@ -1,0 +1,32 @@
+---
+- name: Remi PHP repository
+  yum_repository:
+    name: "remi-php{{ php_remi_version_norm }}"
+    description: "Remi's PHP {{ php_remi_version_raw }} RPM repository for Enterprise Linux 7 - $basearch"
+    mirrorlist: "http://cdn.remirepo.net/enterprise/7/php{{ php_remi_version_norm }}/mirror"
+    gpgcheck: yes
+    enabled: yes
+    gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
+  when: not php_oob
+  tags: [ packages, remi ]
+
+- name: yum common packages
+  yum:
+    name: "{{ php_common_packages }}"
+    state: present
+  tags: [ packages ]
+
+- name: yum Remi packages
+  yum:
+    name: "{{ php_remi_packages }}"
+    state: present
+  when: not php_oob
+  tags: [ packages ]
+
+- name: yum memcached client package
+  yum:
+    name: "php-pecl-memcached"
+  when: php_memcached_client
+  tags: [ packages, memcached ]
+
+...
