@@ -1,0 +1,7 @@
+---
+- name: restorecon www
+  command: >
+    restorecon -R /var/www
+  async: 1800
+  poll: 10
+...

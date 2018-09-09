@@ -1,0 +1,106 @@
+---
+- name: Check if role assigned to host
+  fail:
+    msg: "ROLE 'selinux-for-web' IS NOT ASSIGNED TO THIS HOST"
+  when: "'selinux-for-web' not in roles"
+
+- name: Toggle booleans
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d('yes') }}"
+    persistent: yes
+  with_items:
+    - { name: 'httpd_can_network_connect_db' }
+    - { name: 'httpd_setrlimit' }
+  loop_control:
+    label: "{{ item.name }}:{{ item.state|d('true') }}"
+
+- name: Toggle booleans (custom)
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d('yes') }}"
+    persistent: yes
+  with_items: "{{ selinux_custom_booleans }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.state|d('true') }}"
+
+- set_fact:
+    selinux_http_ports: "9001-9999"
+  when: "'php-fpm' in roles"
+
+- set_fact:
+    selinux_http_ports: "{{ httpd_port|d('8888') }}"
+  when: "'httpd' in roles"
+
+- name: Add SELinux ports
+  seport:
+    ports: "{{ item.port }}"
+    proto : tcp
+    setype: "{{ item.type }}"
+    state: present
+  with_items:
+    - { port: '{{ selinux_http_ports }}', type: 'http_port_t' }
+    - { port: '6432', type: 'postgresql_port_t' }
+  loop_control:
+    label: "{{ item.type }}:{{ item.port }}"
+  tags: [ selinux_ports ]
+
+- name: Add fcontexts
+  sefcontext:
+    setype: "{{ item.setype }}"
+    target: "{{ item.target }}"
+    state: present
+  with_items:
+    - name: "Usual ssh dir"
+      setype: ssh_home_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/\.ssh(/.*)?'
+    - name: "Usual log dir"
+      setype: httpd_log_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/log(/.*)?'
+    - name: "Usual sessions dir"
+      setype: httpd_cache_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/tmp(/.*)?'
+    - name: "DkProtec engine: cache"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/cache(/.*)?'
+    - name: "DkProtec engine: uploads"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/uploads(/.*)?'
+    - name: "DkProtec engine: _synchro templates_c"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/_synchro/templates_c(/.*)?'
+    - name: "Laravel framework bootstrap cache"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/bootstrap/cache(/.*)?'
+    - name: "Laravel framework photos (webmech)"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/public/photos(/.*)?'
+    - name: "Laravel framework storage"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/storage(/.*)?'
+    - name: "CakePHP tmp"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp(/.*)?'
+    - name: "Yii framework assets"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/web/assets(/.*)?'
+    - name: "Yii framework assets (?)"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/assets(/.*)?'
+    - name: "Yii framework runtime"
+      setype: httpd_sys_rw_content_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/runtime(/.*)?'
+  loop_control:
+    label: "{{ item.setype }}:{{ item.name|d('Unnamed') }}:{{ item.target }}"
+  notify: restorecon www
+
+- name: Add fcontexts (custom)
+  sefcontext:
+    setype: "{{ item.setype }}"
+    target: "{{ item.target }}"
+    state: present
+  with_items: "{{ selinux_custom_fcontexts }}"
+  loop_control:
+    label: "{{ item.setype }}:{{ item.name|d('Unnamed') }}:{{ item.target }}"
+  notify: restorecon www
+...
