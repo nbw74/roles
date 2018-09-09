@@ -4,15 +4,7 @@
     msg: "Role 'httpd' is not assigned to this host"
   when: "'httpd' not in roles"
 
-- name: "Check required parameter"
-  fail:
-    msg: "Please add PHP version parameter (-e remi_php_version=56|70|71)"
-  when: remi_php_version is not defined
-  tags: [remi]
-
-- include: packages.yml
-
-- include: selinux.yml
+- import_tasks: packages.yml
 
 - name: "Set Listen directive"
   lineinfile:
@@ -31,19 +23,6 @@
     line: 'LoadModule\1mpm_\2'
   when:  ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7
   tags: [conf]
-
-# PHP TIMEZONE
-- stat: path=/etc/php.ini
-  register: php_ini
-  tags: [ php ]
-
-- name: "Set timezone in php.ini [rh-based]"
-  lineinfile:
-    dest: "/etc/php.ini"
-    regexp: '(^date.timezone\s*=\s*(?!{{ timezone|default(''Europe/Moscow'') }})|;date.timezone\s*=\s*)'
-    line: 'date.timezone = {{ timezone|default(''Europe/Moscow'') }}'
-  when: php_ini.stat.exists
-  tags: [ php, timezone ]
 
 # UMASK
 - name: "Set umask for httpd service (sysconfig)"
@@ -64,7 +43,7 @@
 #   notify: config reload systemd
 #   tags: [services]
 
-- include: logrotate.yml
+- import_tasks: logrotate.yml
 
-- include: awstats.yml
+- include_tasks: awstats.yml
 ...

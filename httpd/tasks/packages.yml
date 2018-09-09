@@ -1,13 +1,4 @@
 ---
-- name: Install Remi repo
-  yum:
-    name: "{{ httpd_remi_package }}"
-    state: present
-  notify: enable remi repo
-  tags: [ packages, remi ]
-
-- meta: flush_handlers
-
 - name: Install packages
   yum:
     state: present
@@ -18,6 +9,6 @@
   yum:
     state: present
     name: "{{ httpd_selinux_packages }}"
-  when: selinux_state|d('disabled') != 'disabled'
+  when: selinux_state != 'disabled'
   tags: [ packages, selinux ]
 ...

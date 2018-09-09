@@ -11,10 +11,4 @@
   ignore_errors: True
   async: 0
   poll: 0
-
-#####
-# Remi repo
-- name: enable remi repo
-  command: yum-config-manager --enable remi-php{{ remi_php_version }}
-  tags: [packages,remi]
 ...
