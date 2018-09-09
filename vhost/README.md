@@ -16,6 +16,7 @@ Deploy website virtual host configuration:
 + create Icinga2 webcheck configuration
 ## Common host variables
 ```yaml
+vhost_apache_port: int                          # default: 8888
 vhost_backend: "php-fpm|apache|reverse-proxy"   # default is "php-fpm"
 vhost_basedir: "filesystem_path"                # default is "/var/www"
 vhost_frontuser: "string"                       # default is "nginx"
