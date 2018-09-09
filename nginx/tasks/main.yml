@@ -1,4 +1,9 @@
 ---
+- name: Check if role assigned to host
+  fail:
+    msg: "ROLE 'nginx' IS NOT ASSIGNED TO THIS HOST"
+  when: "'nginx' not in roles"
+
 - import_tasks: packages.yml
 
 - import_tasks: html.yml
