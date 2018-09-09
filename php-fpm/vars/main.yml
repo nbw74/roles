@@ -1,28 +1,6 @@
 ---
-included: /etc/nginx/include.d
 confd: /etc/nginx/conf.d
-fpmd: /etc/php-fpm.d
-
-php_fpm_add_packages: []
 
 php_fpm_common_packages:
-  - php-cli
   - php-fpm
-  - php-pdo
-  - php-xml
-  - php-gd
-  - php-intl
-  - php-pgsql
-  - php-mbstring
-  - php-nette-tokenizer
-  - python-psycopg2
-  - MySQL-python
-  - python-dns
-
-php_fpm_remi_packages:
-  - php-pecl-crypto
-
-php_fpm_selinux_packages:
-  - libsemanage-python        # this packages required by selinux.xml
-  - policycoreutils-python    #
 ...

@@ -1,34 +1,9 @@
 ---
-- name: Remi PHP repository
-  yum_repository:
-    name: "remi-php{{ remi_php_version_norm }}"
-    description: "Remi's PHP {{ remi_php_version_raw }} RPM repository for Enterprise Linux 7 - $basearch"
-    mirrorlist: "http://cdn.remirepo.net/enterprise/7/php{{ remi_php_version_norm }}/mirror"
-    gpgcheck: yes
-    enabled: yes
-    gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
-  when: not php_fpm_oob
-  tags: [ packages, remi ]
-
 - name: yum common packages
   yum:
     name: "{{ php_fpm_common_packages }}"
     state: present
   tags: [ packages ]
-
-- name: yum Remi packages
-  yum:
-    name: "{{ php_fpm_remi_packages }}"
-    state: present
-  when: not php_fpm_oob
-  tags: [ packages ]
-
-- name: yum SELinux packages
-  yum:
-    name: "{{ php_fpm_selinux_packages }}"
-    state: present
-  when: selinux_state != "disabled"
-  tags: [ packages, selinux ]
 
 - name: yum additional packages
   yum:

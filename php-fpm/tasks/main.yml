@@ -4,36 +4,14 @@
     msg: "ROLE 'php-fpm' IS NOT ASSIGNED TO THIS HOST"
   when: "'php-fpm' not in roles"
 
-- name: Check required parameter
-  fail:
-    msg: "Please set PHP version variable)"
-  when:
-    - remi_php_version is not defined
-    - not php_fpm_oob
-
 - import_tasks: packages.yml
-
-- import_tasks: selinux.yml
 
 - name: "Copy index.php"
   copy:
     dest: /var/www
     src: index.php
     force: yes
-  tags: [index]
-
-# PHP TIMEZONE
-- stat: path=/etc/php.ini
-  register: php_ini
-  tags: [ php ]
-
-- name: "Set timezone in php.ini [rh-based]"
-  lineinfile:
-    dest: "/etc/php.ini"
-    regexp: '(^date.timezone\s*=\s*(?!{{ timezone|default(''Europe/Moscow'') }})|;date.timezone\s*=\s*)'
-    line: 'date.timezone = {{ timezone|default(''Europe/Moscow'') }}'
-  when: php_ini.stat.exists
-  tags: [ php, timezone ]
+  tags: [ index ]
 
 # UMASK
 - name: "Set umask for php-fpm service"
@@ -45,7 +23,7 @@
       [Service]
       UMask=0002
   notify: config restart php-fpm
-  tags: [services]
+  tags: [ services ]
 
 - name: Set ini ondemand for default pool
   ini_file:
@@ -56,10 +34,6 @@
   notify: config reload php-fpm
 
 - include_tasks: logrotate.yml
-
-- include_tasks: memcached.yml
-  when: php_fpm_memcached_client
-  tags: [memcached]
 
 - include_tasks: awstats.yml
 ...
