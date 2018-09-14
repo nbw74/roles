@@ -45,60 +45,15 @@
     suffix: ".sh"
   register: kvm_sysprep_tmp_2
 
-- name: Sysprep customize operations script (I)
-  blockinfile:
-    path: "{{ kvm_sysprep_tmp_2.path }}"
-    block: |
-      #!/bin/sh
-      PATH=/bin:/sbin:/usr/bin:/usr/sbin
-      setenforce 0
-      systemctl enable --now getty@ttyS0.service
-      {% if not kvm_common_case %}
-      sed -r -i "s/^(SELINUX=)enforcing/\1permissive/" /etc/selinux/config
-      sleep 60
-      yum -q -y clean metadata
-      yum -q -y makecache
-      yum -q -y install epel-release
-      yum -q -y install {{ kvm_sysprep_pkgs }}
-      useradd -g wheel -m -d{{ ansible_home }} ansible
-      mkdir -m 0700 {{ ansible_home }}/{{ ansible_key_dir }}
-      chown ansible {{ ansible_home }}/{{ ansible_key_dir }}
-      echo "{{ ansible_key_data }}" > "{{ ansible_home }}/{{ ansible_key_dir }}/{{ ansible_key_file }}"
-      chown ansible:wheel "{{ ansible_home }}/{{ ansible_key_dir }}/{{ ansible_key_file }}"
-      systemctl enable --now sshd_ansible.service
-      if systemctl is-enabled firewalld.service; then
-          firewall-cmd --zone=public --add-port=48022/tcp
-          firewall-cmd --zone=public --add-port=48022/tcp --permanent
-      fi
-      {% endif %}
+- name: Sysprep customize operations batch file
+  template:
+    src: "sysprep_batch.j2"
+    dest: "{{ kvm_sysprep_tmp_1.path }}"
 
-- name: Sysprep customize operations script (II)
-  lineinfile:
-    path: "{{ kvm_sysprep_tmp_2.path }}"
-    regexp: '^# BEGIN'
-    state: absent
-
-- name: Sysprep customize operations file
-  blockinfile:
-    path: "{{ kvm_sysprep_tmp_1.path }}"
-    block: |
-      copy-in /etc/resolv.conf:/etc
-      touch /.autorelabel
-      mkdir /etc/systemd/system/getty@ttyS0.service.d
-      copy-in {{ kvm_templates_path }}/autologin.conf:/etc/systemd/system/getty@ttyS0.service.d
-      {% if not kvm_common_case %}
-      mkdir /etc/ssh_ansible
-      link /usr/sbin/sshd:/usr/sbin/sshd_ansible
-      copy-in {{ kvm_templates_path }}/sshd_config:/etc/ssh_ansible
-      copy-in {{ kvm_templates_path }}/sshd_ansible:/etc/pam.d
-      copy-in {{ kvm_templates_path_bis }}/sshd_ansible:/etc/sysconfig
-      copy-in {{ kvm_templates_path }}/ansible-sshd-passwd:/etc
-      copy-in {{ kvm_templates_path }}/ansible-sshd.conf:/etc/rsyslog.d
-      copy-in {{ kvm_templates_path_bis }}/ansible-sshd.conf:/etc/logrotate.d
-      copy-in {{ kvm_templates_path }}/sshd_ansible.service:/usr/lib/systemd/system
-      copy-in {{ kvm_templates_path_bis }}/ansible:/etc/sudoers.d
-      {% endif %}
-      firstboot {{ kvm_sysprep_tmp_2.path }}
+- name: Sysprep customize operations script
+  template:
+    src: "sysprep_script.j2"
+    dest: "{{ kvm_sysprep_tmp_2.path }}"
 
 - name: Running sysprep on VM templates
   command: >

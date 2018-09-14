@@ -1,0 +1,22 @@
+#!/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+setenforce 0
+systemctl enable --now getty@ttyS0.service
+{% if not kvm_common_case %}
+sed -r -i "s/^(SELINUX=)enforcing/\1permissive/" /etc/selinux/config
+sleep 60
+yum -q -y clean metadata
+yum -q -y makecache
+yum -q -y install epel-release
+yum -q -y install {{ kvm_sysprep_pkgs }}
+useradd -g wheel -m -d{{ ansible_home }} ansible
+mkdir -m 0700 {{ ansible_home }}/{{ ansible_key_dir }}
+chown ansible {{ ansible_home }}/{{ ansible_key_dir }}
+echo "{{ ansible_key_data }}" > "{{ ansible_home }}/{{ ansible_key_dir }}/{{ ansible_key_file }}"
+chown ansible:wheel "{{ ansible_home }}/{{ ansible_key_dir }}/{{ ansible_key_file }}"
+systemctl enable --now sshd_ansible.service
+if systemctl is-enabled firewalld.service; then
+    firewall-cmd --zone=public --add-port=48022/tcp
+    firewall-cmd --zone=public --add-port=48022/tcp --permanent
+fi
+{% endif %}
