@@ -13,13 +13,23 @@
 
 - import_tasks: packages.yml
 
-- name: "Set timezone in php.ini [rh-based]"
-  lineinfile:
-    dest: "/etc/php.ini"
-    regexp: '(^date.timezone\s*=\s*(?!{{ timezone|default("Europe/Moscow") }})|;date.timezone\s*=\s*)'
-    line: 'date.timezone = {{ timezone|default("Europe/Moscow") }}'
+- name: "Timezone in php.ini [rh-based]"
+  ini_file:
+    path: "/etc/php.ini"
+    section: Date
+    option: date.timezone
+    value: "{{ timezone|default('Europe/Moscow') }}"
     create: no
   tags: [ timezone ]
+
+- name: Custom php.ini options
+  ini_file:
+    path: "/etc/php.ini"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    create: no
+  with_items: "{{ php_options }}"
 
 - name: Memcached PHP module settings
   lineinfile:

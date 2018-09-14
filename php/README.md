@@ -11,6 +11,9 @@ php_memcached_nubmer_of_replicas: int # default: 1 :Настроить коли�
 
 php_oob: bool # default: false -- Use PHP from OS distribution
 
+php_options:
+  - { section: 'string', option: 'string', value: 'string' }
+
 timezone: "string" # default: 'Europe/Moscow' :Временна'я зона, устанавливаемая в php.ini
 ```
 ## Tags

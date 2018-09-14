@@ -4,6 +4,8 @@ php_memcached_nubmer_of_replicas: 1
 
 php_oob: false
 
+php_options: []
+
 php_remi_version: 7.2
 php_remi_version_raw: "{{ php_remi_version|string }}"
 php_remi_version_norm: "{{ php_remi_version_raw|regex_replace('\\.', '') }}"
