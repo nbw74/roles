@@ -16,7 +16,7 @@
     group: root
     mode: 0755
 
-- name: Set values in the INI config file
+- name: Set values in the INI config file ([pgbouncer])
   ini_file:
     path: "/etc/pgbouncer/pgbouncer.ini"
     section: pgbouncer
@@ -26,6 +26,8 @@
     - { option: 'auth_type', value: 'md5' }
     - { option: 'ignore_startup_parameters', value: 'extra_float_digits' }
     - { option: 'idle_transaction_timeout', value: "{{ pgbouncer_config['idle_transaction_timeout']|d('7200') }}" }
+    - { option: 'listen_addr', value: "{{ pgbouncer_config['listen_addr']|d('127.0.0.1') }}" }
+    - { option: 'listen_port', value: "{{ pgbouncer_config['listen_port']|d('6432') }}" }
   notify: pgbouncer restart
 
 - name: Insert ANSIBLE MANAGED mark
