@@ -15,4 +15,20 @@
     - bxvhost.ddns.enable|d()
   with_items: "{{ bxvhost.multisite|d([]) }}"
   tags: [ ddns, multisite ]
+
+- name: ddns update main
+  nsupdate:
+    server: "{{ vhost_ddns_server }}"
+    zone: "{{ bxvhost.ddns.zone|d(vhost_default_ddns_zone) }}"
+    record: "{{ ansible_fqdn|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
+    type: "{{ bxvhost.ddns.type|d('CNAME') }}"
+    value: "{{ ansible_fqdn|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}.{{ bitrix_aux_domain }}."
+    state: "{{ bxvhost.state|d(true)|ternary('present', 'absent') }}"
+    key_name: "{{ vhost_ddns_key_name|d('ddns_key') }}"
+    key_algorithm: "{{ vhost_ddns_key_algorithm|d('hmac-md5') }}"
+    key_secret: "{{ vhost_ddns_key_secret }}"
+  when:
+    - bxvhost.ddns is defined
+    - bxvhost.ddns.enable|d()
+  tags: [ ddns ]
 ...
