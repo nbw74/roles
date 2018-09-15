@@ -45,6 +45,22 @@
     pkgupdate: false
   when: bx_run_script.changed
 
+- name: Restore Nginx user
+  lineinfile:
+    path: "/etc/nginx/nginx.conf"
+    regexp: '^user\s+.*;'
+    line: 'user nginx;'
+  notify: restart nginx
+
+- name: Restore Apache user
+  lineinfile:
+    path: "/etc/httpd/conf/httpd.conf"
+    regexp: '^({{ item }})'
+    line: '\1 apache'
+    backrefs: yes
+  with_items: [ 'User', 'Group' ]
+  notify: restart httpd
+
 - name: Package httpd-itk
   yum:
     name: httpd-itk
