@@ -11,10 +11,12 @@
     src: "10-ssl-cache.conf"
     dest: "{{ confd }}"
     mode: 0644
+  notify: config reload nginx
   tags: [nginx]
 
 - name: "Template dummy host config"
   template:
     src: "00-dummy.j2"
     dest: "{{ confd }}/00-dummy.conf"
+  notify: config restart nginx
 ...
