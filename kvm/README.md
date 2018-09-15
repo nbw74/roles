@@ -30,21 +30,22 @@ kvm_common_case: bool # (default: false) Не выполнять таски, с�
 kvm_leave_hostname: bool # (default: false) Не устанавливать sysprep'ом hostname
 kvm_mac_printout: bool # (default: false)
 kvm_nested: bool # (default: false) Включает поддержку вложенной виртуализации
-kvm_template_default: "string"  # Имя образа-шаблона по-умолчанию
-kvm_templates_uri: "uri" # (mandatory) URI, откуда скачивать шаблоны
 
 kvm_pool: # Задаёт storage pool
 
-- name: "cs02" # Имя пула
-  type: "logical" # Тип пула (logical|dir)
-  path: "/dev/vg00" # Путь к пулу (/dev/vgname в случае "logical", и /file/system/path в случае "dir")
-  state: "active" # Состояние пула (active|absent)
+- name: "string" # Имя пула; при типе logical должно совпадать с именем VG
+  type: "string" # Тип пула (logical|dir)
+  path: "string" # Путь к пулу (/dev/vgname в случае "logical", и /file/system/path в случае "dir")
+  state: "string" # Состояние пула (active|absent)
 
 kvm_sysprep_root_key: "string" # (optional) Ключ SSH, который можно интегрировать
                                # суперпользователю в ВМ
+kvm_template_default: "string"  # Имя образа-шаблона по-умолчанию
+kvm_templates_uri: "uri" # (mandatory) URI, откуда скачивать шаблоны
+
 kvm_vm:
 
-- name: "submachine-1" # (mandatory) Имя ВМ
+- name: "string" # (mandatory) Имя ВМ
   nic_bridge: "string" # (mandatory) Мост на хосте, в который втыкается ВМ
   pool_name: "string" # (mandatory) Используемый пул хранения
   template_name: "string" # (default: kvm_template_default; mandatory if not set) Имя образа-шаблона
@@ -55,24 +56,27 @@ kvm_vm:
   disk_gb: int # (default: 16) Объём образа ВМ, ГБ
   memory_mb: int # (default: 1024) Объём RAM, МБ
   nic_model: "string" # (default: virtio) модель виртуальной сетевой карты (virtio|e1000|rtl8139)
-  state: "string" # (default: running) Состояние ВМ (running|shutdown|destroyed|paused)
-  sysprep_domain: "string" # Доменное имя для sysprep (по-умолчанию выделяется из ansible_nodename)
-  sysprep_hostname: "string" # (default: name)
+  state: "string" # (default: running) Состояние ВМ (running|shutdown|destroyed|paused|undefined);
+                  # undefined полностью удаляет ВМ с первым диском
+  sysprep_domain: "string" # (default: from ansible_nodename) Доменное имя для sysprep
+  sysprep_hostname: "string" # (default: name) Имя хоста для sysprep
   sysprep_ifcfg: # (optional) Конфигурация интерфейсов.
-    - dev: "eth0" # Имя интерфейса
-      bootproto: "static" # Протокол загрузки (static|dhcp)
-      address: "198.51.100.10/28" # IP-адрес (для static)
-      peer: "198.51.100.1" # Указание peer (для p2p, как в Хетцнере)
-      gateway: "198.51.100.1" # Шлюз по-умолчанию
-  sysprep_root_pass: # (optional) Пароль root
+    - dev: "string" # Имя интерфейса (например, eth0)
+      bootproto: "string" # Протокол загрузки (static|dhcp)
+      address: "ipv4/prefix" # IP-адрес (для static)
+      peer: "ipv4" # Указание peer (для p2p, как в Хетцнере)
+      gateway: "ipv4" # Шлюз по-умолчанию
+  sysprep_root_pass: "string" # (optional) Пароль root
+  template_name: "string" # (mandatory) Имя файла образа-шаблона
 
-ansible_ssh_proxy_internal_address: "ipaddr" # (default: undefined) Серый адрес сервера,
-                                             # выполняющего роль ssh proxy (ProxyCommand)
+ansible_ssh_proxy_internal_address: "ipv4" # (default: undefined) Серый адрес сервера,
+                                           # выполняющего роль ssh proxy (ProxyCommand)
 ```
-Все подэлементы массива `kvm_vm` (кроме `state`) читаются только при создании ВМ.
+Все элементы словарей в списке `kvm_vm` (кроме `name` и `state`) читаются только при создании ВМ.
 
 ## Зависимости
 bridge
 
 ## Лицензия
 BSD
+
