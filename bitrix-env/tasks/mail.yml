@@ -5,7 +5,6 @@
     src: msmtprc.j2
     force: yes
     backup: yes
-    # notify: link template msmtprc
   tags: [ mail ]
 
 - name: "Adding bitrix alias in /etc/aliases"
@@ -23,6 +22,4 @@
     force: no
     mode: 0666
   tags: [ mail ]
-
-- meta: flush_handlers
 ...

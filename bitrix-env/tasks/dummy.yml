@@ -1,0 +1,41 @@
+---
+- name: Copy index file for default server
+  copy:
+    src: index.php
+    dest: /var/www/html/
+    force: yes
+
+- name: Remove Nginx s1 files
+  file:
+    path: "/etc/nginx/bx/site_enabled/{{ item }}"
+    state: absent
+  with_items:
+    - "s1.conf"
+    - "ssl.s1.conf"
+
+- name: Template Nginx default server (available)
+  template:
+    src: "00-default.conf.j2"
+    dest: "/etc/nginx/bx/site_avaliable/00-default.conf"
+    owner: bitrix
+    group: bitrix
+    mode: 0644
+  notify: restart nginx
+
+- name: Template Nginx default server (enabled)
+  file:
+    path: "/etc/nginx/bx/site_enabled/00-default.conf"
+    src: "../site_avaliable/00-default.conf"
+    state: link
+  notify: restart nginx
+
+- name: Copy default httpd vhost
+  copy:
+    src: "default.conf"
+    dest: "/etc/httpd/bx/conf/default.conf"
+    owner: bitrix
+    group: bitrix
+    mode: 0644
+  notify: restart httpd
+
+...

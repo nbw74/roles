@@ -1,9 +1,0 @@
----
-- name: print a path to the wiki file
-  debug:
-    msg: "Wiki content: /tmp/bx_{{ ansible_fqdn }}.txt"
-  when:
-    - bx_user.changed
-    - bx_user.state == 'present'
-  tags: [ wiki ]
-...

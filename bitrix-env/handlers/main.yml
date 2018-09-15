@@ -1,22 +1,13 @@
 ---
-- name: config restart iptables
-  service: name=iptables state=restarted
+- name: restart nginx
+  systemd:
+    name: nginx.service
+    state: restarted
 
-- name: config restart nginx
-  service: name=nginx state=restarted
-
-- name: config restart httpd
-  service: name=httpd state=restarted
-
-- name: set bitrix password
-  shell: echo "$(date) Rainy Weather" | sha1sum | passwd bitrix --stdin
-
-- name: selinux autorelabel
-  file: path=/.autorelabel state=touch
-
-- name: pdo_dblib chattr
-  command: chattr +i /etc/php.d/pdo_dblib.ini
-  ignore_errors: true
+- name: restart httpd
+  systemd:
+    name: httpd.service
+    state: restarted
 
 - name: config newaliases
   command: newaliases

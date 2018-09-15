@@ -26,72 +26,87 @@
   tags: [ bitrix-env ]
 
 - name: "Run {{ bitrix_sh }}"
-  shell: "/var/local/{{ bitrix_sh }}"
+  shell: "/var/local/{{ bitrix_sh }} -s -M {{ lookup('password','/dev/null') }}"
   when: getent_bitrix.stdout.find('bitrix') == -1
   register: bx_run_script
-  notify: set bitrix password
   tags: [ bitrix-env ]
 
-- meta: flush_handlers
+- name: Set password for bitrix user
+  user:
+    name: bitrix
+    password: "{{ lookup('password','/dev/null')|password_hash('sha512') }}"
+  when: bx_run_script.changed
+  tags: [ bitrix-env ]
 
-- import_tasks: restore.yml
+- name: Restore normal system state
+  include_role:
+    name: common
+  vars:
+    pkgupdate: false
+  when: bx_run_script.changed
 
-- import_tasks: nginx.yml
+- name: Package httpd-itk
+  yum:
+    name: httpd-itk
 
-- import_tasks: php.yml
+- name: Enable httpd-itk
+  lineinfile:
+    path: "/etc/httpd/conf.modules.d/00-mpm-itk.conf"
+    regexp: '#*\s*(LoadModule.*)'
+    line: '\1'
+    backrefs: yes
+  notify: restart httpd
 
-- name: "Template bxmult script"
-  template:
-    src: "{{ item }}.j2"
-    dest: "/usr/local/bin/{{ item }}"
-    force: yes
-    owner: root
-    group: root
-    mode: 0744
+- name: Configure firewalld
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  with_items: [ ntp, snmp, http, bacula-client ]
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ firewalld ]
+
+- name: Status block in bx/site_available/s1.conf
+  blockinfile:
+    dest: "/etc/nginx/bx/conf/bitrix_general.conf"
+    insertafter: 'allow 127.0.0.0/24;'
+    block: |
+      {% for address in nginx_allow_status_list %}
+      allow {{ address|ipv4|ternary(address,'# ' ~ address) }};
+      {% endfor %}
+  notify: restart nginx
+  tags: [ nginx_status ]
+
+- name: Enable PHP modules
+  lineinfile:
+    dest: "{{ item.dest }}"
+    line: "{{ item.line }}"
+    state: present
+    create: yes
   with_items:
-    - "{{ bxmult_sh }}"
-  tags: [ scripts ]
-
-- name: "Copy .gitignore"
-  copy:
-    src: "gitignore"
-    dest: "/home/bitrix/www/.gitignore"
-    force: no
-    owner: bitrix
-    group: bitrix
-    mode: 0644
-  tags: [ bitrix-env ]
+    - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
+  when: bitrix_curl_enable
+  notify: restart httpd
+  tags: [ php_modules, php ]
 
 - import_tasks: mail.yml
 
-- import_tasks: init.yml
+- import_tasks: dummy.yml
 
-- import_tasks: mysql.yml
+- name: "mysqld masked (systemd)"
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
   when: not alien
-
-- name: "Set bash prompt attributes [dev]"
-  lineinfile:
-    dest: /etc/bash.attr
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
   with_items:
-    - { regexp: '^PR_HOST=', line: 'PR_HOST=${PR_GREEN}' }
-    - { regexp: '^PR_ATTRIB=', line: 'PR_ATTRIB=VM' }
-  when: "'deff' in ansible_domain"
-  tags: [ prompt ]
-
-- name: "Set bash prompt attributes [prod]"
-  lineinfile:
-    dest: /etc/bash.attr
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: '^PR_HOST=', line: 'PR_HOST=${PR_RED}' }
-    - { regexp: '^PR_ATTRIB=', line: 'PR_ATTRIB=VM' }
-  when: "'deff' not in ansible_domain"
-  tags: [ prompt ]
+    - mariadb
+    - mysqld
+    - mysql
+  ignore_errors: true
+  tags: [ services ]
 
 - name: "Add domain in /etc/hosts"
   lineinfile:
@@ -99,16 +114,4 @@
     line: "127.0.1.1\t{{ ansible_fqdn }}"
     state: present
   tags: [ hosts ]
-
-- import_tasks: user.yml
-
-- import_tasks: wiki.yml
-
-- import_tasks: redmine.yml
-
-- import_tasks: ddns.yml
-
-- import_tasks: multisite.yml
-
-- import_tasks: wiki2.yml
 ...
