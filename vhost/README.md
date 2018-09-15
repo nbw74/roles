@@ -82,7 +82,7 @@ vhost:
   index: "myindex.php" # optional; default is "index.php"
   legacy: bool # optional; don't force web-server config templates
   listen: # optional; default is first public IP (or private, if no public addresses)
-    - ipaddr: 192.0.2.10|all # 'all' is special word
+    - ipaddr: 192.0.2.10|all # 'all' is a special word
       port: 80 # optional; default is 80 or 443 if use crypto
   memcached: # optional if use memcached
     server1: address # default is "localhost4"
@@ -90,10 +90,14 @@ vhost:
     server2: address # default is none
     port2: 11211
   mobile: bool # optional; default is 'no'; enable mobile version config with same site root
-  nginx_auth_basic:
+  nginx_auth_basic: # optional
     enable: bool # default: no
     string: "string" # default: "Restricted"
     user_file: "path" # default: "/etc/nginx/.htpasswd"
+    users:
+      - name: "string"
+        pass: "string"
+        state: bool # default: yes
   nginx_http_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'http' context
   nginx_server_snippet: | # insert configuration block into nginx vhost config

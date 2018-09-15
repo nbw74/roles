@@ -1,4 +1,16 @@
 ---
+- name: Include htpasswd tasks
+  include_tasks: htpasswd.yml
+  when:
+    - current.nginx_auth_basic is defined
+    - current.nginx_auth_basic.enable|d(false)
+  with_items: "{{ vhost }}"
+  loop_control:
+    loop_var: current
+    label: "{{ current.name }}"
+  notify: validate nginx
+  tags: [ conf ]
+
 - name: template nginx vhost config
   template:
     src: "nginx{{ (item.nginx_301_only is defined)|ternary('-301', '') }}.j2"
