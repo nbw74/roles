@@ -110,7 +110,7 @@
     path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}"
     owner: "{{ item.user|d(item.name) }}"
     group: "{{ item.user|d(item.name) }}"
-    mode: 0755
+    mode: "{{ (vhost_backend == 'bitrix')|ternary('0770','0755') }}"
   when:
     - item.state|d(true)
     - item.nginx_301_only is not defined
@@ -119,7 +119,7 @@
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
 
-- name: initial index file
+- name: Initial index file
   copy:
     src: "index.php"
     dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"
@@ -131,6 +131,24 @@
     - item.state|d(true)
     - not item.legacy|d()
     - item.nginx_301_only is not defined
+    - vhost_backend != 'bitrix'
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}"
+  tags: [ user, db ]
+
+- name: Initial webroot content (Bitrix)
+  shell: >
+    cp -r --preserve=mode /home/bitrix/www/* {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/
+    && chown -R {{ item.user|d(item.name) }}:{{ item.user|d(item.name) }}
+    {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}
+  args:
+    creates: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"
+  when:
+    - item.state|d(true)
+    - not item.legacy|d()
+    - item.nginx_301_only is not defined
+    - vhost_backend == 'bitrix'
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"

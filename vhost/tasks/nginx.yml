@@ -11,21 +11,23 @@
   notify: validate nginx
   tags: [ conf ]
 
-- name: template nginx vhost config
+- name: Template Nginx vhost config
   template:
     src: "nginx{{ (item.nginx_301_only is defined)|ternary('-301', '') }}.j2"
     dest: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
     mode: 0644
     backup: yes
     force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  when: item.state|d(true)
+  when:
+    - vhost_backend != 'bitrix'
+    - item.state|d(true)
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
   tags: [ conf ]
 
-- name: remove nginx vhost config
+- name: Remove Nginx vhost config
   file:
     path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
     state: absent
@@ -37,7 +39,36 @@
   notify: validate nginx
   tags: [ conf ]
 
-- name: template php-fpm vhost config
+- name: "Template Nginx vhost config (Bitrix: site_available)"
+  template:
+    src: "nginx-bx.j2"
+    dest: "/etc/nginx/bx/site_avaliable/{{ item.user|d(item.name) }}.conf"
+    mode: 0644
+    backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
+  when: vhost_backend == 'bitrix'
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: vhost_bx_nginx_conf
+  notify: validate nginx
+  tags: [ conf ]
+
+- name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
+  file:
+    path: "/etc/nginx/bx/site_enabled/{{ item[0].dest|basename }}"
+    src: "../site_avaliable/{{ item[0].dest|basename }}"
+    state: "{{ item[1].state|ternary('link', 'absent') }}"
+  when: vhost_backend == 'bitrix'
+  with_together:
+    - "{{ vhost_bx_nginx_conf.results }}"
+    - "{{ vhost }}"
+  loop_control:
+    label: "{{ item[0].dest|basename }}"
+  notify: validate nginx
+  tags: [ conf ]
+
+- name: Template php-fpm vhost config
   template:
     src: "php-fpm.j2"
     dest: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
@@ -54,7 +85,7 @@
   notify: validate php-fpm
   tags: [ conf ]
 
-- name: remove php-fpm vhost config
+- name: Remove php-fpm vhost config
   file:
     path: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
     state: absent
@@ -69,15 +100,15 @@
   notify: validate php-fpm
   tags: [ conf ]
 
-- name: template apache vhost config
+- name: Template Apache vhost config
   template:
-    src: "apache.j2"
-    dest: "/etc/httpd/conf.d/{{ item.user|d(item.name) }}.conf"
+    src: "apache{{ (vhost_backend == 'bitrix')|ternary('-bx','') }}.j2"
+    dest: "/etc/httpd/{{ (vhost_backend == 'bitrix')|ternary('bx/custom','conf.d') }}/{{ item.user|d(item.name) }}.conf"
     mode: 0644
     backup: yes
     force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
   when:
-    - vhost_backend == 'apache'
+    - ( vhost_backend == 'apache' or vhost_backend == 'bitrix' )
     - item.state|d(true)
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
@@ -86,13 +117,13 @@
   notify: validate apache
   tags: [ conf ]
 
-- name: remove apache vhost config
+- name: Remove Apache vhost config
   file:
-    path: "/etc/httpd/conf.d/{{ item.user|d(item.name) }}.conf"
+    path: "/etc/httpd/{{ (vhost_backend == 'bitrix')|ternary('bx/custom','conf.d') }}/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
   when:
-    - vhost_backend == 'apache'
+    - ( vhost_backend == 'apache' or vhost_backend == 'bitrix' )
     - not item.state|d(true)
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"

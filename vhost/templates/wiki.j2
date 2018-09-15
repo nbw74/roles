@@ -1,6 +1,3 @@
-# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-# vim: set ft=ansible_template:
-# =================================== CUT ===================================
 
 h3. Web
 
@@ -8,7 +5,9 @@ h3. Web
 {% if item[0].mobile|d() %}
 *URI (mob):* http://m.{{ item[0].name }}
 {% endif %}
-*Software versions:* @{{ vhost_nginx_version }}, {{ vhost_php_version }}{% if vhost_backend == 'apache' %}, {{ vhost_apache_version }}{% endif %}@
+*Software versions:* @{{ vhost_nginx_version }}, {{ vhost_php_version }}
+{%- if vhost_backend == 'apache' %}, {{ vhost_apache_version }}{% endif %}
+{%- if vhost_backend == 'bitrix' %}, {{ vhost_apache_version }}, {{ vhost_bitrix_version }}{% endif %}@
 
 h3. SSH Access
 
@@ -46,4 +45,3 @@ h3. Database
 *DB user:* @{{ item[0].db.name }}:{{ item[0].db.pass }}@
 {% endif %}
 
-# =================================== CUT ===================================

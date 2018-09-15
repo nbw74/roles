@@ -38,7 +38,16 @@
 - name: get apache version
   shell: "httpd -V | awk '/Server version:/ { print $3 }'"
   register: vhost_reg_apache_ver
-  when: vhost_backend == 'apache'
+  when: vhost_backend == 'apache' or vhost_backend == 'bitrix'
+  changed_when: no
+  tags: [ version ]
+
+- name: get bitrix-env version
+  command: rpm -q --qf "%{NAME}/%{VERSION}-%{RELEASE}" bitrix-env
+  args:
+    warn: no
+  when: vhost_backend == 'bitrix'
+  register: vhost_reg_bitrix_ver
   changed_when: no
   tags: [ version ]
 
@@ -56,7 +65,13 @@
 - name: set apache version fact
   set_fact:
     vhost_apache_version: "{{ vhost_reg_apache_ver.stdout }}"
-  when: vhost_backend == 'apache'
+  when: vhost_backend == 'apache' or vhost_backend == 'bitrix'
+  tags: [ version ]
+
+- name: set bitrix version fact
+  set_fact:
+    vhost_bitrix_version: "{{ vhost_reg_bitrix_ver.stdout }}"
+  when: vhost_backend == 'bitrix'
   tags: [ version ]
 
 - name: get postgresql datadir

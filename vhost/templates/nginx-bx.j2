@@ -1,0 +1,74 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+server {
+
+{% include "nginx/listen-plain.j2" %}
+    server_name		{{ item.name }}
+			www.{{ item.name }}
+{% if item.alias is defined %}
+{% for name in item.alias %}
+			{{ name }}
+			www.{{ name }}
+{% endfor %}
+{% endif %}
+			;
+    server_name_in_redirect off;
+
+    proxy_set_header	X-Real-IP        $remote_addr;
+    proxy_set_header	X-Forwarded-For  $proxy_add_x_forwarded_for;
+    proxy_set_header	Host $host:80;
+
+    set $proxyserver	"http://127.0.0.1:8888";
+    set $docroot	"{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}";
+
+    index index.php;
+    root {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }};
+
+    # Redirect to ssl if need
+    if (-f {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/.htsecure) { rewrite ^(.*)$ https://$host$1 permanent; }
+
+    # Include parameters common to all websites
+    include bx/conf/bitrix.conf;
+}
+{% if item.crypto|d('none') != 'none' %}
+
+server {
+{% include "nginx/listen-crypto.j2" %}
+    server_name		{{ item.name }}
+			;
+
+# If they come here using HTTP, bounce them to the correct scheme
+# Nginx internal code used for the plain HTTP requests 
+# that are sent to HTTPS port to distinguish it from 4XX in a log and an error page redirection.
+    error_page 497 https://$host$request_uri;
+
+# Increase keepalive connection lifetime
+    keepalive_timeout	70;
+    keepalive_requests	150;
+
+# SSL encryption parameters
+    ssl			on;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+    ssl_prefer_server_ciphers on;
+{% include "nginx/ssl.j2" %}
+# performance
+    ssl_session_cache	shared:SSL:10m;
+    ssl_session_timeout	10m;
+
+    server_name_in_redirect	off;
+
+    proxy_set_header	X-Real-IP	$remote_addr;
+    proxy_set_header	X-Forwarded-For	$proxy_add_x_forwarded_for;
+    proxy_set_header	Host		$host:443;
+    proxy_set_header	HTTPS 		YES;
+
+    set $proxyserver	"http://127.0.0.1:8888";
+    set $docroot	"{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}";
+
+    index index.php;
+    root {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }};
+
+    # Include parameters common to all websites
+    include bx/conf/bitrix.conf;
+}
+{% endif %}
