@@ -1,0 +1,32 @@
+---
+- name: Bitrix cron task
+  cron:
+    name: "Standard bitrix cron task"
+    user: "{{ item.user|d(item.name) }}"
+    job: >
+      test -f
+      {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/bitrix/modules/main/tools/cron_events.php
+      && { /usr/bin/php -f
+      {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/bitrix/modules/main/tools/cron_events.php;
+      } >/dev/null 2>&1
+    state: "{{ item.state|d(true) | ternary('present','absent') }}"
+  when:
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: "Template user's msmtprc"
+  template:
+    src: "msmtprc.j2"
+    dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/.msmtprc"
+    owner: "{{ item.user|d(item.name) }}"
+    group: "{{ item.user|d(item.name) }}"
+    mode: 0644
+  when:
+    - item.state|d(true)
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+...

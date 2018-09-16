@@ -1,5 +1,5 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-{% set siteroot = vhost_basedir ~ '/' ~ item.user|d(item.name)~ '/' ~ item.webroot|d('www') %}
+{% set siteroot = vhost_basedir ~ '/' ~ item.user|d(item.name) ~ '/' ~ item.webroot|d('www') %}
 
 <VirtualHost 127.0.0.1:8888>
 	ServerAdmin webmaster@{{ item.name }}

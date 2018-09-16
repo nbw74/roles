@@ -64,7 +64,7 @@
     - "{{ vhost_bx_nginx_conf.results }}"
     - "{{ vhost }}"
   loop_control:
-    label: "{{ item[0].dest|basename }}"
+    label: "{{ item[0].dest|d('null')|basename }}"
   notify: validate nginx
   tags: [ conf ]
 

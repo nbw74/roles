@@ -1,7 +1,8 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% set homedir = vhost_basedir ~ '/' ~ item.user|d(item.name) %}
 
 <VirtualHost 127.0.0.1:{{ vhost_apache_port }}>
-    DocumentRoot {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}
+    DocumentRoot {{ homedir }}/{{ item.webroot|d('www') }}
     ServerAdmin admin@{{ item.name }}
     ServerName {{ item.name }}
     ServerAlias www.{{ item.name }}
@@ -11,10 +12,10 @@
     ServerAlias www.{{ name }}
 {% endfor %}
 {% endif %}
-    ErrorLog {{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/apache-error.log
-    CustomLog {{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/apache-access.log combined
+    ErrorLog {{ homedir }}/log/apache-error.log
+    CustomLog {{ homedir }}/log/apache-access.log combined
 
-    <Directory {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}>
+    <Directory {{ homedir }}/{{ item.webroot|d('www') }}>
         Options -ExecCGI -Indexes -Includes +FollowSymLinks
         AllowOverride All
 
@@ -31,11 +32,11 @@
 
     AssignUserId {{ vhost_backuser }} {{ item.user|d(item.name) }}
 
-    php_admin_value open_basedir "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/:."
-    php_admin_value upload_tmp_dir "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/tmp"
+    php_admin_value open_basedir "{{ homedir }}/:."
+    php_admin_value upload_tmp_dir "{{ homedir }}/tmp"
 {% if item.save_handler|d('files') == 'files' %}
     php_admin_value session.save_handler "files"
-    php_admin_value session.save_path "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/tmp"
+    php_admin_value session.save_path "{{ homedir }}/tmp"
 {% elif item.save_handler|d('files') == 'memcached' %}
     php_admin_value session.save_handler "memcached"
     php_admin_value session.save_path "{{ item.memcached.server1|d('localhost4') }}:{{ item.memcached.port1|d('11211') }}

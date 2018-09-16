@@ -4,6 +4,9 @@
 - include_tasks: user.yml
   when: vhost_backend != 'reverse-proxy'
 
+- include_tasks: bitrix.yml
+  when: vhost_backend == 'bitrix'
+
 - include_tasks: redmine.yml
   when: vhost_backend != 'reverse-proxy'
 
