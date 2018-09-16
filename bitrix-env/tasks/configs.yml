@@ -1,0 +1,27 @@
+---
+- name: Status block in bx/site_available/s1.conf
+  blockinfile:
+    dest: "/etc/nginx/bx/conf/bitrix_general.conf"
+    insertafter: 'allow 127.0.0.0/24;'
+    block: |
+      {% for address in nginx_allow_status_list %}
+      allow {{ address|ipv4|ternary(address,'# ' ~ address) }};
+      {% endfor %}
+  notify: restart nginx
+  tags: [ nginx_status ]
+
+- name: Copy ssl.conf include
+  copy:
+    src: "/etc/nginx/bx/conf/ssl.conf"
+    dest: "/etc/nginx/bx/conf/ssl.h"
+    remote_src: yes
+    force: no
+  register: bitrix_ssl_custom
+
+- name: Edit ssl.h
+  lineinfile:
+    path: "/etc/nginx/bx/conf/ssl.h"
+    regexp: '^\s*ssl_certificate'
+    state: absent
+  when: bitrix_ssl_custom.changed
+...
