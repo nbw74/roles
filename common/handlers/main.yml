@@ -79,6 +79,9 @@
 - name: config restart ntpd
   service: name=ntpd state=restarted
 
+- name: config restart crond
+  service: name=crond state=restarted
+
 #####
 # SNMPd restart
 #

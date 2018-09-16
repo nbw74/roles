@@ -73,6 +73,8 @@ common_static_route: # Добавить статичные маршруты в /
       - ...
 
 selinux_state: bool # default: "enforcing"
+
+timezone: "string" # default: "Europe/Moscow"
 ```
 
 ## Tags

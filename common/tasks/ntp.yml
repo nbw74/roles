@@ -21,5 +21,10 @@
   notify: config restart ntpd
   tags: [ ntp ]
 
+- name: "Set timezone"
+  timezone:
+    name: "{{ timezone }}"
+  notify: config restart crond
+
 - meta: flush_handlers
 ...
