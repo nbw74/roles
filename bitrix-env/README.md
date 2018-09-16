@@ -17,27 +17,7 @@ bx_msmtp_domain: "string" # default: первая и последняя част
 nginx_allow_status_list: # default: <RFC-1918 network list> Список адресов, с которых разрешено
   - "ipv4"               # обращение к странице статуса Nginx
 
-bxvhost:
-  db:
-    host: "string" # mandatory
-    port: "int" # optional; default is '3306'
-    name: "string" # mandatory
-    pass: "string" # mandatory
-  ddns:
-    enable: bool # optional; default is 'false'
-    zone: string # default is vhost_default_ddns_zone
-    record: string # default is vhost.name minus vhost_default_ddns_zone
-    type: A|CNAME|... # default is CNAME
-    value: string # default is ansible_fqdn.
-  multisite: # optional; currently used for wiki page and ddns
-    - domain: string # fqdn w/o "vhost_default_ddns_zone"
-      adaptive: bool # default: 'yes'; if 'no' then run script bxmultisite.sh
-  redmine:
-    title: "string" # mandatory
-    description: "string" # mandatory
-    id: "string" # optional
-  ssh_key_type: "string" # optional, default 'ed25519'
-
+timezone: "string" # default: "Europe/Moscow"
 ```
 ## Tags
 `bitrix-env`, `ddns`, `hosts`, `iptables`, `mail`, `mail_alias`, `multisite`, `nginx_status`, `packages`, `passwd`, `php`, `php_modules`, `prompt`, `scripts`, `selinux`

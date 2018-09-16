@@ -61,6 +61,31 @@
   with_items: [ 'User', 'Group' ]
   notify: restart httpd
 
+- name: "Fix owner of dirs in /tmp/php_*"
+  file:
+    path: "/tmp/{{ item }}"
+    state: directory
+    owner: apache
+    group: apache
+    mode: 0770
+  with_items:
+    - "php_sessions"
+    - "php_sessions/www"
+    - "php_sessions/ext_www"
+    - "php_upload"
+    - "php_upload/www"
+    - "php_upload/ext_www"
+
+- name: Set timezone in php config
+  ini_file:
+    path: "/etc/php.d/bitrixenv.ini"
+    section: null
+    option: "date.timezone"
+    value: "{{ timezone }}"
+    create: no
+  notify: restart httpd
+  tags: [ timezone ]
+
 - name: Package httpd-itk
   yum:
     name: httpd-itk
