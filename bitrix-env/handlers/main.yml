@@ -8,6 +8,7 @@
   systemd:
     name: httpd.service
     state: restarted
+    daemon-reload: yes
 
 - name: config newaliases
   command: newaliases

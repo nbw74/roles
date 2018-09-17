@@ -61,6 +61,27 @@
   with_items: [ 'User', 'Group' ]
   notify: restart httpd
 
+- name: Apache umask dir
+  file:
+    path: "/etc/systemd/system/httpd.service.d"
+    state: directory
+    mode: 0755
+
+- name: Apache umask file
+  copy:
+    src: umask.conf
+    dest: "/etc/systemd/system/httpd.service.d/umask.conf"
+    mode: 0644
+  notify: restart httpd
+
+- name: Disable bvat service
+  systemd:
+    name: "bvat.service"
+    state: stopped
+    enabled: no
+  ignore_errors: true
+  tags: [ services ]
+
 - name: "Fix owner of dirs in /tmp/php_*"
   file:
     path: "/tmp/{{ item }}"
@@ -126,7 +147,7 @@
 
 - import_tasks: dummy.yml
 
-- name: "mysqld masked (systemd)"
+- name: Mask services
   systemd:
     name: "{{ item }}"
     state: stopped
