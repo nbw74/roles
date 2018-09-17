@@ -58,3 +58,60 @@ server {
     include bx/conf/bitrix.conf;
 }
 {% endif %}
+{% if item.bitrix_multisite is defined %}
+{% for multi in item.bitrix_multisite %}
+{% set siteroot = vhost_basedir ~ '/' ~ item.user|d(item.name) ~ '/' ~  multi.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') %}
+
+server {
+
+{% include "nginx/listen-plain.j2" %}
+    server_name		{{ multi.name }}
+			www.{{ multi.name }}
+			;
+    server_name_in_redirect off;
+
+    proxy_set_header	X-Real-IP        $remote_addr;
+    proxy_set_header	X-Forwarded-For  $proxy_add_x_forwarded_for;
+    proxy_set_header	Host $host:80;
+
+    set $proxyserver	"http://127.0.0.1:8888";
+    set $docroot	"{{ siteroot }}";
+
+    index index.php;
+    root {{ siteroot }};
+
+    # Redirect to ssl if need
+    if (-f {{ siteroot }}/.htsecure) { rewrite ^(.*)$ https://$host$1 permanent; }
+
+    # Include parameters common to all websites
+    include bx/conf/bitrix.conf;
+}
+{% if multi.crypto|d('none') != 'none' %}
+
+server {
+{% include "nginx/listen-crypto.j2" %}
+    server_name		{{ multi.name }}
+			;
+    # Enable SSL connection
+    include		bx/conf/ssl.h;
+{% include "nginx/ssl.j2" %}
+
+    server_name_in_redirect	off;
+
+    proxy_set_header	X-Real-IP	$remote_addr;
+    proxy_set_header	X-Forwarded-For	$proxy_add_x_forwarded_for;
+    proxy_set_header	Host		$host:443;
+    proxy_set_header	HTTPS 		YES;
+
+    set $proxyserver	"http://127.0.0.1:8888";
+    set $docroot	"{{ siteroot }}";
+
+    index index.php;
+    root {{ siteroot }};
+
+    # Include parameters common to all websites
+    include bx/conf/bitrix.conf;
+}
+{% endif %}
+{% endfor %}
+{% endif %}

@@ -1,7 +1,7 @@
 ---
 - name: Bitrix cron task
   cron:
-    name: "Standard bitrix cron task"
+    name: Standard bitrix cron task
     user: "{{ item.user|d(item.name) }}"
     job: >
       test -f
@@ -29,4 +29,16 @@
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
+
+- name: Include multisite
+  include_tasks: bitrix-multisite.yml
+  with_subelements:
+    - "{{ vhost }}"
+    - bitrix_multisite
+    - flags:
+      skip_missing: true
+  loop_control:
+    loop_var: multi
+    label: "{{ multi[0].name }}:{{ multi[1].name }}"
+
 ...

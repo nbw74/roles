@@ -43,6 +43,9 @@ vhost:
     - nose.example.org
   apache:
     port: 8888 # optional (if use apache as vhost_backend)
+  bitrix_multisite:
+    - domain: ears.example.org
+      crypto: bool
   crypto: none|redirect|both # optional; default is "none"
   crypto_mobile: none|redirect|both # optional; default is 'crypto' value
   crypto_wildcard: bool # Use wildcard certificate _<example.org>; default: false

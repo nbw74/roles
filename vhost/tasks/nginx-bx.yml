@@ -1,0 +1,29 @@
+---
+- name: "Template Nginx vhost config (Bitrix: site_available)"
+  template:
+    src: "nginx-bx.j2"
+    dest: "/etc/nginx/bx/site_avaliable/{{ item.user|d(item.name) }}.conf"
+    mode: 0644
+    backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: vhost_bx_nginx_conf
+  notify: validate nginx
+  tags: [ conf ]
+
+- name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
+  file:
+    path: "/etc/nginx/bx/site_enabled/{{ item[0].dest|basename }}"
+    src: "../site_avaliable/{{ item[0].dest|basename }}"
+    state: "{{ item[1].state|ternary('link', 'absent') }}"
+  with_together:
+    - "{{ vhost_bx_nginx_conf.results }}"
+    - "{{ vhost }}"
+  loop_control:
+    label: "{{ item[0].dest|d('null')|basename }}"
+  notify: validate nginx
+  tags: [ conf ]
+
+...

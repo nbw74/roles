@@ -1,0 +1,31 @@
+---
+- name: Template Apache vhost config
+  template:
+    src: "apache{{ (vhost_backend == 'bitrix')|ternary('-bx','') }}.j2"
+    dest: "/etc/httpd/{{ (vhost_backend == 'bitrix')|ternary('bx/custom','conf.d') }}/{{ item.user|d(item.name) }}.conf"
+    mode: 0644
+    backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
+  when:
+    - item.state|d(true)
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: validate apache
+  tags: [ conf ]
+
+- name: Remove Apache vhost config
+  file:
+    path: "/etc/httpd/{{ (vhost_backend == 'bitrix')|ternary('bx/custom','conf.d') }}/{{ item.user|d(item.name) }}.conf"
+    state: absent
+    backup: yes
+  when:
+    - not item.state|d(true)
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: validate apache
+  tags: [ conf ]
+...

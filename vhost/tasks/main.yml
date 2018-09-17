@@ -18,7 +18,14 @@
 
 - import_tasks: crypto.yml
 
-- import_tasks: nginx.yml
+- include_tasks: nginx.yml
+  when: vhost_backend != 'bitrix'
+
+- include_tasks: nginx-bx.yml
+  when: vhost_backend == 'bitrix'
+
+- include_tasks: apache.yml
+  when: vhost_backend == 'apache' or vhost_backend == 'bitrix'
 
 - include_tasks: ddns.yml
   when: vhost_backend != 'reverse-proxy'

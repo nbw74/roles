@@ -1,0 +1,18 @@
+---
+- name: Multisite dirs
+  file:
+    path: "{{ vhost_basedir }}/{{ multi[0].user|d(multi[0].name) }}/{{ multi[1].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
+    state: directory
+    owner: "{{ multi[0].user|d(multi[0].name) }}"
+    group: "{{ multi[0].user|d(multi[0].name) }}"
+    mode: 0770
+
+- name: Multisite links
+  file:
+    path: "{{ vhost_basedir }}/{{ multi[0].user|d(multi[0].name) }}/{{ multi[1].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}/{{ item }}"
+    state: link
+    src: "../www/{{ item }}"
+    owner: "{{ multi[0].user|d(multi[0].name) }}"
+    group: "{{ multi[0].user|d(multi[0].name) }}"
+  with_items: [ 'bitrix', 'upload' ]
+...
