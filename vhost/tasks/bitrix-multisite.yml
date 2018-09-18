@@ -14,5 +14,7 @@
     src: "../www/{{ item }}"
     owner: "{{ multi[0].user|d(multi[0].name) }}"
     group: "{{ multi[0].user|d(multi[0].name) }}"
+    force: yes
+    follow: no
   with_items: [ 'bitrix', 'upload' ]
 ...

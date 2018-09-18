@@ -7,9 +7,6 @@
 - include_tasks: bitrix.yml
   when: vhost_backend == 'bitrix'
 
-- include_tasks: redmine.yml
-  when: vhost_backend != 'reverse-proxy'
-
 - include_tasks: wiki.yml
   when: vhost_backend != 'reverse-proxy'
 
@@ -29,11 +26,15 @@
 
 - include_tasks: ddns.yml
   when: vhost_backend != 'reverse-proxy'
+  tags: [ ddns ]
 
 - include_tasks: mysql.yml
   when: vhost_backend != 'reverse-proxy'
 
 - include_tasks: postgresql.yml
+  when: vhost_backend != 'reverse-proxy'
+
+- include_tasks: redmine.yml
   when: vhost_backend != 'reverse-proxy'
 
 - include_tasks: repo.yml

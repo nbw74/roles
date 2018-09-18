@@ -1,4 +1,20 @@
 ---
+- name: Initial bitrix webroot content
+  shell: >
+    cp -ru --preserve=mode /home/bitrix/www/* {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/
+    && chown -R {{ item.user|d(item.name) }}:{{ item.user|d(item.name) }}
+    {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}
+  args:
+    creates: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"
+  when:
+    - item.state|d(true)
+    - not item.legacy|d()
+    - item.nginx_301_only is not defined
+    - vhost_backend == 'bitrix'
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}"
+
 - name: Bitrix cron task
   cron:
     name: Standard bitrix cron task
@@ -14,7 +30,7 @@
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.user|d(item.name) }}"
 
 - name: "Template user's msmtprc"
   template:
@@ -28,10 +44,13 @@
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.user|d(item.name) }}"
 
 - name: Include multisite
   include_tasks: bitrix-multisite.yml
+  when:
+    - multi[0].state|d(true)
+    - multi[0].nginx_301_only is not defined
   with_subelements:
     - "{{ vhost }}"
     - bitrix_multisite
