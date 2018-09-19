@@ -10,6 +10,17 @@
   when: not php_oob
   tags: [ packages, remi ]
 
+- name: Remi-safe repository
+  yum_repository:
+    name: "remi-safe"
+    description: "Safe Remi's RPM repository for Enterprise Linux 7 - $basearch"
+    mirrorlist: "http://cdn.remirepo.net/enterprise/7/safe/mirror"
+    gpgcheck: yes
+    enabled: yes
+    gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
+  when: not php_oob
+  tags: [ packages, remi ]
+
 - name: yum common packages
   yum:
     name: "{{ php_common_packages }}"
