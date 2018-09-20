@@ -5,6 +5,11 @@ h3. Web
 {% if item[0].mobile|d() %}
 *URI (mob):* http://m.{{ item[0].name }}
 {% endif %}
+{% if item[0].bitrix_multisite is defined %}
+{% for domain in item[0].bitrix_multisite %}
+*URI ({{ domain|regex_replace('^([-a-zA-Z0-9]+).*$','\\1') }}):* http://{{ domain }}
+{% endfor %}
+{% endif %}
 *Software versions:* @{{ vhost_nginx_version }}, {{ vhost_php_version }}
 {%- if vhost_backend == 'apache' %}, {{ vhost_apache_version }}{% endif %}
 {%- if vhost_backend == 'bitrix' %}, {{ vhost_apache_version }}, {{ vhost_bitrix_version }}{% endif %}@
