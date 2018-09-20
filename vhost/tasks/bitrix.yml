@@ -10,10 +10,25 @@
     - item.state|d(true)
     - not item.legacy|d()
     - item.nginx_301_only is not defined
-    - vhost_backend == 'bitrix'
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
+
+- name: Check umask in dbconn.php
+  lineinfile:
+    path: "{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[1].webroot|d('www') }}/bitrix/php_interface/dbconn.php"
+    regexp: 'define.+BX_{{ item[0] }}_PERMISSIONS'
+    line: 'define("BX_{{ item[0] }}_PERMISSIONS", {{ (item[0] == "FILE")|ternary("0664", "0775") }});'
+    insertbefore: '\?>$'
+  when:
+    - item[1].state|d(true)
+    - item[1].nginx_301_only is not defined
+  with_nested:
+    - [ 'FILE', 'DIR' ]
+    - "{{ vhost }}"
+  loop_control:
+    label: "{{ item[1].user|d(item[1].name) }}"
+  ignore_errors: yes
 
 - name: Bitrix cron task
   cron:
