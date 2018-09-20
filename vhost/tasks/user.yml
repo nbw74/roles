@@ -148,5 +148,6 @@
   with_items: "{{ vhost_user.results }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
+  ignore_errors: yes
   tags: [ user, selinux ]
 ...

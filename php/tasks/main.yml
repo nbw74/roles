@@ -2,7 +2,9 @@
 - name: Check if role assigned to host
   fail:
     msg: "ROLE 'php' IS NOT ASSIGNED TO THIS HOST"
-  when: "'php' not in roles"
+  when:
+    - "'httpd' not in roles"
+    - "'php-fpm' not in roles"
 
 - name: Check required parameter
   fail:
