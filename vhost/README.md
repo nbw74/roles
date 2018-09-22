@@ -44,8 +44,18 @@ vhost:
   apache:
     port: 8888 # optional (if use apache as vhost_backend)
   bitrix_multisite:
-    - domain: ears.example.org
+    - name: ears.example.org
       crypto: bool
+  cron: # optional; cron tasks for vhost user
+    - name: "Task name" # mandatory; description of a crontab entry
+      minute: "string" # default: *; minute when the job should run ( 0-59, *, */2, etc )
+      hour: "string" # default: *; hour when the job should run ( 0-23, *, */2, etc )
+      day: "string" # default: *; day of the month the job should run ( 1-31, *, */2, etc )
+      weekday: "string" # default: *; day of the week that the job should run ( 0-6 for Sunday-Saturday, *, etc )
+      month: "string" # default: *; month of the year the job should run ( 1-12, *, */2, etc )
+      job: "string" # mandatory; the command to execute
+      disabled: bool # default: no; if the job should be disabled (commented out) in the crontab
+      state: bool # default: yes; whether to ensure the job is present or absent
   crypto: none|redirect|both # optional; default is "none"
   crypto_mobile: none|redirect|both # optional; default is 'crypto' value
   crypto_wildcard: bool # Use wildcard certificate _<example.org>; default: false
