@@ -86,6 +86,27 @@
     label: "{{ item.name|d('301') }}"
   tags: [ user, db ]
 
+- name: Cron tasks
+  cron:
+    name: "{{ item[1].name }}"
+    user: "{{ item[0].user|d(item[0].name) }}"
+    job: "{{ item[1].job }}"
+    minute: "{{ item[1].minute|d('*') }}"
+    hour: "{{ item[1].hour|d('*') }}"
+    day: "{{ item[1].day|d('*') }}"
+    weekday: "{{ item[1].weekday|d('*') }}"
+    month: "{{ item[1].month|d('*') }}"
+    disabled: "{{ item[1].disabled|d('false') }}"
+    state: "{{ item[1].state|d(true)|ternary('present','absent') }}"
+  with_subelements:
+    - "{{ vhost }}"
+    - cron
+    - flags:
+      skip_missing: true
+  loop_control:
+    label: "{{ item[0].user|d(item[0].name) }}:{{ item[1].name }}"
+  tags: [ cron ]
+
 - name: manage common directories
   file:
     state: directory
