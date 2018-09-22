@@ -1,5 +1,5 @@
 ---
-- name: create git repo
+- name: Git repo
   command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}'"
   args:
     creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/HEAD"
@@ -15,4 +15,27 @@
   notify: repo git created
   ignore_errors: yes
   tags: [ repo ]
+
+- name: Git post-update hook
+  file:
+    state: link
+    path: >-
+      {{ vhost_git_path }}/{{ item.repo.name|d(item.name
+      | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/hooks/post-update
+    src: "post-update.sample"
+    force: no
+  when:
+    - item.repo is defined
+    - item.repo.type|d('none') == 'git'
+    - item.state|d(true)
+    - not item.legacy|d()
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  delegate_to: "{{ vhost_git_server }}"
+  ignore_errors: yes
+  register: vhost_git_hook
+  notify: repo git created
+  tags: [ repo ]
+
 ...

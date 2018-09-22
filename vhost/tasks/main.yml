@@ -39,6 +39,7 @@
 
 - include_tasks: repo.yml
   when: vhost_backend != 'reverse-proxy'
+  tags: [ repo ]
 
 - import_tasks: webcheck.yml
 

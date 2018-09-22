@@ -68,15 +68,17 @@
   run_once: true
 
 - name: repo git created
-  shell: "cd {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/hooks && ln -sv post-update.sample post-update && git update-server-info"
-  args:
-    creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/hooks/post-update"
-  delegate_to: "{{ vhost_git_server }}"
+  shell: >
+    cd {{ vhost_git_path }}/{{ item.item.repo.name|d(item.item.name
+    | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}
+    && git update-server-info
   when:
-    - item.repo is defined
-    - item.repo.type|d('none') == 'git'
-    - item.state|d(true)
-  with_items: "{{ vhost }}"
+    - item.item.repo is defined
+    - item.item.repo.type|d('none') == 'git'
+    - item.item.state|d(true)
+    - item.changed
+  with_items: "{{ vhost_git_hook.results }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.item.name }}"
+  delegate_to: "{{ vhost_git_server }}"
 ...
