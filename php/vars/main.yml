@@ -15,4 +15,6 @@ php_common_packages:
 php_remi_packages:
   - php-pecl-crypto
 
+php_git_hooks_dir: "/etc/git/hooks"
+flags_dir: "/var/lib/flags"
 ...

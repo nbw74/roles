@@ -1,0 +1,31 @@
+---
+- name: Dirs for flags and Git system-wide hooks
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{ flags_dir }}"
+    - "{{ php_git_hooks_dir }}"
+  tags: [ git ]
+
+- name: System Git config core.hooksPath
+  shell: >
+    git config --system core.hooksPath {{ php_git_hooks_dir }}
+    && touch {{ flags_dir }}/git.core.hooksPath
+  args:
+    creates: "{{ flags_dir }}/git.core.hooksPath"
+  tags: [ git ]
+
+- name: Template Git post-checkout and post-merge hooks
+  template:
+    src: "git-selinux-hook.j2"
+    dest: "{{ php_git_hooks_dir }}/{{ item }}"
+    mode: 0775
+    backup: yes
+  with_items: [ 'post-checkout', 'post-merge' ]
+  loop_control:
+    label: "{{ item }}"
+  tags: [ git ]
+
+...

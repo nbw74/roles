@@ -21,6 +21,26 @@
   when: not php_oob
   tags: [ packages, remi ]
 
+- name: GPG key for Lux repo
+  copy:
+    src: "RPM-GPG-KEY-LUX"
+    dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
+    force: no
+    mode: 0644
+    owner: root
+    group: root
+  tags: [ packages, git ]
+
+- name: Lux repository
+  yum_repository:
+    name: "lux"
+    description: "CentOS $releasever - $basearch - Lux"
+    baseurl: "http://repo.iotti.biz/CentOS/$releasever"
+    enabled: no
+    gpgcheck: yes
+    gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
+  tags: [ packages, git ]
+
 - name: yum common packages
   yum:
     name: "{{ php_common_packages }}"
@@ -34,10 +54,16 @@
   when: not php_oob
   tags: [ packages ]
 
+- name: Git from Lux
+  yum:
+    name: git
+    enablerepo: lux
+    state: latest
+  tags: [ packages, git ]
+
 - name: yum memcached client package
   yum:
     name: "php-pecl-memcached"
   when: php_memcached_client
   tags: [ packages, memcached ]
-
 ...

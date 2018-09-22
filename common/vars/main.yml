@@ -19,7 +19,6 @@ common_required_base_packages:
   - checkpolicy
   - deltarpm
   - gdisk
-  - git
   - ipset
   - libselinux-python
   - mailx

@@ -46,4 +46,6 @@
     - { regexp: '^;?(memcached.sess_number_of_replicas\s+=\s+)\d+', line: '\g<1>{{ php_memcached_nubmer_of_replicas }}' }
   when: php_memcached_client
   tags: [ memcached ]
+
+- import_tasks: git.yml
 ...
