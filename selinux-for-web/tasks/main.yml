@@ -51,6 +51,9 @@
     target: "{{ item.target }}"
     state: present
   with_items:
+    - name: "Crontab fix"
+      setype: user_cron_spool_t
+      target: '/var/spool/cron/[^/]*'
     - name: "Usual ssh dir"
       setype: ssh_home_t
       target: '/var/www/[-a-zA-Z0-9\.]+/\.ssh(/.*)?'

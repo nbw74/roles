@@ -10,5 +10,12 @@
   tags: [ porntube ]
   when: not alien
 
-- meta: flush_handlers
+- name: copy ptr_se
+  copy:
+    src: "{{ ptr_se }}.te"
+    dest: "/var/local/{{ ptr_se }}.te"
+  when: selinux_state != "disabled"
+  notify: checkmodule ptr_se
+  tags: [ selinux ]
 
+...

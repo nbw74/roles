@@ -5,6 +5,7 @@ common_icinga2_conf: []
 common_icinga2_enable: true
 pkgupdate: false
 roles: []
+selinux_custom_booleans: []
 selinux_state: "enforcing"
 timezone: "Europe/Moscow"
 ...

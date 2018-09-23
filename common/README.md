@@ -72,6 +72,9 @@ common_static_route: # Добавить статичные маршруты в /
       - { dest: "CIDR", gw: "ipv4_address"[, state: bool] }
       - ...
 
+selinux_custom_booleans:
+  - { name: 'boolean_name'[, state: 'bool'] }
+
 selinux_state: bool # default: "enforcing"
 
 timezone: "string" # default: "Europe/Moscow"
