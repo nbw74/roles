@@ -14,6 +14,7 @@
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
+  notify: restorecon command
   tags: [ user, db ]
 
 - name: set password
@@ -44,6 +45,7 @@
   with_items: "{{ vhost_user.results }}"
   loop_control:
     label: "{{ item.name|d('301') }}"
+  notify: restorecon command
   tags: [ user, db ]
 
 - name: set homedir mode
@@ -123,6 +125,7 @@
     - "{{ vhost }}"
   loop_control:
     label: "{{ item[0] }}, {{ item[1].user|d(item[1].name) }}"
+  notify: restorecon command
   tags: [ user, db ]
 
 - name: manage webroot directory
@@ -157,18 +160,4 @@
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
-
-- name: restorecon command
-  command: >
-    restorecon -r "{{ item.home }}"
-  when:
-    - selinux_state != 'disabled'
-    - item.nginx_301_only is not defined
-    - item.changed
-    - item.state == 'present'
-  with_items: "{{ vhost_user.results }}"
-  loop_control:
-    label: "{{ item.name|d('null') }}"
-  ignore_errors: yes
-  tags: [ user, selinux ]
 ...
