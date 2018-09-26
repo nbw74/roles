@@ -7,7 +7,7 @@ h3. Web
 {% endif %}
 {% if item[0].bitrix_multisite is defined %}
 {% for domain in item[0].bitrix_multisite %}
-*URI ({{ domain|regex_replace('^([-a-zA-Z0-9]+).*$','\\1') }}):* http://{{ domain }}
+*URI ({{ domain.name|regex_replace('^([-a-zA-Z0-9]+).*$','\\1') }}):* http://{{ domain.name }}
 {% endfor %}
 {% endif %}
 *Software versions:* @{{ vhost_nginx_version }}, {{ vhost_php_version }}
