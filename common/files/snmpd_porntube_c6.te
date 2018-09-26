@@ -1,13 +1,17 @@
 
-module snmpd_porntube_c6 2.2;
+module snmpd_porntube_c6 2.4;
 
 require {
 	type http_port_t;
+        type httpd_sys_content_t;
         type kernel_t;
         type kmsg_device_t;
+        type logrotate_t;
+	type postfix_local_t;
 	type shadow_t;
 	type snmpd_t;
         class chr_file { read open };
+        class dir { read search };
 	class file { read open getattr };
 	class tcp_socket name_connect;
         class system syslog_read;
@@ -22,3 +26,10 @@ allow snmpd_t shadow_t:file { read open getattr };
 #============= snmpd_t ==============
 allow snmpd_t kernel_t:system syslog_read;
 allow snmpd_t kmsg_device_t:chr_file { read open };
+
+#============= logrotate_t ==============
+allow logrotate_t httpd_sys_content_t:dir read;
+
+#============= postfix_local_t ==============
+allow postfix_local_t httpd_sys_content_t:dir search;
+

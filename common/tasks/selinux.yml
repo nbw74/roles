@@ -3,7 +3,7 @@
   selinux:
     policy: targeted
     state: "{{ selinux_state }}"
-  notify: touch autorelabel
+#   notify: touch autorelabel
   tags: [selinux]
 
 - name: setroubleshootd fix
