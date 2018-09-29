@@ -1,32 +1,46 @@
 ---
-- name: Create temporary dirs for templates
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - "{{ kvm_templates_path }}"
-    - "{{ kvm_templates_path_bis }}"
+- name: Get and uncompress template images
+  block:
+    - name: Create temporary dirs for templates
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ kvm_templates_path }}"
+        - "{{ kvm_templates_path_bis }}"
 
-- name: Get VM templates
-  get_url:
-    url: "{{ kvm_templates_uri }}/{{ item.template_name|d(kvm_template_default) }}.bz2"
-    dest: "{{ kvm_templates_path }}/{{ item.template_name|d(kvm_template_default) }}.bz2"
-    mode: 0640
-    force: no
-  when:
-    - item.name not in kvm_existing_vms.list_vms
-    - item.state|d('running') != 'undefined'
-  with_items: "{{ kvm_vm }}"
-  register: kvm_get_templates
-  loop_control:
-    label: "{{ item.name }}:{{ item.template_name|d(kvm_template_default|d('null')) }}"
+    - name: Get VM templates
+      get_url:
+        url: "{{ kvm_templates_uri }}/{{ item.template_name|d(kvm_template_default) }}.bz2"
+        dest: "{{ kvm_templates_path }}/{{ item.template_name|d(kvm_template_default) }}.bz2"
+        mode: 0640
+        force: no
+      when:
+        - item.name not in kvm_existing_vms.list_vms
+        - item.state|d('running') != 'undefined'
+      with_items: "{{ kvm_vm }}"
+      register: kvm_get_templates
+      loop_control:
+        label: "{{ item.name }}:{{ item.template_name|d(kvm_template_default|d('null')) }}"
 
-- name: VM templates uncompressed
-  command: "lbzip2 -fd {{ item.dest }}"
-  when:
-    - item.changed
-    - item.dest is defined
-  with_items: "{{ kvm_get_templates.results }}"
-  loop_control:
-    label: "lbzip2:d:{{ item.dest|d('null') }}"
+    - name: VM templates uncompressed
+      command: "lbzip2 -fd {{ item.dest }}"
+      when:
+        - item.changed
+        - item.dest is defined
+      with_items: "{{ kvm_get_templates.results }}"
+      loop_control:
+        label: "lbzip2:d:{{ item.dest|d('null') }}"
+  rescue:
+    - name: Remove temporary dirs if error
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ kvm_templates_path }}"
+        - "{{ kvm_templates_path_bis }}"
+
+    - name: Fail if error
+      fail:
+        msg: "IMAGE FETCHING FAILED"
 ...

@@ -61,91 +61,126 @@
   loop_control:
     label: "{{ item[0].name }}"
 
-- name: Create VM disk from template (with virt-sysprep)
-  shell: >
-    virt-sysprep --quiet --operations customize,lvm-uuids
-    {{ kvm_leave_hostname|ternary('','--hostname ' ~ item[0].sysprep_hostname|d(item[0].name) ~ '.' ~
-    item[0].sysprep_domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
-    --copy-in {{ kvm_templates_path }}/{{ item[0].name }}:/var/local
-    --run-command 'mv /var/local/{{ item[0].name }}/* /etc/sysconfig/network-scripts'
-    --firstboot-command 'nmcli con modify eth0 ipv4.dhcp-hostname {{ item[0].sysprep_hostname|d(item[0].name) }}
-    && systemctl is-enabled NetworkManager.service && systemctl restart NetworkManager.service'
-    {{ (item[0].sysprep_root_pass is defined)
-    |ternary('--root-password password:' ~ item[0].sysprep_root_pass|d(),'') }}
-    {{ (kvm_sysprep_root_key is defined)
-    |ternary('--ssh-inject "root:string:' ~ kvm_sysprep_root_key ~ '"'|d(),'') }}
-    -a {{ kvm_templates_path }}/{{ item[0].template_name|d(kvm_template_default) }} &&
-    qemu-img convert -q -O {{ item[0].disk_format|d('raw') }}
-    {{ kvm_templates_path }}/{{ item[0].template_name|d(kvm_template_default) }}
-    {{ item[1].matches[0].path }}/vm_{{ item[0].name }}
-  when:
-    - item[0].name not in kvm_existing_vms.list_vms
-    - item[0].state|d('running') != 'undefined'
-    - not item[2].stat.exists
-  with_together:
-    - "{{ kvm_vm }}"
-    - "{{ kvm_pool_xml_path.results }}"
-    - "{{ kvm_disk_stat.results }}"
-  loop_control:
-    label: "{{ item[0].name|d('null') }}"
+- name: Create VM with errors handling
+  block:
+    - name: Create VM disk from template (with virt-sysprep)
+      shell: >
+        virt-sysprep --quiet --operations customize,lvm-uuids
+        {{ kvm_leave_hostname|ternary('','--hostname ' ~ item[0].sysprep_hostname|d(item[0].name) ~ '.' ~
+        item[0].sysprep_domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
+        --copy-in {{ kvm_templates_path }}/{{ item[0].name }}:/var/local
+        --run-command 'mv /var/local/{{ item[0].name }}/* /etc/sysconfig/network-scripts'
+        --firstboot-command 'nmcli con modify eth0 ipv4.dhcp-hostname {{ item[0].sysprep_hostname|d(item[0].name) }}
+        && systemctl is-enabled NetworkManager.service && systemctl restart NetworkManager.service'
+        {{ (item[0].sysprep_root_pass is defined)
+        |ternary('--root-password password:' ~ item[0].sysprep_root_pass|d(),'') }}
+        {{ (kvm_sysprep_root_key is defined)
+        |ternary('--ssh-inject "root:string:' ~ kvm_sysprep_root_key ~ '"'|d(),'') }}
+        -a {{ kvm_templates_path }}/{{ item[0].template_name|d(kvm_template_default) }} &&
+        qemu-img convert -q -O {{ item[0].disk_format|d('raw') }}
+        {{ kvm_templates_path }}/{{ item[0].template_name|d(kvm_template_default) }}
+        {{ item[1].matches[0].path }}/vm_{{ item[0].name }}
+      when:
+        - item[0].name not in kvm_existing_vms.list_vms
+        - item[0].state|d('running') != 'undefined'
+        - not item[2].stat.exists
+      with_together:
+        - "{{ kvm_vm }}"
+        - "{{ kvm_pool_xml_path.results }}"
+        - "{{ kvm_disk_stat.results }}"
+      loop_control:
+        label: "{{ item[0].name|d('null') }}"
 
-- include_tasks: rm_images.yml
+    - name: Resize VM image (file)
+      command: >
+        qemu-img resize -q {{ item[1].matches[0].path }}/vm_{{ item[0].name }}
+        {{ item[0].disk_gb|d('16') }}G
+      when:
+        - item[0].name not in kvm_existing_vms.list_vms
+        - item[0].state|d('running') != 'undefined'
+        - item[2].matches[0].pool.type == "dir"
+      with_together:
+        - "{{ kvm_vm }}"
+        - "{{ kvm_pool_xml_path.results }}"
+        - "{{ kvm_pool_xml_type.results }}"
+      loop_control:
+        label: "{{ item[0].name }}:{{ item[0].disk_gb|d('16') }}"
+    #
+    # - Define VM from XML
+    #
+    - name: Get host CPU model (I)
+      command: virsh capabilities
+      register: kvm_host_capabilities
+      changed_when: false
 
-- name: Resize VM image (file)
-  command: >
-    qemu-img resize -q {{ item[1].matches[0].path }}/vm_{{ item[0].name }}
-    {{ item[0].disk_gb|d('16') }}G
-  when:
-    - item[0].name not in kvm_existing_vms.list_vms
-    - item[0].state|d('running') != 'undefined'
-    - item[2].matches[0].pool.type == "dir"
-  with_together:
-    - "{{ kvm_vm }}"
-    - "{{ kvm_pool_xml_path.results }}"
-    - "{{ kvm_pool_xml_type.results }}"
-  loop_control:
-    label: "{{ item[0].name }}:{{ item[0].disk_gb|d('16') }}"
-#
-# - Define VM from XML
-#
-- name: Get host CPU model (I)
-  command: virsh capabilities
-  register: kvm_host_capabilities
-  changed_when: false
+    - name: Get host CPU model (II)
+      xml:
+        xmlstring: "{{ kvm_host_capabilities.stdout }}"
+        xpath: "/capabilities/host/cpu/model"
+        content: text
+      register: kvm_host_cpu_model
+      changed_when: false
 
-- name: Get host CPU model (II)
-  xml:
-    xmlstring: "{{ kvm_host_capabilities.stdout }}"
-    xpath: "/capabilities/host/cpu/model"
-    content: text
-  register: kvm_host_cpu_model
-  changed_when: false
+    - name: Template VM XML (local)
+      become: no
+      template:
+        src: "vm.j2"
+        dest: "{{ kvm_tmp_dir }}/{{ ansible_nodename }}-vm-{{ item[0].name }}.xml.j2"
+      when:
+        - item[0].name not in kvm_existing_vms.list_vms
+        - item[0].state|d('running') != 'undefined'
+      with_together:
+        - "{{ kvm_vm }}"
+        - "{{ kvm_pool_xml_path.results }}"
+        - "{{ kvm_pool_xml_type.results }}"
+      loop_control:
+        label: "{{ item[0].name }}"
+      delegate_to: localhost
 
-- name: Template VM XML (local)
-  become: no
-  template:
-    src: "vm.j2"
-    dest: "{{ kvm_tmp_dir }}/{{ ansible_nodename }}-vm-{{ item[0].name }}.xml.j2"
-  when:
-    - item[0].name not in kvm_existing_vms.list_vms
-    - item[0].state|d('running') != 'undefined'
-  with_together:
-    - "{{ kvm_vm }}"
-    - "{{ kvm_pool_xml_path.results }}"
-    - "{{ kvm_pool_xml_type.results }}"
-  loop_control:
-    label: "{{ item[0].name }}"
-  delegate_to: localhost
+    - name: Virt define
+      virt:
+        command: define
+        name: "{{ item.name }}"
+        xml: "{{ lookup('template',  kvm_tmp_dir ~ '/' ~ ansible_nodename ~ '-vm-' ~ item.name ~ '.xml.j2') }}"
+      when:
+        - item.name not in kvm_existing_vms.list_vms
+        - item.state|d('running') != 'undefined'
+      with_items: "{{ kvm_vm }}"
+      loop_control:
+        label: "{{ item.name }}"
+  rescue:
+    - name: Remove LV if error
+      lvol:
+        lv: "vm_{{ item[0].name }}"
+        vg: "{{ item[1].matches[0].path|basename }}"
+        state: absent
+        force: yes
+      when:
+        - item[0].name not in kvm_existing_vms.list_vms
+        - item[0].state|d('running') != 'undefined'
+        - item[2].matches[0].pool.type == 'logical'
+      with_together:
+        - "{{ kvm_vm }}"
+        - "{{ kvm_pool_xml_path.results }}"
+        - "{{ kvm_pool_xml_type.results }}"
+      loop_control:
+        label: "{{ item[0].name }}"
 
-- name: Virt define
-  virt:
-    command: define
-    name: "{{ item.name }}"
-    xml: "{{ lookup('template',  kvm_tmp_dir ~ '/' ~ ansible_nodename ~ '-vm-' ~ item.name ~ '.xml.j2') }}"
-  when:
-    - item.name not in kvm_existing_vms.list_vms
-    - item.state|d('running') != 'undefined'
-  with_items: "{{ kvm_vm }}"
-  loop_control:
-    label: "{{ item.name }}"
+    - name: Remove VM image file if error
+      file:
+        path: "{{ item[1].matches[0].path }}/vm_{{ item[0].name }}"
+        state: absent
+      when:
+        - item[0].name not in kvm_existing_vms.list_vms
+        - item[0].state|d('running') != 'undefined'
+        - item[2].matches[0].pool.type == "dir"
+      with_together:
+        - "{{ kvm_vm }}"
+        - "{{ kvm_pool_xml_path.results }}"
+        - "{{ kvm_pool_xml_type.results }}"
+      loop_control:
+        label: "{{ item[0].name }}"
+  always:
+    - include_tasks: rm_images.yml
+
 ...
