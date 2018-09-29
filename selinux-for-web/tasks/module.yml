@@ -1,0 +1,48 @@
+---
+- name: directory for SELinux modules
+  file:
+    path: "{{ sfw_se_dir }}"
+    state: directory
+    owner: root
+    mode: 0700
+  when: selinux_state != "disabled"
+  tags: [ module ]
+
+- name: copy SELinux module file
+  copy:
+    src: "{{ sfw_se_module }}.te"
+    dest: "{{ sfw_se_dir }}/{{ sfw_se_module }}.te"
+    owner: root
+    mode: 0400
+  when: selinux_state != "disabled"
+  register: common_copy_se_module
+  tags: [ module ]
+
+- name: SELinux module block
+  block:
+    - name: checkmodule command
+      command: >
+        checkmodule -M -m -o {{ sfw_se_dir }}/{{ sfw_se_module }}.mod {{ sfw_se_dir }}/{{ sfw_se_module }}.te
+
+    - name: package command
+      command: >
+        semodule_package -o {{ sfw_se_dir }}/{{ sfw_se_module }}.pp -m {{ sfw_se_dir }}/{{ sfw_se_module }}.mod
+
+    - name: install command
+      command: >
+        semodule -i {{ sfw_se_dir }}/{{ sfw_se_module }}.pp
+  rescue:
+    - name: remove module file if error
+      file:
+        path: "{{ sfw_se_dir }}/{{ sfw_se_module }}.te"
+        state: absent
+  always:
+    - name: remove compiled files
+      file:
+        path: "{{ sfw_se_dir }}/{{ sfw_se_module }}.{{ item }}"
+        state: absent
+      with_items: [ 'mod', 'pp' ]
+  when: common_copy_se_module.changed
+  tags: [ module ]
+
+...

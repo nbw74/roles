@@ -1,0 +1,23 @@
+
+module role-sfw 1.0;
+
+require {
+        type httpd_sys_content_t;
+	type httpd_t;
+        type logrotate_t;
+	type postfix_local_t;
+	class capability sys_ptrace;
+        class dir { read search };
+	class process ptrace;
+}
+
+#============= logrotate_t ==============
+allow logrotate_t httpd_sys_content_t:dir read;
+
+#============= postfix_local_t ==============
+allow postfix_local_t httpd_sys_content_t:dir search;
+
+#============= httpd_t ==============
+allow httpd_t self:capability sys_ptrace;
+allow httpd_t self:process ptrace;
+

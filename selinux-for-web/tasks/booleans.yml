@@ -1,0 +1,22 @@
+---
+- name: Toggle booleans
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d('yes') }}"
+    persistent: yes
+  with_items:
+    - { name: 'httpd_can_network_connect_db' }
+    - { name: 'httpd_setrlimit' }
+  loop_control:
+    label: "{{ item.name }}:{{ item.state|d('true') }}"
+
+- name: Toggle booleans (custom)
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d('yes') }}"
+    persistent: yes
+  with_items: "{{ selinux_custom_booleans }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.state|d('true') }}"
+
+...

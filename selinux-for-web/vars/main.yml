@@ -1,0 +1,4 @@
+---
+sfw_se_module: role-sfw
+sfw_se_dir: "/var/local/selinux"
+...
