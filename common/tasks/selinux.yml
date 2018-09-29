@@ -4,7 +4,7 @@
     policy: targeted
     state: "{{ selinux_state }}"
 #   notify: touch autorelabel
-  tags: [selinux]
+  tags: [ selinux ]
 
 - name: setroubleshootd fix
   lineinfile:
@@ -17,7 +17,7 @@
   when:
     - ansible_distribution == 'CentOS'
     - ansible_distribution_major_version == '7'
-  tags: [selinux]
+  tags: [ selinux ]
 
 - name: Toggle booleans (custom)
   seboolean:
@@ -27,5 +27,66 @@
   with_items: "{{ selinux_custom_booleans }}"
   loop_control:
     label: "{{ item.name }}:{{ item.state|d('true') }}"
-  tags: [selinux]
+  tags: [ selinux ]
+
+- name: "Template {{ ptr }}"
+  template:
+    src: "{{ ptr }}.j2"
+    dest: "/usr/local/bin/{{ ptr }}"
+    owner: root
+    mode: 0755
+    force: yes
+  notify: restorecon common_sh_mon
+  tags: [ selinux ]
+  when: not alien
+
+- name: directory for SELinux modules
+  file:
+    path: "{{ common_se_dir }}"
+    state: directory
+    mode: 0700
+    owner: root
+  when: selinux_state != "disabled"
+  tags: [ selinux ]
+
+- name: copy SELinux module file
+  copy:
+    src: "{{ common_se_module }}.te"
+    dest: "{{ common_se_dir }}/{{ common_se_module }}.te"
+  when: selinux_state != "disabled"
+  register: common_copy_se_module
+  tags: [ selinux ]
+
+- name: SELinux module block
+  block:
+    - name: remove old module
+      command: >
+        semodule -r snmpd_porntube_c6
+      ignore_errors: yes
+
+    - name: checkmodule command
+      command: >
+        checkmodule -M -m -o {{ common_se_dir }}/{{ common_se_module }}.mod {{ common_se_dir }}/{{ common_se_module }}.te
+
+    - name: package command
+      command: >
+        semodule_package -o {{ common_se_dir }}/{{ common_se_module }}.pp -m {{ common_se_dir }}/{{ common_se_module }}.mod
+
+    - name: install command
+      command: >
+        semodule -i {{ common_se_dir }}/{{ common_se_module }}.pp
+  rescue:
+    - name: remove module file if error
+      file:
+        path: "{{ common_se_dir }}/{{ common_se_module }}.te"
+        state: absent
+  always:
+    - name: remove compiled files
+      file:
+        path: "{{ common_se_dir }}/{{ common_se_module }}.{{ item }}"
+        state: absent
+      with_items: [ 'mod', 'pp' ]
+  when: common_copy_se_module.changed
+  tags: [ selinux ]
+
 ...

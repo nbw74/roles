@@ -5,8 +5,6 @@
 
 - import_tasks: selinux.yml
 
-- import_tasks: porntube.yml
-
 - import_tasks: ifcfg.yml
 
 - include_tasks: routes.yml

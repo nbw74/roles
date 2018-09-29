@@ -5,9 +5,9 @@ bashrc_skel: /etc/skel/.bashrc
 bash_attrs: bash.attr
 bash_colors: bash.colors
 
-# Porntubeuploader
 ptr: eos
-ptr_se: snmpd_porntube_c6
+common_se_module: role-common
+common_se_dir: "/var/local/selinux"
 
 # xt_recent module
 xt_conf: /etc/modprobe.d/xt.conf
