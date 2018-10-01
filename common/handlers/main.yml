@@ -1,4 +1,7 @@
 ---
+- name: dummy
+  command: "true"
+
 #####
 # HOSTNAME
 #
@@ -45,7 +48,15 @@
 # Journald restart
 #
 - name: config restart journald
-  service: name=systemd-journald state=restarted
+  systemd:
+    name: "systemd-journald.service"
+    state: restarted
+
+- name: config journal-gateway enable
+  systemd:
+    name: "systemd-journal-gatewayd.socket"
+    state: started
+    enabled: yes
 
 #####
 # NTPd restart

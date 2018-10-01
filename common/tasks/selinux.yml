@@ -6,6 +6,17 @@
 #   notify: touch autorelabel
   tags: [ selinux ]
 
+- name: Set SELinux alert recipient
+  lineinfile:
+    dest: /var/lib/setroubleshoot/email_alert_recipients
+    line: "{{ common_selinux_alert_recipients }}"
+    create: yes
+    owner: setroubleshoot
+    group: setroubleshoot
+    mode: 0600
+  when: selinux_state != "disabled"
+  tags: [ mail ]
+
 - name: setroubleshootd fix
   lineinfile:
     dest: "/etc/tmpfiles.d/setroubleshoot.conf"

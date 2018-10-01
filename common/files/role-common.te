@@ -1,5 +1,5 @@
 
-module role-common 2.6;
+module role-common 2.7;
 
 require {
 	type bacula_t;
@@ -30,5 +30,5 @@ allow snmpd_t kmsg_device_t:chr_file { read open };
 #============= bacula_t ==============
 
 allow bacula_t sysctl_net_t:dir search;
-allow bacula_t sysctl_net_t:file read;
+allow bacula_t sysctl_net_t:file { read open };
 

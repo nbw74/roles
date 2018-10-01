@@ -48,6 +48,8 @@ common_ifcfg_line: # Добавить или удалить переменные
       - { key: "VAR_NAME", value: "value"[, state: bool] }
       - ...
 
+common_journal_gateway_enable: bool # default: false
+
 common_ntp_domains: # Хэш с локальными доменами и обслуживающими их NTP-серверами
   - domain: "fqdn"
     servers: [ 'string', 'string', ... ]

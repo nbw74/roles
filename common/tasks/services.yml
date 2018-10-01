@@ -27,19 +27,6 @@
   ignore_errors: yes
   tags: [ services ]
 
-- name: "Reconfigure Journald"
-  ini_file:
-    dest: /etc/systemd/journald.conf
-    section: Journal
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-  with_items:
-    - { option: 'Storage', value: 'persistent' }
-    - { option: 'Compress', value: 'yes' }
-  notify: config restart journald
-  when: ansible_distribution_major_version|int >= 7
-  tags: [ services, journald ]
-
 - name: "Reconfigure logrotate"
   replace:
     dest: /etc/logrotate.conf

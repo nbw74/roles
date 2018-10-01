@@ -18,6 +18,8 @@
 
 - import_tasks: services.yml
 
+- import_tasks: journal.yml
+
 - import_tasks: console.yml
   when:
     - 'ansible_virtualization_role == "guest"'

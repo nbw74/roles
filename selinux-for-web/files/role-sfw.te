@@ -1,13 +1,16 @@
 
-module role-sfw 1.0;
+module role-sfw 1.1;
 
 require {
+	type ftpd_t;
         type httpd_sys_content_t;
 	type httpd_t;
         type logrotate_t;
 	type postfix_local_t;
+	type sysctl_net_t;
 	class capability sys_ptrace;
         class dir { read search };
+	class file { read open };
 	class process ptrace;
 }
 
@@ -20,4 +23,8 @@ allow postfix_local_t httpd_sys_content_t:dir search;
 #============= httpd_t ==============
 allow httpd_t self:capability sys_ptrace;
 allow httpd_t self:process ptrace;
+
+#============= ftpd_t ==============
+allow ftpd_t sysctl_net_t:dir search;
+allow ftpd_t sysctl_net_t:file { read open };
 

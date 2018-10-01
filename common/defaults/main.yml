@@ -3,6 +3,7 @@ alien: false
 common_cron_user_tasks: []
 common_icinga2_conf: []
 common_icinga2_enable: true
+common_journal_gateway_enable: false
 pkgupdate: false
 roles: []
 selinux_custom_booleans: []
