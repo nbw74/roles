@@ -1,0 +1,14 @@
+---
+- name: Package httpd-itk
+  yum:
+    name: httpd-itk
+  tags: [ packages ]
+
+- name: yum additional packages
+  yum:
+    name: "{{ bx_add_packages }}"
+    state: present
+  when: bx_add_packages|length > 0
+  notify: reload httpd
+  tags: [ packages ]
+...

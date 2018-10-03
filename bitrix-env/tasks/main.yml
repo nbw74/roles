@@ -45,6 +45,9 @@
     pkgupdate: false
   when: bx_run_script.changed
 
+- import_tasks: packages.yml
+- import_tasks: bvat.yml
+
 - name: Restore Nginx user
   lineinfile:
     path: "/etc/nginx/nginx.conf"
@@ -74,14 +77,6 @@
     mode: 0644
   notify: restart httpd
 
-- name: Disable bvat service
-  systemd:
-    name: "bvat.service"
-    state: stopped
-    enabled: no
-  ignore_errors: true
-  tags: [ services ]
-
 - name: "Fix owner of dirs in /tmp/php_*"
   file:
     path: "/tmp/{{ item }}"
@@ -104,12 +99,8 @@
     option: "date.timezone"
     value: "{{ timezone }}"
     create: no
-  notify: restart httpd
+  notify: reload httpd
   tags: [ timezone ]
-
-- name: Package httpd-itk
-  yum:
-    name: httpd-itk
 
 - name: Enable httpd-itk
   lineinfile:
@@ -137,8 +128,8 @@
     create: yes
   with_items:
     - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
-  when: bitrix_curl_enable
-  notify: restart httpd
+  when: bx_curl_enable
+  notify: reload httpd
   tags: [ php_modules, php ]
 
 - import_tasks: configs.yml

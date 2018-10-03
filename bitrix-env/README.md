@@ -6,6 +6,8 @@ https://www.1c-bitrix.ru/products/env/
 
 ## Variables
 ```yaml
+bx_add_packages: [] # install additional packages
+
 bx_mail_alias: "string" # default: none :Почтовый алиас для пересылки почты пользователя bitrix
 
 bx_msmtp_host: "string" # default: none :Параметр "host" в msmtprc

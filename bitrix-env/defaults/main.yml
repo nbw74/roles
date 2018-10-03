@@ -1,9 +1,11 @@
 ---
+bx_add_packages: []
+bx_curl_enable: false
+
 nginx_allow_status_list:
   - "10.0.0.0/8"
   - "172.16.0.0/12"
   - "192.168.0.0/24"
 
-bitrix_curl_enable: false
 timezone: "Europe/Moscow"
 ...

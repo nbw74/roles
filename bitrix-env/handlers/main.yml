@@ -10,6 +10,11 @@
     state: restarted
     daemon-reload: yes
 
+- name: reload httpd
+  systemd:
+    name: httpd.service
+    state: reloaded
+
 - name: config newaliases
   command: newaliases
 

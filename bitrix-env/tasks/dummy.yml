@@ -20,14 +20,14 @@
     owner: bitrix
     group: bitrix
     mode: 0644
-  notify: restart nginx
+  notify: reload nginx
 
 - name: Template Nginx default server (enabled)
   file:
     path: "/etc/nginx/bx/site_enabled/00-default.conf"
     src: "../site_avaliable/00-default.conf"
     state: link
-  notify: restart nginx
+  notify: reload nginx
 
 - name: Copy default httpd vhost
   copy:
@@ -36,6 +36,6 @@
     owner: bitrix
     group: bitrix
     mode: 0644
-  notify: restart httpd
+  notify: reload httpd
 
 ...

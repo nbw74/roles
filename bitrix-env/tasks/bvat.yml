@@ -1,0 +1,16 @@
+---
+- name: Disable bvat service
+  systemd:
+    name: "bvat.service"
+    state: stopped
+    enabled: no
+  ignore_errors: true
+  tags: [ services ]
+
+- name: Replace bitrix in tmpfiles.d/bvat.conf
+  replace:
+    path: "/etc/tmpfiles.d/bvat.conf"
+    regexp: 'bitrix'
+    replace: 'apache'
+  ignore_errors: true
+...
