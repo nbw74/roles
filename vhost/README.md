@@ -91,6 +91,7 @@ vhost:
     process_idle_timeout: 10s # optional
     max_requests: 0 # optional
     template: "string" # fpm configuration; see below
+  hosts: bool # add vhost resord in /etc/hosts; IP address set in listen[0] or vhost_default_ipaddr
   idna: bool # Encode server_name in IDNA (Internationalized Domain Names in Applications)
   index: "myindex.php" # optional; default is "index.php"
   legacy: bool # optional; don't force web-server config templates
@@ -159,5 +160,5 @@ CentOS 7
 + python-psycopg2
 + MySQL-python
 ## Tags
-`archive` `conf` `crypto` `db` `ddns` `redmine` `repo` `user` `version` `webcheck` `wiki`
+`archive` `conf` `crypto` `db` `ddns` `hosts` `redmine` `repo` `user` `version` `webcheck` `wiki`
 

@@ -19,8 +19,8 @@
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride All
 		DirectoryIndex index.php index.html index.htm
-		php_admin_value session.save_path /tmp/php_sessions/www
-		php_admin_value upload_tmp_dir /tmp/php_upload/www
+		php_admin_value session.save_path /tmp/php_sessions/{{ item.user|d(item.name) }}
+		php_admin_value upload_tmp_dir /tmp/php_upload/{{ item.user|d(item.name) }}
         Require all granted
 	</Directory>
 

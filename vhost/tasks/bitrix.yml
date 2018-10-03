@@ -12,23 +12,36 @@
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.user|d(item.name) }}"
+    label: "{{ item.name }}"
 
 - name: Check umask in dbconn.php
   lineinfile:
-    path: "{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[1].webroot|d('www') }}/bitrix/php_interface/dbconn.php"
-    regexp: 'define.+BX_{{ item[0] }}_PERMISSIONS'
-    line: 'define("BX_{{ item[0] }}_PERMISSIONS", {{ (item[0] == "FILE")|ternary("0664", "0775") }});'
+    path: "{{ vhost_basedir }}/{{ item[0].user|d(item[0].name) }}/{{ item[0].webroot|d('www') }}/bitrix/php_interface/dbconn.php"
+    regexp: 'define.+BX_{{ item[1] }}_PERMISSIONS'
+    line: 'define("BX_{{ item[1] }}_PERMISSIONS", {{ (item[1] == "FILE")|ternary("0664", "0775") }});'
     insertbefore: '\?>$'
   when:
-    - item[1].state|d(true)
-    - item[1].nginx_301_only is not defined
+    - item[0].state|d(true)
+    - item[0].nginx_301_only is not defined
   with_nested:
-    - [ 'FILE', 'DIR' ]
     - "{{ vhost }}"
+    - [ 'FILE', 'DIR' ]
   loop_control:
-    label: "{{ item[1].user|d(item[1].name) }}"
+    label: "{{ item[0].name }}:{{ item[1] }}"
   ignore_errors: yes
+
+- name: PHP sessions and upload dirs
+  file:
+    path: "/tmp/{{ item[1] }}/{{ item[0].user|d(item[0].name) }}"
+    state: directory
+    owner: apache
+    group: "{{ item[0].user|d(item[0].name) }}"
+    mode: 0770
+  with_nested:
+    - "{{ vhost }}"
+    - [ 'php_sessions', 'php_upload' ]
+  loop_control:
+    label: "{{ item[0].name }}:{{ item[1] }}"
 
 - name: Bitrix cron task
   cron:
@@ -45,7 +58,7 @@
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.user|d(item.name) }}"
+    label: "{{ item.name }}"
 
 - name: "Template user's msmtprc"
   template:
@@ -59,7 +72,7 @@
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.user|d(item.name) }}"
+    label: "{{ item.name }}"
 
 - name: Include multisite
   include_tasks: bitrix-multisite.yml
