@@ -1,7 +1,7 @@
 ---
 - name: Bridge interfaces
   shell: >
-    brctl addbr {{ item.dev }}
+    ip link add name {{ item.dev }} type bridge
   when:
     - item.dev not in ansible_interfaces
   with_items: "{{ bridge_devices }}"

@@ -2,12 +2,12 @@
 - name: No IP addresses on L2 bridge ports
   shell: >
     ip address flush dev {{ item.1 }};
-    brctl addif {{ item.0.item.dev }} {{ item.1 }};
-    ip link set up dev {{ item.1 }}
+    ip link set up dev {{ item.1 }};
+    ip link set {{ item.1 }} master {{ item.0.item.dev }}
     {{ ( item.0.item.bootproto == "dhcp" )|ternary(' ; /sbin/dhclient -1 -q
     -lf /var/lib/dhclient/dhclient--' ~ item.0.item.dev ~ '.lease
     -pf /var/run/dhclient-' ~ item.0.item.dev ~ '.pid
-    -H ' ~ ansible_hostname ~ ' ' ~ item.0.item.dev,'') }}
+    -H ' ~ ansible_hostname ~ ' ' ~ item.0.item.dev,'') }};
   with_subelements:
     - "{{ bridge_brctl_result.results }}"
     - item.ports
