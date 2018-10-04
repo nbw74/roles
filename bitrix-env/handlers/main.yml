@@ -4,6 +4,11 @@
     name: nginx.service
     state: restarted
 
+- name: reload nginx
+  systemd:
+    name: nginx.service
+    state: reloaded
+
 - name: restart httpd
   systemd:
     name: httpd.service
