@@ -24,7 +24,7 @@ main() {
     pcs -f PGSQL_CFG resource create VADDR-MAIN ocf:heartbeat:IPaddr2 \
        ip="10.0.0.5" \
        nic="eth0" \
-       cidr_netmask="29" \
+       cidr_netmask="28" \
        op start   timeout="60s" interval="0s"  on-fail="restart" \
        op monitor timeout="60s" interval="10s" on-fail="restart" \
        op stop    timeout="60s" interval="0s"  on-fail="block"
@@ -32,7 +32,7 @@ main() {
     pcs -f PGSQL_CFG resource create VADDR-REPL ocf:heartbeat:IPaddr2 \
        ip="10.0.0.6" \
        nic="eth0" \
-       cidr_netmask="29" \
+       cidr_netmask="28" \
        meta migration-threshold="0" \
        op start   timeout="60s" interval="0s"  on-fail="stop" \
        op monitor timeout="60s" interval="10s" on-fail="restart" \
