@@ -25,7 +25,7 @@ postgresql_backup_enable: true
 postgresql_wal_backup_enable: false
 postgresql_wal_backup_server: ''
 postgresql_wal_backup_user: "walbackup"
-postgresql_wal_backup_dir: ''
+postgresql_wal_backup_dir: "{{ ansible_hostname }}"
 
 postgresql_conf:
   empty: ""

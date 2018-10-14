@@ -1,6 +1,6 @@
 ---
 - name: Template WAL backup script
-  template:
+  copy:
     src: "{{ postgresql_wal_backup_script }}"
     dest: "{{ postgresql_sb_libexec }}/"
     mode: 0755
