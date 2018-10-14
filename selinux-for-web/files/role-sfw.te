@@ -1,5 +1,5 @@
 
-module role-sfw 1.1;
+module role-sfw 1.2;
 
 require {
 	type ftpd_t;
@@ -10,7 +10,7 @@ require {
 	type sysctl_net_t;
 	class capability sys_ptrace;
         class dir { read search };
-	class file { read open };
+	class file { read open getattr };
 	class process ptrace;
 }
 
@@ -26,5 +26,5 @@ allow httpd_t self:process ptrace;
 
 #============= ftpd_t ==============
 allow ftpd_t sysctl_net_t:dir search;
-allow ftpd_t sysctl_net_t:file { read open };
+allow ftpd_t sysctl_net_t:file { read open getattr };
 
