@@ -40,14 +40,12 @@ main() {
     if [[ ! -d "$PGARCHIVE" ]]; then
 	mkdir "$PGARCHIVE"
     fi
-
+    # if WAL archive file already exists - create backup for it
+    backup "${PGARCHIVE}/${BASENAME}"
     # Copy WAL file into pg_archive directory
     cp "$FULLNAME" "${PGARCHIVE}/$BASENAME"
-
-    # if archive file already exists - create backup for it
-    if [[ -f "${PGARCHIVE}/${BASENAME}.bz2" ]]; then
-        mv "${PGARCHIVE}/${BASENAME}.bz2" "${PGARCHIVE}/${BASENAME}.bz2-$(shuf -i 1000-9999 -n 1)"
-    fi
+    # if compressed file already exists - create backup for it
+    backup "${PGARCHIVE}/${BASENAME}.bz2"
     # Compress WAL archive file with lbzip2
     lbzip2 "${PGARCHIVE}/$BASENAME"
 
@@ -59,9 +57,16 @@ main() {
         rm "${PGARCHIVE}/${BASENAME}.bz2"
     fi
 
-    [[ -f $LOGERR ]] && rm "$LOGERR"
-
     exit 0
+}
+
+backup() {
+    local fn=${FUNCNAME[0]}
+    local arg1="${1:?}"
+
+    if [[ -f "$arg1" ]]; then
+        mv "$arg1" "${arg1}-$(shuf -i 1000-9999 -n 1)"
+    fi
 }
 
 checks() {
