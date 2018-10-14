@@ -37,6 +37,10 @@ main() {
 
     local PGARCHIVE="/var/lib/pgsql/${PG_VERSION}/pg_archive"
 
+    if [[ ! -d "$PGARCHIVE" ]]; then
+	mkdir "$PGARCHIVE"
+    fi
+
     # Copy WAL file into pg_archive directory
     cp "$FULLNAME" "${PGARCHIVE}/$BASENAME"
 
