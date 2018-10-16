@@ -52,7 +52,7 @@ main() {
     warn=1
     # Copy compressed file to remote server
     # shellcheck disable=SC2086
-    if rsync $rsync_opts "${PGARCHIVE}/${BASENAME}.bz2" ${BACKUPUSER}@${BACKUPSERVER}:${BACKUPDIR}/
+    if rsync $rsync_opts "${PGARCHIVE}/${BASENAME}.bz2" ${BACKUPUSER}@${BACKUPSERVER}:${BACKUPDIR}/ >/dev/null
     then
         rm "${PGARCHIVE}/${BASENAME}.bz2"
     fi
