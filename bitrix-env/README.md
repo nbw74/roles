@@ -16,8 +16,14 @@ bx_msmtp_user: "string" # default: none :Параметр "user" в msmtprc
 bx_msmtp_pass: "string" # default: none :Параметр "password" в msmtprc
 bx_msmtp_domain: "string" # default: первая и последняя части FQDN
 
-nginx_allow_status_list: # default: <RFC-1918 network list> Список адресов, с которых разрешено
-  - "ipv4"               # обращение к странице статуса Nginx
+bx_real_ip_from: [] # default: <RFC-1918 network list>
+
+nginx_allow_status_list: [] # default: <RFC-1918 network list> Список адресов, с которых разрешено
+                            # обращение к странице статуса Nginx
+
+php_options: # Global PHP options
+  - option: 'string'
+    value: 'string'
 
 timezone: "string" # default: "Europe/Moscow"
 ```

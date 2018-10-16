@@ -1,0 +1,44 @@
+---
+- name: Create custom PHP options file
+  copy:
+    dest: "{{ bx_custom_php_settings }}"
+    content: >
+      "# {{ bx_custom_php_settings }}"
+    mode: 0644
+    force: no
+  tags: [ php ]
+
+- name: Set timezone php option
+  ini_file:
+    path: "{{ bx_custom_php_settings }}"
+    section: null
+    option: "date.timezone"
+    value: "{{ timezone }}"
+    create: no
+  notify: reload httpd
+  tags: [ php, timezone ]
+
+- name: Custom php options
+  ini_file:
+    path: "{{ bx_custom_php_settings }}"
+    section: null
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    create: no
+  with_items: "{{ php_options }}"
+  notify: reload httpd
+  tags: [ php ]
+
+- name: Enable PHP modules
+  lineinfile:
+    dest: "{{ item.dest }}"
+    line: "{{ item.line }}"
+    state: present
+    create: yes
+  with_items:
+    - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
+  when: bx_curl_enable
+  notify: reload httpd
+  tags: [ php_modules, php ]
+
+...

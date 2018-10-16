@@ -1,3 +1,4 @@
 ---
 bitrix_sh: "bitrix-env.sh"
+bx_custom_php_settings: "/etc/php.d/z_bx_custom_settings.ini"
 ...

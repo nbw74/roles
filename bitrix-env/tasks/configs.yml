@@ -10,6 +10,16 @@
   notify: reload nginx
   tags: [ nginx_status ]
 
+- name: Template set_real_ip_from
+  template:
+    src: "real-ip.conf.j2"
+    dest: "/etc/nginx/bx/settings/real-ip.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload nginx
+  tags: [ nginx_status ]
+
 - name: Copy ssl.conf include
   copy:
     src: "/etc/nginx/bx/conf/ssl.conf"
