@@ -17,7 +17,7 @@
   file:
     path: "/etc/nginx/bx/site_enabled/{{ item[0].dest|basename }}"
     src: "../site_avaliable/{{ item[0].dest|basename }}"
-    state: "{{ item[1].state|ternary('link', 'absent') }}"
+    state: "{{ item[1].state|d(true)|ternary('link', 'absent') }}"
   with_together:
     - "{{ vhost_bx_nginx_conf.results }}"
     - "{{ vhost }}"

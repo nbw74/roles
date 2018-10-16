@@ -70,7 +70,7 @@ postgresql_backup_enable: bool # (default: true) Включение в штат�
 postgresql_wal_backup_enable: bool # (default: false) Включение архивирования WAL на архивный сервер
 postgresql_wal_backup_server: "ipv4" # (default: none) Адрес архивного сервера
 postgresql_wal_backup_user: "string" # (default: "walbackup") Пользователь для архивирования WAL
-postgresql_wal_backup_dir: "string" # (default:: none) Каталог для архивов на сервере
+postgresql_wal_backup_dir: "string" # (default: ansible_hostname) Каталог для архивов на сервере
 
 postgresql_additional_packages: # Дополнительно установить указанные пакеты
   - "package1"
