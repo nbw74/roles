@@ -13,7 +13,7 @@
   when: item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.user|d(item.name) }}"
   notify: restorecon command
   tags: [ user, db ]
 
@@ -27,7 +27,7 @@
     - item.password is defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.user|d(item.name) }}"
   tags: [ user, db, password ]
 
 - name: copy pubkey to authorized_keys
@@ -44,7 +44,7 @@
     - item.state == 'present'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name|d('301') }}"
+    label: "{{ item.name|d('null') }}"
   notify: restorecon command
   tags: [ user, db ]
 
@@ -58,7 +58,7 @@
     - not item.legacy|d()
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name|d('301') }}"
+    label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
 
 - name: add web-server users to the new user group
@@ -73,7 +73,7 @@
     - [ '{{ vhost_frontuser }}', '{{ vhost_backuser }}' ]
     - "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item[0] }}, {{ item[1].name|d('301') }}"
+    label: "{{ item[0] }}, {{ item[1].name|d('null') }}"
   tags: [ user, db ]
 
 - name: remove unused groups
@@ -85,7 +85,7 @@
     - item.state == 'absent'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name|d('301') }}"
+    label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
 
 - name: Cron tasks

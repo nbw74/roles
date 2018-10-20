@@ -1,24 +1,51 @@
 ---
-- name: dump mysql database
-  mysql_db:
-    name: "{{ item[0].db.name }}"
-    state: dump
-    target: "{{ vhost_preserve }}/{{ item[0].db.name }}-{{ vhost_timestamp }}.sql.bz2"
-    login_host: "{{ item[0].db.host }}"
-    login_port: "{{ item[0].db.port|d('3306') }}"
-    login_user: "{{ vhost_db_mysql_admin_user }}"
-    login_password: "{{ vhost_db_mysql_admin_pass }}"
-  when:
-    - item[0].db is defined
-    - item[0].db.type == 'mysql'
-    - item[1].changed
-    - item[1].state == 'absent'
-  with_together:
-    - "{{ vhost }}"
-    - "{{ vhost_user.results }}"
-  loop_control:
-    label: "{{ item[0].name }}"
-  tags: [ db ]
+- name: Attempt dump and manage mysql database
+  block:
+    - name: dump mysql database
+      mysql_db:
+        name: "{{ item[0].db.name }}"
+        state: dump
+        target: "{{ vhost_preserve }}/{{ item[0].db.name }}-{{ vhost_timestamp }}.sql.bz2"
+        login_host: "{{ item[0].db.host }}"
+        login_port: "{{ item[0].db.port|d('3306') }}"
+        login_user: "{{ vhost_db_mysql_admin_user }}"
+        login_password: "{{ vhost_db_mysql_admin_pass }}"
+      register: vhost_dump_mysql_result
+      when:
+        - item[0].db is defined
+        - item[0].db.type == 'mysql'
+        - item[1].changed
+        - item[1].state == 'absent'
+      failed_when:
+        - vhost_dump_mysql_result.failed
+        - "'Cannot dump database ' ~ item[0].db.name ~ ' - not found' not in vhost_dump_mysql_result.msg"
+      with_together:
+        - "{{ vhost }}"
+        - "{{ vhost_user.results }}"
+      loop_control:
+        label: "{{ item[0].db.name|d('null') }}"
+      tags: [ db ]
+  rescue:
+    - name: Create user back if dump error
+      user:
+        name: "{{ item[0].user|d(item[0].name) }}"
+        create_home: no
+        state: present
+      when:
+        - item[0].db is defined
+        - item[0].db.type == 'mysql'
+        - item[1].state == 'absent'
+      with_together:
+        - "{{ vhost }}"
+        - "{{ vhost_user.results }}"
+      loop_control:
+        label: "{{ item[0].user|d(item[0].name) }}"
+      tags: [ db ]
+
+    - name: Exit
+      fail:
+        msg: "MYSQL DUMP ERROR"
+      tags: [ db ]
 
 - name: manage mysql database
   mysql_db:
@@ -35,7 +62,7 @@
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.db.name|d('null') }}"
   tags: [ db ]
 
 - name: manage mysql user
@@ -54,6 +81,6 @@
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.db.name|d('null') }}"
   tags: [ db ]
 ...

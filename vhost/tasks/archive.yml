@@ -8,19 +8,22 @@
     - item.state == 'absent'
   with_items: "{{ vhost_user.results }}"
   loop_control:
-    label: "{{ item.name|d('301') }}"
+    label: "{{ item.name|d('null') }}"
   tags: [ archive ]
 
 - name: remove logs and tmp from homedir
   file:
     path: "{{ item.0.stat.path }}/{{ item.1 }}"
     state: absent
-  when: not item.0.skipped|d()
+  when:
+    - item.stat is defined
+    - item.0.stat.path is defined
+    - not item.0.skipped|d()
   with_nested:
     - "{{ vhost_reg_home.results }}"
     - [ 'log', 'logs', 'tmp' ]
   loop_control:
-    label: "{{ item.0.item.name|d('301') }}: {{ item.1 }}"
+    label: "{{ item.0.item.name|d('null') }}: {{ item.1 }}"
   ignore_errors: yes
   tags: [ archive ]
 
@@ -38,20 +41,26 @@
       - "{{ item.stat.path }}/*.zip"
       - "{{ item.stat.path }}/*.bz2"
       - "*.log"
-  when: not item.skipped|d()
+  when:
+    - item.stat is defined
+    - item.stat.path is defined
+    - not item.skipped|d()
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
-    label: "{{ item.item.name|d('301') }}"
+    label: "{{ item.item.name|d('null') }}"
   tags: [ archive ]
 
 - name: remove homedir
   file:
     path: "{{ item.stat.path }}"
     state: absent
-  when: not item.skipped|d()
+  when:
+    - item.stat is defined
+    - item.stat.path is defined
+    - not item.skipped|d()
   with_items: "{{ vhost_reg_home.results }}"
   loop_control:
-    label: "{{ item.item.name|d('301') }}"
+    label: "{{ item.item.name|d('null') }}"
   ignore_errors: yes
   tags: [ archive ]
 ...
