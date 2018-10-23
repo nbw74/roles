@@ -33,7 +33,7 @@
 - name: PHP sessions and upload dirs
   file:
     path: "/tmp/{{ item[1] }}/{{ item[0].user|d(item[0].name) }}"
-    state: directory
+    state: "{{ item[0].state|d(true)|ternary('directory','absent') }}"
     owner: apache
     group: "{{ item[0].user|d(item[0].name) }}"
     mode: 0770

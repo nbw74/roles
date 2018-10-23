@@ -23,7 +23,7 @@
         - "{{ vhost }}"
         - "{{ vhost_user.results }}"
       loop_control:
-        label: "{{ item[0].db.name|d('null') }}"
+        label: "{{ item[0].name }}"
       tags: [ db ]
   rescue:
     - name: Create user back if dump error
@@ -62,7 +62,7 @@
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.db.name|d('null') }}"
+    label: "{{ item.name }}"
   tags: [ db ]
 
 - name: manage mysql user
@@ -81,6 +81,6 @@
     - item.db.type == 'mysql'
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.db.name|d('null') }}"
+    label: "{{ item.name }}"
   tags: [ db ]
 ...
