@@ -43,7 +43,7 @@
   loop_control:
     label: "{{ item[0].name }}:{{ item[1] }}"
 
-- name: Bitrix cron task
+- name: Bitrix cron task present
   cron:
     name: Standard bitrix cron task
     user: "{{ item.user|d(item.name) }}"
@@ -53,8 +53,9 @@
       && { /usr/bin/php -f
       {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/bitrix/modules/main/tools/cron_events.php;
       } >/dev/null 2>&1
-    state: "{{ item.state|d(true) | ternary('present','absent') }}"
+    state: present
   when:
+    - item.state|d(true)
     - item.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:

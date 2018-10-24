@@ -1,6 +1,9 @@
 ---
 - import_tasks: init.yml
 
+- include_tasks: bitrix-pre.yml
+  when: vhost_backend == 'bitrix'
+
 - include_tasks: user.yml
   when: vhost_backend != 'reverse-proxy'
 
