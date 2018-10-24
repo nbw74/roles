@@ -1,4 +1,26 @@
 ---
+- name: Cron tasks absent
+  cron:
+    name: "{{ item[1].name }}"
+    user: "{{ item[0].user|d(item[0].name) }}"
+    job: "{{ item[1].job }}"
+    minute: "{{ item[1].minute|d('*') }}"
+    hour: "{{ item[1].hour|d('*') }}"
+    day: "{{ item[1].day|d('*') }}"
+    weekday: "{{ item[1].weekday|d('*') }}"
+    month: "{{ item[1].month|d('*') }}"
+    disabled: "{{ item[1].disabled|d('false') }}"
+    state: absent
+  when: not item[0].state|d(true)
+  with_subelements:
+    - "{{ vhost }}"
+    - cron
+    - flags:
+      skip_missing: true
+  loop_control:
+    label: "{{ item[0].user|d(item[0].name) }}:{{ item[1].name }}"
+  tags: [ cron ]
+
 - name: manage user
   user:
     name: "{{ item.user|d(item.name) }}"
@@ -88,7 +110,7 @@
     label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
 
-- name: Cron tasks
+- name: Cron tasks present
   cron:
     name: "{{ item[1].name }}"
     user: "{{ item[0].user|d(item[0].name) }}"
@@ -99,7 +121,8 @@
     weekday: "{{ item[1].weekday|d('*') }}"
     month: "{{ item[1].month|d('*') }}"
     disabled: "{{ item[1].disabled|d('false') }}"
-    state: "{{ item[1].state|d(true)|ternary('present','absent') }}"
+    state: present
+  when: item[0].state|d(true)
   with_subelements:
     - "{{ vhost }}"
     - cron

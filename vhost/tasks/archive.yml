@@ -27,28 +27,50 @@
   ignore_errors: yes
   tags: [ archive ]
 
-- name: archive homedir
-  archive:
-    path:
-      - "{{ item.stat.path }}"
-    dest: "{{ vhost_preserve }}/{{ item.stat.path|basename }}-{{ vhost_timestamp }}.tar.gz"
-    format: gz
-    exclude_path:
-      - "{{ item.stat.path }}/tmp/*"
-      - "{{ item.stat.path }}/log/*"
-      - "{{ item.stat.path }}/*.tar*"
-      - "{{ item.stat.path }}/*.gz"
-      - "{{ item.stat.path }}/*.zip"
-      - "{{ item.stat.path }}/*.bz2"
-      - "*.log"
-  when:
-    - item.stat is defined
-    - item.stat.path is defined
-    - not item.skipped|d()
-  with_items: "{{ vhost_reg_home.results }}"
-  loop_control:
-    label: "{{ item.item.name|d('null') }}"
-  tags: [ archive ]
+- name: Attempt to archive home directory
+  block:
+    - name: archive homedir
+      archive:
+        path:
+          - "{{ item.stat.path }}"
+        dest: "{{ vhost_preserve }}/{{ item.stat.path|basename }}-{{ vhost_timestamp }}.tar.gz"
+        format: gz
+        exclude_path:
+          - "{{ item.stat.path }}/tmp/*"
+          - "{{ item.stat.path }}/log/*"
+          - "{{ item.stat.path }}/*.tar*"
+          - "{{ item.stat.path }}/*.gz"
+          - "{{ item.stat.path }}/*.zip"
+          - "{{ item.stat.path }}/*.bz2"
+          - "*.log"
+      when:
+        - item.stat is defined
+        - item.stat.path is defined
+        - not item.skipped|d()
+      with_items: "{{ vhost_reg_home.results }}"
+      loop_control:
+        label: "{{ item.item.name|d('null') }}"
+      tags: [ archive ]
+  rescue:
+    - name: Create user back if archive error
+      user:
+        name: "{{ item[0].user|d(item[0].name) }}"
+        create_home: no
+        state: present
+      when:
+        - item[1].state == 'absent'
+        - item[1].changed
+      with_together:
+        - "{{ vhost }}"
+        - "{{ vhost_user.results }}"
+      loop_control:
+        label: "{{ item[0].user|d(item[0].name) }}"
+      tags: [ archive ]
+
+    - name: Exit
+      fail:
+        msg: "HOMEDIR ARCHIVE ERROR"
+      tags: [ archive ]
 
 - name: remove homedir
   file:

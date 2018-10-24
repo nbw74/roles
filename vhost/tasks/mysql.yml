@@ -1,5 +1,5 @@
 ---
-- name: Attempt dump and manage mysql database
+- name: Attempt to dump mysql database
   block:
     - name: dump mysql database
       mysql_db:
@@ -35,6 +35,7 @@
         - item[0].db is defined
         - item[0].db.type == 'mysql'
         - item[1].state == 'absent'
+        - item[1].changed
       with_together:
         - "{{ vhost }}"
         - "{{ vhost_user.results }}"
