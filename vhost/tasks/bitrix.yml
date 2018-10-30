@@ -67,7 +67,21 @@
     dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/.msmtprc"
     owner: "{{ item.user|d(item.name) }}"
     group: "{{ item.user|d(item.name) }}"
-    mode: 0644
+    mode: 0600
+  when:
+    - item.state|d(true)
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Template apache msmtprc
+  template:
+    src: "msmtprc.j2"
+    dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/.msmtprc_httpd"
+    owner: apache
+    group: apache
+    mode: 0600
   when:
     - item.state|d(true)
     - item.nginx_301_only is not defined

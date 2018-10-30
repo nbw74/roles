@@ -75,6 +75,8 @@
 
 	CustomLog logs/access_log combined
 
+	php_admin_value sendmail_path "msmtp -C /var/www/{{ item.user|d(item.name) }}/.msmtprc_httpd -t -i"
+
 	<IfModule mod_rewrite.c>
 		#Nginx should have "proxy_set_header HTTPS YES;" in location
 		RewriteEngine On
