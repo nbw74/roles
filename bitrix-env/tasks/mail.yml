@@ -1,12 +1,4 @@
 ---
-- name: "Template msmtprc"
-  template:
-    dest: "/etc/msmtprc"
-    src: msmtprc.j2
-    force: yes
-    backup: yes
-  tags: [ mail ]
-
 - name: "Adding bitrix alias in /etc/aliases"
   lineinfile:
     dest: /etc/aliases
