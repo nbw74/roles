@@ -5,6 +5,9 @@
 nginx_allow_status_list: # Список IP-адресов, с которых позволено читать страницу статуса Nginx
   - "ipv4"               # default: "127.0.0.0/8"
 
+nginx_http_directives: # Конфигурационные параметры для nginx.conf (контекст http)
+  - { key: 'string', value: 'string' }
+
 nginx_main_domain: "fqdn" # Актуальный домен второго уровня, для которого существуют сертификат
                           # и ключ в files, указываемые в двух следующих переменных:
 nginx_main_cert: "string"

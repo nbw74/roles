@@ -1,11 +1,21 @@
 ---
-- name: "logrotate php-fpm site logs"
+- name: Copy logrotate php-fpm sites logs
   copy:
-    src: "php-fpm_sites"
-    dest: "/etc/logrotate.d/"
+    src: logrotate.d/php-fpm_sites
+    dest: /etc/logrotate.d/
     force: no
     owner: root
     group: root
     mode: 0644
-  tags: [logrotate]
+  tags: [ logrotate ]
+
+- name: Copy logrotate laravel logs
+  copy:
+    src: logrotate.d/laravel
+    dest: /etc/logrotate.d/
+    owner: root
+    group: root
+    mode: 0644
+  when: php_logrotate_laravel_enable
+  tags: [ logrotate ]
 ...

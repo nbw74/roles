@@ -1,3 +1,4 @@
 ---
 php_fpm_add_packages: []
+php_logrotate_laravel_enable: false
 ...

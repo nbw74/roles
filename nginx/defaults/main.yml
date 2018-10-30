@@ -1,4 +1,6 @@
 ---
 nginx_allow_status_list:
   - "127.0.0.0/8"
+
+nginx_http_directives: []
 ...
