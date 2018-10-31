@@ -6,7 +6,4 @@ html: "/var/www/html"
 
 nginx_packages:
   - nginx
-  - awstats
-  - patch
-  - ed
 ...

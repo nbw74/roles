@@ -1,12 +1,19 @@
 ---
-- name: "Install Nginx (YUM)"
+- name: yum install nginx
   yum:
     name: "{{ nginx_packages }}"
     state: present
   when: ansible_distribution == "CentOS"
   tags: [ packages ]
 
-- name: "Install Nginx (DNF)"
+- name: yum package awstats
+  yum:
+    name: awstats
+    state: "{{ awstats_enable|d()|ternary('present','absent') }}"
+  when: ansible_distribution == "CentOS"
+  tags: [ packages ]
+
+- name: dnf install nginx
   dnf:
     name: "{{ nginx_packages }}"
     state: present

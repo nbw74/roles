@@ -48,7 +48,7 @@ main() {
 {% endif %}
 {% raw %}
     logger -p user.info -t "$bn" "* INFO: pwd: $PWD, ${ARGS}"
-    restorecon -r .
+    restorecon -r "${HOME}/www"
 
     exit 0
 }

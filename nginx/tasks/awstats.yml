@@ -44,12 +44,12 @@
   when: awstats_enable|d()
   tags: [ awstats, templates ]
 
-- name: Disable awstats
-  lineinfile:
-    path: "/etc/cron.hourly/awstats"
-    regexp: '.*(exec.*awstats.*)'
-    line: '# \1'
-    backrefs: yes
-  when: not awstats_enable|d()
-  tags: [ awstats ]
+# - name: Disable awstats
+#   lineinfile:
+#     path: "/etc/cron.hourly/awstats"
+#     regexp: '.*(exec.*awstats.*)'
+#     line: '# \1'
+#     backrefs: yes
+#   when: not awstats_enable|d()
+#   tags: [ awstats ]
 ...
