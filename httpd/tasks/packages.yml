@@ -4,11 +4,4 @@
     state: present
     name: "{{ httpd_packages }}"
   tags: [ packages ]
-
-- name: Install packages (SELinux)
-  yum:
-    state: present
-    name: "{{ httpd_selinux_packages }}"
-  when: selinux_state != 'disabled'
-  tags: [ packages, selinux ]
 ...
