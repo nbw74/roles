@@ -10,7 +10,7 @@
 bridge_devices:
 
 - dev: "br0" # Имя устройства
-  bootproto: "static" # Протокол поднятия адреса (static|dhcp|none)
+  bootproto: "none" # Протокол поднятия адреса
   address: "192.0.2.12/24" # IP-адрес (CIDR)
   peer: "192.0.2.1" # scope peer (применяется при prefix /32 - например, в Hetzner)
   onboot: "yes" # (default: yes) Поднимать ли интерфейс при загрузке (yes|no)
