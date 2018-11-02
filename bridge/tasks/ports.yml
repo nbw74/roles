@@ -4,7 +4,8 @@
     ip address flush dev {{ item.1 }};
     ip link set up dev {{ item.1 }};
     ip link set {{ item.1 }} master {{ item.0.item.dev }}
-    {{ ( item.0.item.bootproto == "dhcp" )|ternary(' ; /sbin/dhclient -1 -q
+    {{ ( item.0.item.bootproto|d('none') == "dhcp" )|ternary(' ;
+    /sbin/dhclient -1 -q
     -lf /var/lib/dhclient/dhclient--' ~ item.0.item.dev ~ '.lease
     -pf /var/run/dhclient-' ~ item.0.item.dev ~ '.pid
     -H ' ~ ansible_hostname ~ ' ' ~ item.0.item.dev,'') }};

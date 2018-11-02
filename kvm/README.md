@@ -62,7 +62,7 @@ kvm_vm:
   sysprep_hostname: "string" # (default: name) Имя хоста для sysprep
   sysprep_ifcfg: # (optional) Конфигурация интерфейсов.
     - dev: "string" # Имя интерфейса (например, eth0)
-      bootproto: "string" # Протокол загрузки (static|dhcp)
+      bootproto: "string" # (default: "none") Протокол загрузки (none|dhcp)
       address: "ipv4/prefix" # IP-адрес (для static)
       peer: "ipv4" # Указание peer (для p2p, как в Хетцнере)
       gateway: "ipv4" # Шлюз по-умолчанию

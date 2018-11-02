@@ -1,8 +1,8 @@
 DEVICE="{{ item.1.dev }}"
 TYPE="Ethernet"
 ONBOOT="yes"
-BOOTPROTO="{{ item.1.bootproto }}"
-{% if item.1.bootproto == "static" %}
+BOOTPROTO="{{ item.1.bootproto|d('none') }}"
+{% if item.1.bootproto|d('none') == "none" %}
 IPADDR="{{ item.1.address|ipv4('address') }}"
 PREFIX="{{ item.1.address|ipv4('prefix') }}"
 {% if item.1.peer is defined %}
