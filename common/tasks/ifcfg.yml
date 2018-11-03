@@ -20,7 +20,6 @@
     line: "{{ item.line }}"
   with_items:
     - { regexp: '^IPV6INIT=', line: 'IPV6INIT="no"' }
-    - { regexp: '^HWADDR=', line: 'HWADDR="{{ ansible_default_ipv4.macaddress }}"' }
   tags: [ services, ifcfg ]
   ignore_errors: yes
 
