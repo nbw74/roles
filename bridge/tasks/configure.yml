@@ -17,6 +17,7 @@
     - bridge_brctl_result is defined
     - item.changed
     - item.item.bootproto|d('none') == "none"
+    - item.item.address is defined
   with_items: "{{ bridge_brctl_result.results }}"
   loop_control:
     label: "{{ item.item.dev }}:{{ item.item.address|d('null') }}"
@@ -32,6 +33,7 @@
     - item.changed
     - item.item.bootproto|d('none') == "none"
     - item.item.peer is defined
+    - item.item.address is defined
   with_items: "{{ bridge_brctl_result.results }}"
   loop_control:
     label: "{{ item.item.dev }}:{{ item.item.address|d('null') }}:{{ item.item.peer|d('null') }}"
