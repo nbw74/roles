@@ -23,6 +23,7 @@ readonly PATH=/bin:/usr/bin:/sbin:/usr/sbin
 readonly bn="$(basename "$0")"
 readonly pwd="$(pwd)"
 readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
+readonly LOCKFILE="/tmp/${bn}.lock"
 readonly BIN_REQUIRED="sestatus restorecon"
 # CONSTANTS END
 
@@ -32,21 +33,13 @@ main() {
     trap 'except $LINENO' ERR
     trap _exit EXIT
 
+    touch "$LOCKFILE"
     touch "$LOGERR"
     exec 4>&2		# Link file descriptor #4 with stderr. Preserve stderr
     exec 2>>"$LOGERR"	# stderr replaced with file $LOGERR
 
     checks
-{% endraw %}
-{% if item == "post-checkout" %}
 
-    if [[ "$HOME" == "$(dirname "$pwd")" ]]; then
-	( shopt -s dotglob; mv -- * .. )
-	cd ..
-	rmdir "$(basename "$pwd")"
-    fi
-{% endif %}
-{% raw %}
     logger -p user.info -t "$bn" "* INFO: pwd: $PWD, ${ARGS}"
     restorecon -r "${HOME}/www"
 
@@ -72,6 +65,11 @@ checks() {
 	exit 0
     fi
 
+    if [[ -f $LOCKFILE ]]; then
+	logger -p user.info -t "$bn" "* INFO: script already running, exiting"
+	exit 0
+    fi
+
 }
 
 except() {
@@ -92,6 +90,7 @@ _exit() {
     exec 2>&4 4>&-	# Restore stderr and close file descriptor #4
 
     [[ -f $LOGERR ]] && rm "$LOGERR"
+    [[ -f $LOCKFILE ]] && rm "$LOCKFILE"
     exit $ret
 }
 
