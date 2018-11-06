@@ -1,0 +1,36 @@
+---
+- name: Copy vmbackup script
+  copy:
+    src: "vmbackup.sh"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: 0744
+  tags: [ backup ]
+
+- name: Cron
+  cron:
+    name: "{{ item.name }}"
+    cron_file: "kvm-{{ item.name|to_uuid }}"
+    user: root
+    job: >
+      /usr/local/bin/vmbackup.sh
+      -H {{ item.vmbackup_config['remote_host'] }}
+      -U {{ item.vmbackup_config['remote_user']|d('root') }}
+      -b {{ item.vmbackup_config['remote_basedir'] }}
+      -D {{ item.vmbackup_config['backup_depth']|d('3') }}
+      {{ (item.vmbackup_config['backup_method']|d('shutdown') == 'shutdown')|ternary('-s','') }}
+      {{ item.vmbackup_config['vm_list']|join(' ') }}
+    minute: "{{ item.minute|d('*') }}"
+    hour: "{{ item.hour|d('*') }}"
+    day: "{{ item.day|d('*') }}"
+    weekday: "{{ item.weekday|d('*') }}"
+    month: "{{ item.month|d('*') }}"
+    disabled: "{{ item.disabled|d('false') }}"
+    state: "{{ item.state|d(true)|ternary('present','absent') }}"
+  when: kvm_backup_cron_job is defined
+  with_items: "{{ kvm_backup_cron_job }}"
+  notify: reload crond
+  tags: [ backup ]
+
+...
