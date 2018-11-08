@@ -12,7 +12,7 @@
 - name: Get TRIM support
   shell: >
     lsblk -do NAME,DISC-GRAN
-    | awk '/[sv]d[a-z]/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
+    | awk '/sd[a-z]/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
   register: trim_support_check
   changed_when: no
   tags: [ fstrim ]

@@ -8,8 +8,9 @@
   with_items:
     - NetworkManager
     - chronyd
-  when: (( ansible_distribution == "Fedora" ) or
-        ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 ))
+  when: >
+    ( ansible_distribution == "Fedora" ) or
+    ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 )
   ignore_errors: yes
   tags: [ services ]
 
@@ -98,4 +99,51 @@
     - postfix
     - snmpd
   tags: [ services, snmp ]
+
+- name: Set mdraid presence
+  set_fact:
+    mdraid_is_present: >-
+      {{ ansible_device_links.ids | d('') | string | regex_search('md[0-9]') |
+      string | regex_replace('[Nn]one','') | length > 0 }}
+
+- name: Set LVM presence
+  set_fact:
+    lvm_is_present: "{{ ansible_lvm is defined and ansible_lvm.vgs|length > 0 }}"
+  tags: [ fstrim ]
+
+- name: Get TRIM support
+  shell: >
+    lsblk -do NAME,DISC-GRAN
+    | awk '/sd[a-z]/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
+  register: trim_support_check
+  changed_when: no
+  tags: [ fstrim ]
+
+- name: Set TRIM support
+  set_fact:
+    trim_is_supported: "{{ trim_support_check.stdout|bool }}"
+  tags: [ fstrim ]
+
+- debug:
+    msg:
+      - "mdraid_is_present: {{ mdraid_is_present }}"
+      - "lvm_is_present: {{ lvm_is_present }}"
+      - "trim_is_supported: {{ trim_is_supported }}"
+
+- name: set discard option for lvm
+  lineinfile:
+    path: "/etc/lvm/lvm.conf"
+    regexp: '^\s*#*\s*issue_discards'
+    line: "\tissue_discards = {{ trim_is_supported|ternary('1','0') }}"
+  when: lvm_is_present
+  tags: [ fstrim ]
+
+- name: manage fstrim.timer
+  systemd:
+    name: fstrim.timer
+    enabled: "{{ trim_is_supported|ternary('yes','no') }}"
+    state: "{{ trim_is_supported|ternary('started','stopped') }}"
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ fstrim ]
+
 ...
