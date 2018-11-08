@@ -73,9 +73,9 @@
         --firstboot-command 'nmcli con modify eth0 ipv4.dhcp-hostname {{ item[0].sysprep_hostname|d(item[0].name) }}
         && systemctl is-enabled NetworkManager.service && systemctl restart NetworkManager.service'
         {{ (item[0].sysprep_root_pass is defined)
-        |ternary('--root-password password:' ~ item[0].sysprep_root_pass|d(),'') }}
+        |ternary('--root-password password:' ~ item[0].sysprep_root_pass|d(''),'') }}
         {{ (kvm_sysprep_root_key is defined)
-        |ternary('--ssh-inject "root:string:' ~ kvm_sysprep_root_key ~ '"'|d(),'') }}
+        |ternary('--ssh-inject "root:string:' ~ kvm_sysprep_root_key|d('') ~ '"','') }}
         -a {{ kvm_templates_path }}/{{ item[0].template_name|d(kvm_template_default) }} &&
         qemu-img convert -q -O {{ item[0].disk_format|d('raw') }}
         {{ kvm_templates_path }}/{{ item[0].template_name|d(kvm_template_default) }}

@@ -44,6 +44,6 @@
   - import_tasks: state.yml
 
   - include_tasks: mac.yml
-    when: kvm_mac_printout
+    when: kvm_mac_printout|d()
   when: kvm_vm|length > 0
 ...
