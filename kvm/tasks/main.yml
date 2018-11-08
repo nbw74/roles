@@ -1,11 +1,67 @@
 ---
-- name: Fails if vz7 and kvm role exists
+- name: Abort if system is not RHEL 7 or above
   fail:
-    msg: "FATAL: Both vz7 and kvm role exists"
-  when:
-    - "'kvm' in roles"
-    - "'vz7' in roles"
+    msg: "THIS ROLE IS DESIGNED FOR RHEL/CentOS 7"
+  when: ansible_distribution_major_version|int != 7
 
-- import_tasks: main_task.yml
-  when: "'kvm' in roles"
+- name: Check if role assigned to host
+  fail:
+    msg: "ROLE 'kvm' IS NOT ASSIGNED TO THIS HOST"
+  when: "'kvm' not in roles"
+
+- name: Get TRIM support
+  shell: >
+    lsblk -do NAME,DISC-GRAN
+    | awk '/[sv]d[a-z]/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
+  register: trim_support_check
+  changed_when: no
+  tags: [ fstrim ]
+
+- name: Set TRIM support
+  set_fact:
+    trim_is_supported: "{{ trim_support_check.stdout|bool }}"
+  tags: [ fstrim ]
+
+- name: Required packages
+  yum:
+    name: "{{ kvm_pkgs }}"
+    state: present
+
+- import_tasks: services.yml
+
+- name: Nested virtualization support
+  lineinfile:
+    path: "{{ kvm_module_nested_file }}"
+    create: yes
+    line: 'options kvm_intel nested=1'
+    state: present
+  when: kvm_nested
+
+- name: Temporary catalog
+  become: no
+  file:
+    path: "{{ kvm_tmp_dir }}"
+    state: directory
+  delegate_to: localhost
+
+- import_tasks: admins.yml
+
+- import_tasks: backup.yml
+
+- import_tasks: net.yml
+
+- import_tasks: pool.yml
+  when: kvm_pool|length > 0
+
+- block:
+  - import_tasks: pre.yml
+
+  - include_tasks: virt.yml
+    when: kvm_pool_xml_path.changed
+
+  - import_tasks: state.yml
+
+  - include_tasks: mac.yml
+    when: kvm_mac_printout|d()
+  when: kvm_vm|length > 0
 ...
