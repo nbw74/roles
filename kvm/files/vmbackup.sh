@@ -68,6 +68,7 @@ removeOld() {
     local fn=${FUNCNAME[0]}
 
     if $connect "test -d '$remote_dir'"; then
+	# shellcheck disable=SC1117
 	$connect -t "cd '$remote_dir' && find . -maxdepth 1 -mindepth 1 -type f -printf '%P\n' | sort -r | tail -n +$BACKUP_DEPTH | xargs -r rm --"
     else
 	$connect "mkdir '$remote_dir'"
@@ -76,7 +77,6 @@ removeOld() {
 
 backupShutdown() {
     local fn=${FUNCNAME[0]}
-    local -i warn=0
 
     if is_poweroff; then
 	if (( ! IGNORE_POWEROFF )); then
@@ -99,6 +99,7 @@ backupShutdown() {
     done
     (( DEBUG )) && echo
     # Dump LV to remote host
+    # shellcheck disable=SC2216
     ionice -c3 dd if="$device" bs=8M | nice lbzip2 - | $connect "dd of=${remote_dir}/$(date +'%s')-${domain}.img.bz2 bs=8M"
     virsh -q start "$domain"
 }
