@@ -1,4 +1,5 @@
 ---
 php_fpm_add_packages: []
+php_laravel_units: []
 php_logrotate_laravel_enable: false
 ...

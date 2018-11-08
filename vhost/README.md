@@ -118,6 +118,9 @@ vhost:
     block # ... in the 'server' context (before "backend section")
   nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
   password: string # optional; set password for <user> (changed only on_create)
+  php_laravel_units:
+    - name: "string" # default: laravel-queue-worker
+      enabled: bool # default: yes
   php_value: # optional
     - key: 'string'
       value: 'string'

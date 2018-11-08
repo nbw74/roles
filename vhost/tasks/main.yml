@@ -31,6 +31,9 @@
 - include_tasks: apache.yml
   when: vhost_backend == 'apache' or vhost_backend == 'bitrix'
 
+- include_tasks: laravel.yml
+  when: vhost_backend == 'php-fpm'
+
 - include_tasks: ddns.yml
   when: vhost_backend != 'reverse-proxy'
   tags: [ ddns ]

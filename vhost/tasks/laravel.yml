@@ -1,0 +1,28 @@
+---
+- name: Manage Laravel instantiated units
+  systemd:
+    name: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
+    enabled: "{{ item[1].enabled|d(True)|ternary('yes','no') }}"
+    state: "{{ item[1].enabled|d(True)|ternary('started','stopped') }}"
+  when: item[0].state|d(True)
+  with_subelements:
+    - "{{ vhost }}"
+    - php_laravel_units
+    - flags:
+      skip_missing: true
+  loop_control:
+    label: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
+
+- name: Disable Laravel instantiated units
+  systemd:
+    name: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
+    enabled: no
+  when: item[0].state|d()
+  with_subelements:
+    - "{{ vhost }}"
+    - php_laravel_units
+    - flags:
+      skip_missing: true
+  loop_control:
+    label: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
+...

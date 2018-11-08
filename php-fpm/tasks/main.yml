@@ -39,6 +39,29 @@
     state: started
     enabled: yes
 
+- name: Template Laravel instantiated units
+  template:
+    src: "systemd/laravel-queue.j2"
+    dest: "/etc/systemd/system/{{ item.name|d('laravel-queue-worker') }}@.service"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - php_laravel_units|length > 0
+    - item.state|d(True)
+  with_items: "{{ php_laravel_units }}"
+  notify: systemd reload
+
+- name: Remove Laravel instantiated units
+  file:
+    path: "/etc/systemd/system/{{ item.name|d('laravel-queue-worker') }}@.service"
+    state: absent
+  when:
+    - php_laravel_units|length > 0
+    - not item.state|d(True)
+  with_items: "{{ php_laravel_units }}"
+  notify: systemd reload
+
 - include_tasks: logrotate.yml
 
 - include_tasks: awstats.yml

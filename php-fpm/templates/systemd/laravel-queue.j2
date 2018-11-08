@@ -1,0 +1,22 @@
+# Laravel queue worker using systemd
+# ----------------------------------
+#
+# run this command to enable service:
+# systemctl enable {{ item.name|d('laravel-queue-worker') }}@<username>
+
+[Unit]
+Description=Laravel queue worker on %I ({{ item.description|d('default') }})
+After=network.target
+
+[Service]
+User=%i
+Group=%i
+Restart=always
+Environment=QUEUE_WORKER_TRIES=1
+EnvironmentFile=/var/www/%i/www/.env
+ExecStart=/usr/bin/php /var/www/%i/www/artisan queue:work {{ ( item.args is defined )|ternary(item.args|d('') ~ ' ','') }}--tries=${QUEUE_WORKER_TRIES}
+ExecReload=/usr/bin/php /var/www/%i/www/artisan queue:restart
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

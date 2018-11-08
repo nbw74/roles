@@ -9,4 +9,8 @@
   systemd:
     name: php-fpm.service
     state: reloaded
+
+- name: systemd reload
+  systemd:
+    daemon_reload: yes
 ...
