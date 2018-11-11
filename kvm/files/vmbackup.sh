@@ -20,6 +20,7 @@ readonly PATH=/bin:/usr/bin:/sbin:/usr/sbin
 readonly bn="$(basename "$0")"
 readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
 readonly BIN_REQUIRED="virsh lbzip2"
+readonly LANG=C LC_ALL=C
 readonly domain_shutdown_timeout=300
 # CONSTANTS END
 
@@ -69,7 +70,7 @@ removeOld() {
 
     if $connect "test -d '$remote_dir'"; then
 	# shellcheck disable=SC1117
-	$connect -t "cd '$remote_dir' && find . -maxdepth 1 -mindepth 1 -type f -printf '%P\n' | sort -r | tail -n +$BACKUP_DEPTH | xargs -r rm --"
+	$connect "cd '$remote_dir' && find . -maxdepth 1 -mindepth 1 -type f -printf '%P\n' | sort -r | tail -n +$BACKUP_DEPTH | xargs -r rm --"
     else
 	$connect "mkdir '$remote_dir'"
     fi
