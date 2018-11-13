@@ -21,4 +21,6 @@ kvm_excluded_system_users: "root|sync|shutdown|halt|operator|ansible"
 
 kvm_templates_path: "/var/lib/libvirt/templates.tmp"
 kvm_templates_path_bis: "/var/lib/libvirt/templates-bis.tmp"
+
+kvm_backup_script: "/usr/local/bin/vmbackup.sh"
 ...

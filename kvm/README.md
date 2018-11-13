@@ -35,7 +35,8 @@ kvm_backup_cron_job:
       remote_user: "string" # Default: root
       remote_basedir: "path" # Mandatory
       backup_depth: "int" # Default: 3
-      backup_method: "shutdown|snapshot" # Only "shutdown" currently supported (default)
+      backup_method: "shutdown|snapshot" # Default: snapshot
+      snapshot_size: "int" # Default: 10; snapshot size in GB
     minute: "string" # Default: *; minute when the job should run ( 0-59, *, */2, etc )
     hour: "string" # Default: *; hour when the job should run ( 0-23, *, */2, etc )
     day: "string" # Default: *; day of the month the job should run ( 1-31, *, */2, etc )

@@ -10,7 +10,8 @@ set -o pipefail
 # set -xv
 
 # DEFAULTS BEGIN
-typeset DEBUG=0 IGNORE_POWEROFF=0 SHUTDOWN=0 BACKUP_DEPTH=3
+typeset -i DEBUG=0 IGNORE_POWEROFF=0 SHUTDOWN=0
+typeset -i BACKUP_DEPTH=3 SNAPSHOT_SIZE=10
 typeset REMOTE_USER=$(whoami)
 typeset REMOTE_HOST="" REMOTE_BASEDIR=""
 # DEFAULTS END
@@ -29,6 +30,7 @@ main() {
 
     trap 'except $LINENO' ERR
     trap _exit EXIT
+    local -i frozen=0 snapshotted=0
 
     if (( ! DEBUG )); then
 	exec 4>&2		# Link file descriptor #4 with stderr. Preserve stderr
@@ -42,15 +44,25 @@ main() {
     while (( $# )); do
 
 	local remote_dir="" domain="" device=""
+	local -i blk_count=0
+
 	domain="$1"
 	remote_dir="${REMOTE_BASEDIR}/$domain"
 	(( DEBUG )) && echo "* DEBUG: domain=$domain remote_dir=$remote_dir"
 
-	writeLog started
 	removeOld
-
 	# Get first block device
-	device=$(virsh domblklist "$domain"|awk '/[sv]da/ { print $2; exit }')
+	device=$(virsh domblklist "$domain"|awk '/[sv]d[a-z]/ { print $2; exit }')
+	# Sanity checks
+	blk_count=$(virsh domblklist "$domain" | grep -c '[sv]d[a-z]')
+	if (( blk_count != 1 )); then
+	    echo "Insufficient disks count for domain $domain (${blk_count}), must be 1" >&2
+	    false
+	fi
+	if ! file -L "$device"|grep -q 'block special'; then
+	    echo "VM disk $device is not a LVM volume, cannot continuing" >&2
+	    false
+	fi
 
 	if (( SHUTDOWN )); then
 	    backupShutdown
@@ -58,7 +70,7 @@ main() {
 	    backupSnapshot
 	fi
 
-	writeLog finished
+	logInfo "backup finished"
 	shift
     done
 
@@ -69,6 +81,7 @@ removeOld() {
     local fn=${FUNCNAME[0]}
 
     if $connect "test -d '$remote_dir'"; then
+	logInfo "pruning old backups"
 	# shellcheck disable=SC1117
 	$connect "cd '$remote_dir' && find . -maxdepth 1 -mindepth 1 -type f -printf '%P\n' | sort -r | tail -n +$BACKUP_DEPTH | xargs -r rm --"
     else
@@ -81,10 +94,11 @@ backupShutdown() {
 
     if is_poweroff; then
 	if (( ! IGNORE_POWEROFF )); then
-	    echo "* ERROR: VM is already powered off, may be backup is not needed?" >&2
+	    echo "VM is already powered off, maybe backup is not needed?" >&2
 	    false
 	fi
     else
+	logInfo "domain shutdown"
 	virsh -q shutdown "$domain"
     fi
     # Waiting for VM shutdown
@@ -94,14 +108,15 @@ backupShutdown() {
 	i=$(( i+1 ))
 	(( DEBUG )) && echo -n "$i "
 	if (( i > domain_shutdown_timeout )); then
-	    echo "* ERROR: domain shutdown timeout reached ($domain_shutdown_timeout)" >&2
+	    echo "Domain shutdown timeout reached ($domain_shutdown_timeout)." >&2
 	    false
 	fi
     done
     (( DEBUG )) && echo
-    # Dump LV to remote host
-    # shellcheck disable=SC2216
-    ionice -c3 dd if="$device" bs=8M | nice lbzip2 - | $connect "dd of=${remote_dir}/$(date +'%s')-${domain}.img.bz2 bs=8M"
+
+    remoteDump "$device"
+
+    logInfo "domain starting"
     virsh -q start "$domain"
 }
 
@@ -117,15 +132,48 @@ is_poweroff() {
 
 backupSnapshot() {
     local fn=${FUNCNAME[0]}
+    local snapshot="" snapshot_basename=""
 
-    echo "* INFO: Not implemented" >&2
-    false
+    snapshot="${device}_snap"
+    snapshot_basename=$(basename "$snapshot")
+
+    if [[ -b "$snapshot" ]]; then
+	echo "Snapshot $snapshot already exists, terminating." >&2
+	false
+    fi
+
+    logInfo "freezing filesystem"
+    virsh -q domfsfreeze "$domain"
+    frozen=1
+
+    logInfo "creating ${SNAPSHOT_SIZE}G snapshot"
+    lvcreate -qq --size ${SNAPSHOT_SIZE}G --snapshot --name "$snapshot_basename" "${device}"
+    snapshotted=1
+
+    frozen=0
+    logInfo "thawing filesystem"
+    virsh -q domfsthaw "$domain"
+
+    remoteDump "$snapshot"
+
+    snapshotted=0
+    logInfo "removing snapshot"
+    lvremove -qqf "$snapshot"
 }
 
-writeLog() {
+remoteDump() {
+    local fn=${FUNCNAME[0]}
+    local dev=$1
+
+    logInfo "dump to remote server"
+    # shellcheck disable=SC2216
+    ionice -c3 dd if="$dev" bs=8M | nice lbzip2 - | $connect "dd of=${remote_dir}/$(date +'%s')-${domain}.img.bz2 bs=8M"
+}
+
+logInfo() {
     local fn=${FUNCNAME[0]}
 
-    logger -p user.info -t "$bn" "* INFO: backup ${1:-NOSTATE} for domain '$domain'"
+    logger -p user.info -t "$bn" "* INFO: ${domain}: $*"
 }
 
 checks() {
@@ -134,18 +182,18 @@ checks() {
     for i in $BIN_REQUIRED; do
         if ! command -v "$i" >/dev/null
         then
-            echo "* ERROR: Required binary '$i' is not installed" >&2
+            echo "Required binary '$i' is not installed." >&2
             false
         fi
     done
 
     if (( UID )); then
-	echo "* INFO: this script must be run as superuser" >&2
+	echo "this script must be run as superuser" >&2
 	false
     fi
 
     if [[ "$1" == "nop" || -z $REMOTE_BASEDIR || -z $REMOTE_HOST ]]; then
-	echo "* ERROR: required parameter missing" >&2
+	echo "required parameter missing" >&2
 	false
     fi
 }
@@ -169,20 +217,30 @@ _exit() {
 	exec 2>&4 4>&-	# Restore stderr and close file descriptor #4
     fi
 
+    if (( frozen )); then
+	virsh -q domfsthaw "$domain"
+    fi
+
+    if (( snapshotted )); then
+	lvremove -qqf "$snapshot"
+    fi
+
     [[ -f $LOGERR ]] && rm "$LOGERR"
     exit $ret
 }
 
 usage() {
-    echo -e "\\n    Usage: $bn [OPTIONS] <parameter>\\n
+    echo -e "\\nScript for KVM virtual machines backup.\\nOnly single-disk LV is currently supported
+    Usage: $bn [OPTIONS] <parameter>\\n
     Options:
 
     -b, --basedir <path>	base directory for backups on remote host
-    -D, --depth <int>		backup depth
+    -D, --depth <int>		backup depth (default is ${BACKUP_DEPTH})
     -H, --host <string>		remote host
     -U, --user <strng>		remote user
-    -i, --ignore-poweroff	don't exit with error if host is powered off
-    -s, --shutdown		shut down VM before backup (only this mode is supported)
+    -i, --ignore-poweroff	don't error if host is already powered off
+    -s, --shutdown		shut down VM before backup (instead of making snapshot)
+    -S, --snapshot-size <int>	size of snapshot, GB (default is ${SNAPSHOT_SIZE})
     -d, --debug			print some info in stdout/stderr
     -h, --help			print help
 "
@@ -190,7 +248,7 @@ usage() {
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o b:D:H:U:isdh --longoptions basedir:,depth:,host:,user:,ignore-poweroff,shutdown,debug,help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o b:D:H:S:U:isdh --longoptions basedir:,depth:,host:,user:,ignore-poweroff,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -205,8 +263,9 @@ while true; do
 	-D|--depth)		BACKUP_DEPTH=$2 ;	shift 2	;;
 	-H|--host)		REMOTE_HOST=$2 ;	shift 2	;;
 	-U|--user)		REMOTE_USER=$2 ;	shift 2	;;
-	-i|--ignore-poweroff)	IGNORE_POWEROFF=1 ;	shift ;;
-	-s|--shutdown)		SHUTDOWN=1 ;		shift ;;
+	-i|--ignore-poweroff)	IGNORE_POWEROFF=1 ;	shift	;;
+	-s|--shutdown)		SHUTDOWN=1 ;		shift	;;
+	-S|--snapshot-size)	SNAPSHOT_SIZE=$2 ;	shift 2	;;
 	-d|--debug)		DEBUG=1 ;		shift	;;
 	-h|--help)		usage ;		exit 0	;;
 	--)			shift ;		break	;;

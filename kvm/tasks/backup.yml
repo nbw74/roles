@@ -1,8 +1,8 @@
 ---
 - name: Copy vmbackup script
   copy:
-    src: "vmbackup.sh"
-    dest: "/usr/local/bin/"
+    src: "{{ kvm_backup_script|basename }}"
+    dest: "{{ kvm_backup_script|dirname }}"
     owner: root
     group: root
     mode: 0744
@@ -14,12 +14,13 @@
     cron_file: "kvm-{{ item.name|to_uuid }}"
     user: root
     job: >
-      /usr/local/bin/vmbackup.sh
+      {{ kvm_backup_script }}
       -H {{ item.vmbackup_config['remote_host'] }}
       -U {{ item.vmbackup_config['remote_user']|d('root') }}
       -b {{ item.vmbackup_config['remote_basedir'] }}
       -D {{ item.vmbackup_config['backup_depth']|d('3') }}
-      {{ (item.vmbackup_config['backup_method']|d('shutdown') == 'shutdown')|ternary('-s','') }}
+      {{ (item.vmbackup_config['backup_method']|d('snapshot') == 'shutdown')|ternary('-s','') }}
+      {{ (item.vmbackup_config['snapshot_size'] is defined)|ternary('-S ' ~ item.vmbackup_config['snapshot_size']|d(''), '') }}
       {{ item.vmbackup_config['vm_list']|join(' ') }}
     minute: "{{ item.minute|d('*') }}"
     hour: "{{ item.hour|d('*') }}"
