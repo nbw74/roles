@@ -38,9 +38,9 @@
       <driver name='qemu' type='{{ item[0].disk_format|d('raw') }}' cache='none' io='native'{% if trim_is_supported|d() %} discard='unmap'{% endif %}/>
       <source {% if item[2].matches[0].pool.type == "logical" %}dev{% elif item[2].matches[0].pool.type == "dir" %}file{% endif %}='{{ item[1].matches[0].path }}/vm_{{ item[0].name }}'/>
 {% if trim_is_supported|d() %}
-      <target dev='vda' bus='{{ item[0].disk_bus|default('virtio') }}'/>
-{% else %}
       <target dev='sda' bus='{{ item[0].disk_bus|default('scsi') }}'/>
+{% else %}
+      <target dev='vda' bus='{{ item[0].disk_bus|default('virtio') }}'/>
 {% endif %}
     </disk>
     <controller type='usb' index='0' model='ich9-ehci1'>

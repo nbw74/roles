@@ -22,6 +22,11 @@
     trim_is_supported: "{{ trim_support_check.stdout|bool }}"
   tags: [ fstrim ]
 
+- debug:
+    msg:
+      - "trim_is_supported: {{ trim_is_supported }}"
+  tags: [ fstrim ]
+
 - name: Required packages
   yum:
     name: "{{ kvm_pkgs }}"
