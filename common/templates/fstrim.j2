@@ -1,0 +1,88 @@
+#!/bin/bash
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+# /etc/cron.weekly/fstrim
+#
+{% raw %}
+set -o nounset
+set -o errtrace
+set -o pipefail
+
+# DEFAULTS BEGIN
+# DEFAULTS END
+
+# CONSTANTS BEGIN
+readonly PATH=/bin:/usr/bin:/sbin:/usr/sbin
+readonly bn="$(basename "$0")"
+readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
+readonly LOGOUT=$(mktemp --tmpdir "${bn%\.*}.XXXX")
+readonly BIN_REQUIRED="lsblk fstrim"
+# CONSTANTS END
+
+main() {
+    local fn=${FUNCNAME[0]}
+
+    trap 'except $LINENO' ERR
+    trap _exit EXIT
+
+    exec 4>&2		# Link file descriptor #4 with stderr. Preserve stderr
+    exec 2>>"$LOGERR"	# stderr replaced with file $LOGERR
+
+    checks
+{% endraw %}
+    typeset -a Fs=(
+{% for item in common_fstrim_weekly %}
+	"{{ item }}"
+{% endfor %}
+    )
+
+{% raw %}
+    for (( i = 0; i < ${#Fs[@]}; i++ )); do
+	fstrim -v "${Fs[i]}" >"$LOGOUT"
+	logger -p user.info -t "$bn" "* INFO: $(cat "${LOGOUT}")"
+    done
+
+    exit 0
+}
+
+checks() {
+    local fn=${FUNCNAME[0]}
+    # Required binaries check
+    for i in $BIN_REQUIRED; do
+        if ! command -v "$i" >/dev/null
+        then
+            echo "Required binary '$i' is not installed" >&2
+            false
+        fi
+    done
+
+    if lsblk -do NAME,DISC-GRAN | awk '/sd[a-z]|nvme/ { if($2 != "0B") flag=1 } END { if(flag) exit 1; else exit 0 }'; then
+	exit 0
+    fi
+
+}
+
+except() {
+    local ret=$?
+    local no=${1:-no_line}
+
+    if [[ -t 1 ]]; then
+        echo "* FATAL: error occured in function '$fn' near line ${no}. Stderr: '$(awk '$1=$1' ORS=' ' "${LOGERR}")'"
+    fi
+
+    logger -p user.err -t "$bn" "* FATAL: error occured in function '$fn' near line ${no}. Stderr: '$(awk '$1=$1' ORS=' ' "${LOGERR}")'"
+    exit $ret
+}
+
+_exit() {
+    local ret=$?
+
+    exec 2>&4 4>&-	# Restore stderr and close file descriptor #4
+
+    [[ -f $LOGERR ]] && rm "$LOGERR"
+    [[ -f $LOGOUT ]] && rm "$LOGOUT"
+    exit $ret
+}
+
+main
+{% endraw %}
+## EOF ##

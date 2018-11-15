@@ -114,7 +114,7 @@
 - name: Get TRIM support
   shell: >
     lsblk -do NAME,DISC-GRAN
-    | awk '/sd[a-z]/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
+    | awk '/sd[a-z]|nvme/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
   register: trim_support_check
   changed_when: no
   tags: [ fstrim ]
@@ -143,7 +143,34 @@
     name: fstrim.timer
     enabled: "{{ trim_is_supported|ternary('yes','no') }}"
     state: "{{ trim_is_supported|ternary('started','stopped') }}"
-  when: ansible_distribution_major_version|int >= 7
+  when: ansible_service_mgr == 'systemd'
+  tags: [ fstrim ]
+
+- name: fstrim cron job present
+  template:
+    src: fstrim.j2
+    dest: /etc/cron.weekly/fstrim
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - ansible_service_mgr != 'systemd'
+    - trim_is_supported
+  notify:
+    - config reload crond
+    - config reload cron
+  tags: [ fstrim ]
+
+- name: fstrim cron job absent
+  file:
+    path: /etc/cron.weekly/fstrim
+    state: absent
+  when:
+    - ansible_service_mgr != 'systemd'
+    - not trim_is_supported
+  notify:
+    - config reload crond
+    - config reload cron
   tags: [ fstrim ]
 
 ...

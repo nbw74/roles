@@ -19,6 +19,9 @@ common_cron_user_tasks:
     disabled: bool # default: no; if the job should be disabled (commented out) in the crontab
     state: bool # default: yes; whether to ensure the job is present or absent
 
+common_fstrim_weekly: # Cron job for weekly fstrim launch
+  - "string" # list of trimmed filesystems
+
 common_icinga2_conf:
   host_main_template: "string" # default: "centos-host" :Основной шаблон хоста (первый import)
   host_templates: [ 'string', ... ] # default: none :Дополнительные шаблоны

@@ -67,6 +67,14 @@
 - name: config restart crond
   service: name=crond state=restarted
 
+- name: config reload crond
+  service: name=crond state=reloaded
+  when: ansible_distribution_file_variety == 'RedHat'
+
+- name: config reload cron
+  service: name=cron state=reloaded
+  when: ansible_distribution_file_variety == 'Debian'
+
 #####
 # SNMPd restart
 #
