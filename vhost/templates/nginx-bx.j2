@@ -13,6 +13,10 @@ server {
 {% endfor %}
 {% endif %}
 			;
+{% if item.disabled|d() %}
+
+    return		503;
+{% endif %}
     server_name_in_redirect off;
 
     proxy_set_header	X-Real-IP        $remote_addr;
@@ -37,6 +41,10 @@ server {
 {% include "nginx/listen-crypto.j2" %}
     server_name		{{ item.name }}
 			;
+{% if item.disabled|d() %}
+
+    return		503;
+{% endif %}
     # Enable SSL connection
     include		bx/conf/ssl.h;
 {% include "nginx/ssl.j2" %}
@@ -68,6 +76,10 @@ server {
     server_name		{{ multi.name }}
 			www.{{ multi.name }}
 			;
+{% if item.disabled|d() %}
+
+    return		503;
+{% endif %}
     server_name_in_redirect off;
 
     proxy_set_header	X-Real-IP        $remote_addr;
@@ -92,6 +104,10 @@ server {
 {% include "nginx/listen-crypto.j2" %}
     server_name		{{ multi.name }}
 			;
+{% if item.disabled|d() %}
+
+    return		503;
+{% endif %}
     # Enable SSL connection
     include		bx/conf/ssl.h;
 {% include "nginx/ssl.j2" %}
