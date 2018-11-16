@@ -94,7 +94,7 @@ server {
 			;
     # Enable SSL connection
     include		bx/conf/ssl.h;
-{% include "nginx/ssl.j2" %}
+{% include "bx/ssl-multi.j2" %}
 
     server_name_in_redirect	off;
 

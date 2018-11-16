@@ -46,6 +46,7 @@ vhost:
   bitrix_multisite:
     - name: ears.example.org
       crypto: bool
+      content: "string"
   cron: # optional; cron tasks for vhost user
     - name: "Task name" # mandatory; description of a crontab entry
       minute: "string" # default: *; minute when the job should run ( 0-59, *, */2, etc )

@@ -34,4 +34,15 @@
 {% endif %}
     }
 {% endif %}
+{% if item.bitrix_multisite is defined %}
+{% for multi in item.bitrix_multisite %}
+{% if multi.crypto|d('none') == 'none' %}
+    vars.www["{{ multi.name }}"] = {
+{% else %}
+    vars.www_tls["{{ multi.name }}"] = {
+{% endif %}
+        http_string = "{{ multi.content|d('modified') }}"
+    }
+{% endfor %}
+{% endif %}
 /* EOF */
