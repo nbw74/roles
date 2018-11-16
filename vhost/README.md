@@ -154,7 +154,7 @@ vhost:
 Nginx website configuration for use with php-fpm PHP backend. Currently supported:
 + generic (default)
 + opencart
-+ `filename.conf` (your custom configuration file placed in `/etc/nginx/include.d/`)
++ phalcon
 ## Required OS
 CentOS 7
 ## Required packages
