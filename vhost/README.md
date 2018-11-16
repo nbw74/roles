@@ -81,7 +81,7 @@ vhost:
     record: string # default is vhost.name minus vhost_default_ddns_zone
     type: A|CNAME|... # default is CNAME
     value: string # default is ansible_fqdn.
-  disable: bool # optional; disable website temporarily (return 503)
+  disabled: bool # optional; disable website temporarily (return 503)
   fpm: # mandatory if use php-fpm
     port: 9001 # mandatory; next free port
     pm: static|dynamic|ondemand # optional; default is "ondemand"

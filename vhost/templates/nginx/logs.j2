@@ -16,7 +16,7 @@
 {% endif %}
     error_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-error.log;
 {% endif %}
-{% if item.disable|d() %}
+{% if item.disabled|d() %}
 
     return		503;
 {% endif %}
