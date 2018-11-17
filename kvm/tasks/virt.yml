@@ -50,6 +50,7 @@
     size: "{{ item[0].disk_gb|d('16') }}G"
     state: "{{ (item[0].state|d('running') == 'undefined')|ternary('absent','present') }}"
     force: "{{ (item[0].state|d('running') == 'undefined')|ternary('yes','no') }}"
+    opts: "{{ (ansible_local.common|default(dict(lvol_opts='')))['lvol_opts']|d('') }}"
   when: >
     ((item[0].name not in kvm_existing_vms.list_vms and item[0].state|d('running') != 'undefined') or
     (item[0].name in kvm_existing_vms.list_vms and item[0].state|d('running') == 'undefined')) and

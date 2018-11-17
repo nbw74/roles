@@ -15,7 +15,7 @@
     group: setroubleshoot
     mode: 0600
   when: selinux_state != "disabled"
-  tags: [ mail ]
+  tags: [ mail, selinux ]
 
 - name: setroubleshootd fix
   lineinfile:

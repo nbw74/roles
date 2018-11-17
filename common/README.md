@@ -28,11 +28,12 @@ common_icinga2_conf:
   ip_address: "ipv4" # default: autodetect
   display_name: "string" # default: ansible_hostname
   int_name: "string" # default: autodetect :Шаблон имени сетевых интерфейсов (eth, ens, eno, ...)
+  variables:
+    key: value
+  freeform: |
+    any block
 
 common_icinga2_enable: bool # default: true :Регистрировать ли хост в мониторинге
-
-common_icinga2_freeform: # default:none :Любая конфигурация
-  - "string [string ...]"
 
 common_icinga2_master: "host" # default: none :Хост кластера icinga2, на каотором хранится конфигурация зон
 common_icinga2_master_zone: "string" # default: none :Мастер-зона icinga2
@@ -57,7 +58,9 @@ common_ntp_domains: # Хэш с локальными доменами и обс�
   - domain: "fqdn"
     servers: [ 'string', 'string', ... ]
 
-common_ntp_servers_list: "string|string|..." # Список локальных/кастомных NTP-серверов
+common_ntp_servers: []
+common_ntp_pool: ru
+
 common_rsyslog_collector: "string" # Хостнейм коллектора логов (rsyslog)
 
 common_selinux_alert_recipients: "string" # Почтовый адрес для отсылки уведомлений SELinux

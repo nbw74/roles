@@ -43,11 +43,12 @@
     validate: 'visudo -cf %s'
   tags: [ sudo ]
 
-- include_tasks: ipset.yml
-
-- include_tasks: xt_recent.yml
-
-- include_tasks: iptables.yml
+- name: IPTables includes
+  block:
+    - include_tasks: ipset.yml
+    - include_tasks: xt_recent.yml
+    - include_tasks: iptables.yml
+  when: common_iptables_enable
 
 - name: "Enable and start network service"
   service: name=network enabled=yes state=started
@@ -84,12 +85,15 @@
   when: ansible_product_name == "VMware Virtual Platform"
   tags: [ services, vmware ]
 
-- name: "Enable and start iptables service"
-  service: name={{ item }} enabled=yes state=started
-  with_items:
-    - iptables
-  when: '"bitrix-env" not in roles'
-  tags: [ services, iptables ]
+- name: "Manage ipset and iptables services"
+  service:
+    name: "{{ item }}"
+    enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
+    state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
+  with_items: [ ipset, iptables ]
+  when:
+    - '"bitrix-env" not in roles'
+  tags: [ services, iptables, ipset ]
 
 - name: "Enable and start other services"
   service: name={{ item }} enabled=yes state=started
@@ -173,4 +177,24 @@
     - config reload cron
   tags: [ fstrim ]
 
+- name: Local facts
+  block:
+    - name: Directory for custom facts
+      file:
+        path: "/etc/ansible/facts.d"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Set custom facts
+      copy:
+        dest: "/etc/ansible/facts.d/common.fact"
+        content: >
+          {{ common_facts|to_nice_json }}
+        owner: root
+        group: root
+        mode: 0644
+  when: common_facts|length > 0
+  tags: [ facts ]
 ...

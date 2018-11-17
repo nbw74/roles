@@ -53,7 +53,7 @@
   when:
     - ansible_distribution == "CentOS"
     - selinux_state != "disabled"
-  tags: [ packages ]
+  tags: [ packages, selinux ]
 
 - name: "Remove SELinux packages (YUM)"
   yum:
@@ -62,7 +62,7 @@
   when:
     - ansible_distribution == "CentOS"
     - selinux_state == "disabled"
-  tags: [ packages ]
+  tags: [ packages, selinux ]
 
 - name: "Install required FreeIPA packages (YUM)"
   yum:

@@ -5,15 +5,5 @@
     dest: "/etc/sysconfig/ipset"
     force: no
   when: '"bitrix-env" not in roles'
-  tags: [ services, ipset ]
-
-- name: "Enable and start ipset service"
-  service:
-    name: "{{ item }}"
-    enabled: yes
-    state: started
-  with_items:
-    - ipset
-  when: '"bitrix-env" not in roles'
-  tags: [ services, ipset ]
+  tags: [ services, iptables, ipset ]
 ...

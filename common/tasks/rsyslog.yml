@@ -5,7 +5,6 @@
     dest: "/etc/rsyslog.d/12-remote.conf"
     force: no
   when: not alien
-  notify: config reboot
   tags: [ rsyslog ]
 
 - name: "Add log2syslog in bashrc"
