@@ -70,11 +70,15 @@
       ignore_errors: true
       register: reg_reboothint
 
-    - name: Rebooting system
-      shell: shutdown -r +1
-      async: 0
-      poll: 0
-      ignore_errors: True
+    - name: Reboot block
+      block:
+        - meta: flush_handlers
+
+        - name: Rebooting system
+          shell: shutdown -r +1
+          async: 0
+          poll: 0
+          ignore_errors: True
       when: reg_reboothint.rc == 1
   when: pkgupdate
 

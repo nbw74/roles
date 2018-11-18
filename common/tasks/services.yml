@@ -46,7 +46,6 @@
 - name: IPTables includes
   block:
     - include_tasks: ipset.yml
-    - include_tasks: xt_recent.yml
     - include_tasks: iptables.yml
   when: common_iptables_enable
 

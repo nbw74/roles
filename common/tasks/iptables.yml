@@ -1,4 +1,16 @@
 ---
+- name: Template xt_recent parameters
+  template:
+    src: xt.conf.j2
+    dest: "{{ xt_conf }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: xt_recent stop iptables
+  tags: [ iptables, xt_recent ]
+
+- meta: flush_handlers
+
 - name: "Check SSH-DIRECT in iptables config"
   shell: "cat /etc/sysconfig/iptables"
   changed_when: false

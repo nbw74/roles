@@ -1,0 +1,5 @@
+{% if ansible_distribution_major_version|int <= 6 %}
+options xt_recent ip_list_tot=50000 ip_pkt_list_tot=24
+{% else %}
+options xt_recent ip_list_tot=500000 ip_pkt_list_tot=24
+{% endif %}
