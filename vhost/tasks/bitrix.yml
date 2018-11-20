@@ -131,4 +131,35 @@
     loop_var: multi
     label: "{{ multi[0].name }}:{{ multi[1].name }}"
 
+- name: Sets default acl for apache on www
+  acl:
+    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/www"
+    entity: apache
+    etype: user
+    permissions: rwX
+    default: yes
+    state: present
+    recursive: yes
+  when:
+    - item.state|d(true)
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Sets current acl for apache on www
+  acl:
+    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/www"
+    entity: apache
+    etype: user
+    permissions: rwX
+    state: present
+    recursive: yes
+  when:
+    - item.state|d(true)
+    - item.nginx_301_only is not defined
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 ...
