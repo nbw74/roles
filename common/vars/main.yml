@@ -80,4 +80,6 @@ common_file_ttyS0_6: "ttyS0.conf"
 common_file_tty_7: "autologin.conf"
 
 common_network_scripts: "/etc/sysconfig/network-scripts"
+
+flags_dir: "/var/lib/flags"
 ...

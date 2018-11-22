@@ -94,5 +94,24 @@
   loop_control:
     label: "{{ item.name|d('null') }}"
   ignore_errors: yes
-  tags: [ user, selinux ]
+
+- name: acl default mask
+  file:
+    path: "{{ flags_dir }}/acl_dm_{{ acl_username }}"
+    state: touch
+
+- name: acl current mask
+  file:
+    path: "{{ flags_dir }}/acl_cm_{{ acl_username }}"
+    state: touch
+
+- name: acl default apache
+  file:
+    path: "{{ flags_dir }}/acl_da_{{ acl_username }}"
+    state: touch
+
+- name: acl current apache
+  file:
+    path: "{{ flags_dir }}/acl_ca_{{ acl_username }}"
+    state: touch
 ...

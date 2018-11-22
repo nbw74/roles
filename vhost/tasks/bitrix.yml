@@ -131,35 +131,23 @@
     loop_var: multi
     label: "{{ multi[0].name }}:{{ multi[1].name }}"
 
-- name: Sets default acl for apache on www
-  acl:
-    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/www"
-    entity: apache
-    etype: user
-    permissions: rwX
-    default: yes
-    state: present
-    recursive: yes
+- name: Find acl flag files
+  find:
+    paths: [ '/var/lib/flags' ]
+    patterns: "acl_*"
+  register: reg_find_acl_flags
+
+- name: Set acl flags list
+  set_fact:
+    acl_flags: "{{ reg_find_acl_flags.files|json_query('[*].path') }}"
+
+- name: Include acl
+  include_tasks: bitrix-acl.yml
   when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
+    - acl.state|d(true)
+    - acl.nginx_301_only is not defined
   with_items: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
-
-- name: Sets current acl for apache on www
-  acl:
-    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/www"
-    entity: apache
-    etype: user
-    permissions: rwX
-    state: present
-    recursive: yes
-  when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-
+    loop_var: acl
+    label: "{{ acl.name }}"
 ...

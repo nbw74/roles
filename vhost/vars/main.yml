@@ -2,4 +2,6 @@
 vhost_preserve: "/var/preserve"
 vhost_default_content: "missing"
 vhost_default_htpasswd: "/etc/nginx/.htpasswd"
+
+flags_dir: "/var/lib/flags"
 ...

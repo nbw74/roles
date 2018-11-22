@@ -1,0 +1,51 @@
+---
+- name: Local fact
+  set_fact:
+    acl_username: "{{ acl.user|d(acl.name) }}"
+
+- name: Sets default acl mask on www
+  acl:
+    path: "{{ vhost_basedir }}/{{ acl_username }}/www"
+    etype: mask
+    permissions: rwx
+    default: yes
+    state: present
+    recursive: yes
+  when: "flags_dir ~ '/acl_dm_' ~ acl_username not in acl_flags or force_acl|d()"
+  notify: acl default mask
+
+- name: Sets current acl mask on www
+  acl:
+    path: "{{ vhost_basedir }}/{{ acl_username }}/www"
+    etype: mask
+    permissions: rwx
+    state: present
+    recursive: yes
+  when: "flags_dir ~ '/acl_cm_' ~ acl_username not in acl_flags or force_acl|d()"
+  notify: acl current mask
+
+- name: Sets default acl for apache on www
+  acl:
+    path: "{{ vhost_basedir }}/{{ acl_username }}/www"
+    entity: apache
+    etype: user
+    permissions: rwx
+    default: yes
+    state: present
+    recursive: yes
+  when: "flags_dir ~ '/acl_da_' ~ acl_username not in acl_flags or force_acl|d()"
+  notify: acl default apache
+
+- name: Sets current acl for apache on www
+  acl:
+    path: "{{ vhost_basedir }}/{{ acl_username }}/www"
+    entity: apache
+    etype: user
+    permissions: rwX
+    state: present
+    recursive: yes
+  when: "flags_dir ~ '/acl_ca_' ~ acl_username not in acl_flags or force_acl|d()"
+  notify: acl current apache
+
+- meta: flush_handlers
+...
