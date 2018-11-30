@@ -1,0 +1,4 @@
+---
+ftpd_variety: proftpd
+ftpd_enable: true
+...

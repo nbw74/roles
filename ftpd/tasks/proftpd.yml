@@ -1,0 +1,23 @@
+---
+- name: Template proftpd configuration file
+  template:
+    src: proftpd.conf.j2
+    dest: /etc/proftpd.conf
+    owner: root
+    group: root
+    mode: 0640
+  notify: reload proftpd
+
+- name: Set line of startup options
+  lineinfile:
+    path: /etc/sysconfig/proftpd
+    regexp: '^PROFTPD_OPTIONS=.*$'
+    line: 'PROFTPD_OPTIONS="-DTLS -DDYNAMIC_BAN_LISTS"'
+  notify: restart proftpd
+
+- name: Manage proftpd service
+  systemd:
+    name: proftpd.service
+    enabled: "{{ ftpd_enable|ternary('yes','no') }}"
+    state: "{{ ftpd_enable|ternary('started','stopped') }}"
+...

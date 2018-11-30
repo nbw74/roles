@@ -1,0 +1,13 @@
+---
+- name: restart proftpd
+  systemd:
+    name: proftpd.service
+    state: restarted
+  when: ftpd_enable
+
+- name: reload proftpd
+  systemd:
+    name: proftpd.service
+    state: reloaded
+  when: ftpd_enable
+...

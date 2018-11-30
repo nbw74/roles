@@ -1,0 +1,63 @@
+# This is the ProFTPD configuration file
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+# See: http://www.proftpd.org/docs/directives/linked/by-name.html
+
+ServerName			"FTP server"
+ServerIdent			on "HELO BTCH"
+ServerAdmin			{{ ftpd_config['ServerAdmin']|d('root@localhost') }}
+DefaultServer			on
+PassivePorts			{{ ftpd_config['PassivePorts']|d('52384 52584') }}
+AllowForeignAddress		On
+IdentLookups			Off
+UseReverseDNS			Off
+DefaultRoot			~ !adm
+AuthPAMConfig			proftpd
+AuthOrder			mod_auth_pam.c* mod_auth_unix.c
+UseReverseDNS			off
+User				nobody
+Group				nobody
+MaxInstances			20
+UseSendfile			off
+LogFormat			default	"%h %l %u %t \"%r\" %s %b"
+LogFormat			auth	"%v [%P] %h %t \"%r\" %s"
+
+# Provide an external SSL session cache using shared memory
+# (contrib/mod_tls_shmcache.html)
+LoadModule mod_tls_shmcache.c
+
+# Implement a virtual chroot capability that does not require root privileges
+# (http://www.castaglia.org/proftpd/modules/mod_vroot.html)
+# Using this module rather than the kernel's chroot() system call works
+# around issues with PAM and chroot (http://bugzilla.redhat.com/506735)
+LoadModule			mod_vroot.c
+VRootEngine			on
+
+# TLS (http://www.castaglia.org/proftpd/modules/mod_tls.html)
+TLSEngine			on
+TLSRequired			on
+TLSRSACertificateFile		{{ ftpd_config['TLSRSACertificateFile']|d('/etc/pki/tls/certs/proftpd.pem') }}
+TLSRSACertificateKeyFile	{{ ftpd_config['TLSRSACertificateKeyFile']|d('/etc/pki/tls/certs/proftpd.pem') }}
+TLSCipherSuite			ALL:!ADH:!DES
+TLSOptions			NoCertRequest
+TLSVerifyClient			off
+TLSLog				/var/log/proftpd/tls.log
+TLSSessionCache			shm:/file=/var/run/proftpd/sesscache
+
+# Dynamic ban lists (http://www.proftpd.org/docs/contrib/mod_ban.html)
+LoadModule			mod_ban.c
+BanEngine			on
+BanLog				/var/log/proftpd/ban.log
+BanTable			/var/run/proftpd/ban.tab
+BanOnEvent			MaxLoginAttempts 2/00:10:00 01:00:00
+BanMessage			"Host %a has been banned"
+BanControlsACLs			all allow user ftpadm
+
+# Global Config - config common to Server Config and all virtual hosts
+# See: http://www.proftpd.org/docs/howto/Vhost.html
+<Global>
+  Umask				022
+  AllowOverwrite		yes
+  <Limit ALL SITE_CHMOD>
+    AllowAll
+  </Limit>
+</Global>

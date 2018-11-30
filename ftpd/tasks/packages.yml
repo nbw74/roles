@@ -1,0 +1,6 @@
+---
+- name: yum proftpd package
+  yum:
+    name: "{{ ftpd_variety }}"
+    state: present
+...
