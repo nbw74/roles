@@ -24,8 +24,8 @@ http {
     tcp_nopush          on;
     tcp_nodelay         on;
     keepalive_timeout   65;
-{% for item in nginx_http_directives %}
-    {{ item.key }} {{ item.value }};
+{% for key, value in nginx_http_directives.iteritems() %}
+    {{ key }} {{ value }};
 {% endfor %}
 
     include             /etc/nginx/mime.types;
