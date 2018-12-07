@@ -27,7 +27,7 @@
   lineinfile:
     dest: "{{ common_network_scripts }}/ifcfg-{{ item.0.dev }}"
     regexp: '^[ #]*{{ item.1.key }}='
-    line: '{{ item.1.key }}="{{ item.1.value }}"'
+    line: '{{ item.1.key }}="{{ item.1.value|d("") }}"'
     state: "{{ item.1.state|d(true)|ternary('present','absent') }}"
     create: yes
   when: common_ifcfg_line is defined
@@ -35,7 +35,7 @@
     - "{{ common_ifcfg_line }}"
     - variables
   loop_control:
-    label: "{{ item.0.dev }}:{{ item.1.key }}={{ item.1.value }}"
+    label: "{{ item.0.dev }}:{{ item.1.key }}={{ item.1.value|d('') }}"
   register: common_ifcfg_result
   tags: [ ifcfg ]
 

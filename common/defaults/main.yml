@@ -6,6 +6,7 @@ common_icinga2_conf: []
 common_icinga2_enable: true
 common_iptables_enable: true
 common_journal_gateway_enable: false
+common_snmpd_conf_line: []
 pkgupdate: false
 roles: []
 selinux_custom_booleans: []

@@ -17,7 +17,7 @@ object Host "{{ ansible_fqdn }}" {
     vars.int_name = "{{ common_icinga2_conf['int_name']|default(common_icinga2_standard_int_name) }}"
 {% if common_icinga2_conf.variables is defined %}
 {% for key, value in common_icinga2_conf.variables.iteritems() %}
-{% if value == "true" or value == "false" %}
+{% if value|regex_search('^([Tt]rue|[Ff]alse|\[.*\])$') %}
     vars.{{ key }} = {{ value }}
 {% else %}
     vars.{{ key }} = "{{ value }}"

@@ -70,6 +70,7 @@ common_snmp_secname: "string" # Security name for snmpd.conf
 common_snmp_community: "string" # Community for snmpd.conf
 common_snmp_syslocation: "string" # default: "Earth" :System location for snmpd.conf
 common_snmp_syscontact: "string" # System contact for snmpd.conf
+common_snmpd_conf_line: [] # Freeform lines
 
 common_ssh_direct_list: # Список адресов, с которых можно открывать неограниченное
   - "ipv4"              # кол-во соединений к SSHd в единицу времени
