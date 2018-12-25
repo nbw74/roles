@@ -8,13 +8,16 @@ tinker panic 0
 
 {% if ansible_distribution_major_version|int == 7 %}
 restrict default nomodify notrap nopeer noquery
+{% elif ansible_distribution_major_version|int > 7 %}
+restrict default nomodify notrap nopeer noepeer noquery
+restrict source nomodify notrap noepeer noquery
 {% else %}
 restrict default kod nomodify notrap nopeer noquery
 restrict -6 default kod nomodify notrap nopeer noquery
 {% endif %}
 
 restrict 127.0.0.1 
-{% if ansible_distribution_major_version|int == 7 %}
+{% if ansible_distribution_major_version|int >= 7 %}
 restrict ::1
 {% else %}
 restrict -6 ::1
@@ -37,6 +40,9 @@ server {{ server }} iburst
 {% endfor %}
 {% endif %}
 {% endfor %}
+{% endif %}
+{% if ansible_distribution_major_version|int > 7 %}
+tos maxclock 5
 {% endif %}
 
 includefile /etc/ntp/crypto/pw

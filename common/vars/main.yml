@@ -16,8 +16,6 @@ xt_conf: /etc/modprobe.d/xt.conf
 common_required_base_packages:
   - bc
   - bzip2
-  - checkpolicy
-  - deltarpm
   - gdisk
   - ipset
   - libselinux-python
@@ -31,7 +29,6 @@ common_required_base_packages:
   - rsyslog
   - tuned
   - vim
-  - yum-utils
   - zsh
 
 common_required_base_packages_7:
@@ -40,6 +37,7 @@ common_required_base_packages_7:
 common_required_base_packages_selinux:
   - setroubleshoot-server
   - libsemanage-python
+  - checkpolicy
 
 common_required_epel_packages:
   - ccze
@@ -51,6 +49,8 @@ common_required_epel_packages:
 
 common_centos_specific_packages:
   - epel-release
+  - yum-utils
+  - deltarpm
 
 common_centos_specific_packages_ipa:
   - ipa-client
@@ -70,6 +70,8 @@ common_virt_unnecessary_packages:
 
 common_unnecessary_packages:
   - abrt
+
+common_unnecessary_packages_nm:
   - NetworkManager
   - ModemManager
 

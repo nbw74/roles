@@ -8,7 +8,9 @@
   with_items:
     - { option: 'fastestmirror', value: 'True' }
     - { option: 'timeout', value: '4' }
-  when: ansible_distribution == "Fedora"
+  when:
+    - ansible_distribution_major_version|int > 7
+    - common_dnf_config_fix|d()
   tags: [ packages ]
 
 - name: "Update all packages (YUM)"
@@ -17,7 +19,7 @@
     state: latest
     update_cache: yes
   when:
-    - ansible_distribution == 'CentOS'
+    - ansible_distribution_major_version|int <= 7
     - pkgupdate
   tags: [ packages, update ]
 
@@ -26,7 +28,7 @@
     name: "*"
     state: latest
   when:
-    - ansible_distribution == 'Fedora'
+    - ansible_distribution_major_version|int <= 7
     - pkgupdate
   tags: [ packages, update ]
 # -------------------------------------------------------------
@@ -34,7 +36,7 @@
   yum:
     name: "{{ common_required_base_packages | union(common_centos_specific_packages) }}"
     state: present
-  when: ansible_distribution == "CentOS"
+  when: ansible_distribution_major_version|int <= 7
   tags: [ packages, snmp, etckeeper ]
 
 - name: "Install required packages (YUM 7)"
@@ -42,8 +44,7 @@
     name: "{{ common_required_base_packages_7 }}"
     state: present
   when:
-    - ansible_distribution == "CentOS"
-    - ansible_distribution_major_version|int >= 7
+    - ansible_distribution_major_version|int == 7
   tags: [ packages, snmp ]
 
 - name: "Install SELinux packages (YUM)"
@@ -51,7 +52,7 @@
     name: "{{ common_required_base_packages_selinux | union(common_centos_specific_packages_selinux) }}"
     state: present
   when:
-    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version|int <= 7
     - selinux_state != "disabled"
   tags: [ packages, selinux ]
 
@@ -60,7 +61,7 @@
     name: "{{ common_required_base_packages_selinux | union(common_centos_specific_packages_selinux) }}"
     state: absent
   when:
-    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version|int <= 7
     - selinux_state == "disabled"
   tags: [ packages, selinux ]
 
@@ -69,7 +70,7 @@
     name: "{{ common_centos_specific_packages_ipa }}"
     state: present
   when:
-    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version|int <= 7
     - not alien
   tags: [ packages ]
 
@@ -77,7 +78,7 @@
   yum:
     state: present
     name: "{{ common_required_epel_packages }}"
-  when: ansible_distribution == "CentOS"
+  when: ansible_distribution_major_version|int <= 7
   tags: [ packages, etckeeper ]
 # -------------------------------------------------------------
 - name: "Install required packages (DNF)"
@@ -87,7 +88,7 @@
   with_items:
     - '{{ common_required_base_packages }}'
     - '{{ common_required_epel_packages }}' 
-  when: ansible_distribution == "Fedora"
+  when: ansible_distribution_major_version|int > 7
   tags: [ packages ]
 
 - name: "Install required SELinux packages (DNF)"
@@ -98,7 +99,7 @@
     - '{{ common_required_base_packages_selinux }}'
     - '{{ common_fedora_specific_packages_selinux }}'
   when:
-    - ansible_distribution == "Fedora"
+    - ansible_distribution_major_version|int > 7
     - selinux_state != "disabled"
   tags: [ packages ]
 
@@ -109,7 +110,7 @@
   with_items:
     - '{{ common_fedora_specific_packages_ipa }}'
   when:
-    - ansible_distribution == "Fedora"
+    - ansible_distribution_major_version|int > 7
     - not alien
   tags: [ packages ]
 # -------------------------------------------------------------
@@ -117,7 +118,9 @@
   yum:
     name: "open-vm-tools"
     state: present
-  when: ansible_virtualization_type == 'VMware'
+  when:
+    - ansible_virtualization_type == 'VMware'
+    - ansible_distribution_major_version|int <= 7
   tags: [ packages, vmware ]
 
 - name: Install qemu-guest-agent
@@ -127,6 +130,7 @@
   when:
     - ansible_virtualization_type == 'kvm'
     - ansible_virtualization_role == 'guest'
+    - ansible_distribution_major_version|int <= 7
     - not alien
   tags: [ packages, kvm ]
 
@@ -136,14 +140,16 @@
     state: present
   when:
     - ansible_distribution == 'CentOS'
-    - ansible_distribution_major_version|int >= 7
+    - ansible_distribution_major_version|int == 7
   tags: [ packages, iptables ]
 
 - name: Remove unnecessary packages
   yum:
     name: "{{ common_virt_unnecessary_packages }}"
     state: absent
-  when: ansible_virtualization_role == 'guest'
+  when:
+    - ansible_virtualization_role == 'guest'
+    - ansible_distribution_major_version|int <= 7
   tags: [ packages ]
 
 - meta: flush_handlers

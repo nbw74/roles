@@ -3,13 +3,30 @@
   yum:
     name: "{{ common_unnecessary_packages }}"
     state: absent
-  when: ansible_distribution == 'CentOS'
+  when: ansible_distribution_major_version|int <= 7
   tags: [packages]
 
 - name: "Remove unnecessary packages (DNF)"
   dnf:
     name: "{{ common_unnecessary_packages }}"
     state: absent
-  when: ansible_distribution == 'Fedora'
+  when: ansible_distribution_major_version|int > 7
   tags: [packages]
+
+- name: NoNM section
+  block:
+    - name: "Remove unnecessary NM packages (YUM)"
+      yum:
+        name: "{{ common_unnecessary_packages_nm }}"
+        state: absent
+      when: ansible_distribution_major_version|int <= 7
+      tags: [packages]
+
+    - name: "Remove unnecessary NM packages (DNF)"
+      dnf:
+        name: "{{ common_unnecessary_packages_nm }}"
+        state: absent
+      when: ansible_distribution_major_version|int > 7
+      tags: [packages]
+  when: not common_leave_networkmanager
 ...

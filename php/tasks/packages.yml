@@ -1,69 +1,88 @@
 ---
-- name: Remi PHP repository
-  yum_repository:
-    name: "remi-php{{ php_remi_version_norm }}"
-    description: "Remi's PHP {{ php_remi_version_raw }} RPM repository for Enterprise Linux 7 - $basearch"
-    mirrorlist: "http://cdn.remirepo.net/enterprise/7/php{{ php_remi_version_norm }}/mirror"
-    gpgcheck: yes
-    enabled: yes
-    gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
-  when: not php_oob
-  tags: [ packages, remi ]
+- name: YUM
+  block:
+    - name: Remi PHP repository
+      yum_repository:
+        name: "remi-php{{ php_remi_version_norm }}"
+        description: "Remi's PHP {{ php_remi_version_raw }} RPM repository for Enterprise Linux 7 - $basearch"
+        mirrorlist: "http://cdn.remirepo.net/enterprise/7/php{{ php_remi_version_norm }}/mirror"
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
+      when: not php_oob
+      tags: [ packages, remi ]
 
-- name: Remi-safe repository
-  yum_repository:
-    name: "remi-safe"
-    description: "Safe Remi's RPM repository for Enterprise Linux 7 - $basearch"
-    mirrorlist: "http://cdn.remirepo.net/enterprise/7/safe/mirror"
-    gpgcheck: yes
-    enabled: yes
-    gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
-  when: not php_oob
-  tags: [ packages, remi ]
+    - name: Remi-safe repository
+      yum_repository:
+        name: "remi-safe"
+        description: "Safe Remi's RPM repository for Enterprise Linux 7 - $basearch"
+        mirrorlist: "http://cdn.remirepo.net/enterprise/7/safe/mirror"
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
+      when: not php_oob
+      tags: [ packages, remi ]
 
-- name: GPG key for Lux repo
-  copy:
-    src: "RPM-GPG-KEY-LUX"
-    dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
-    force: no
-    mode: 0644
-    owner: root
-    group: root
-  tags: [ packages, git ]
+    - name: GPG key for Lux repo
+      copy:
+        src: "RPM-GPG-KEY-LUX"
+        dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
+        force: no
+        mode: 0644
+        owner: root
+        group: root
+      tags: [ packages, git ]
 
-- name: Lux repository
-  yum_repository:
-    name: "lux"
-    description: "CentOS $releasever - $basearch - Lux"
-    baseurl: "http://repo.iotti.biz/CentOS/$releasever"
-    enabled: no
-    gpgcheck: yes
-    gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
-  tags: [ packages, git ]
+    - name: Lux repository
+      yum_repository:
+        name: "lux"
+        description: "CentOS $releasever - $basearch - Lux"
+        baseurl: "http://repo.iotti.biz/CentOS/$releasever"
+        enabled: no
+        gpgcheck: yes
+        gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
+      tags: [ packages, git ]
 
-- name: yum common packages
-  yum:
-    name: "{{ php_common_packages }}"
-    state: present
-  tags: [ packages ]
+    - name: yum common packages
+      yum:
+        name: "{{ php_common_packages }}"
+        state: present
+      tags: [ packages ]
 
-- name: yum Remi packages
-  yum:
-    name: "{{ php_remi_packages }}"
-    state: present
-  when: not php_oob
-  tags: [ packages ]
+    - name: yum Remi packages
+      yum:
+        name: "{{ php_remi_packages }}"
+        state: present
+      when: not php_oob
+      tags: [ packages ]
 
-- name: Git from Lux
-  yum:
-    name: git
-    enablerepo: lux
-    state: latest
-  tags: [ packages, git ]
+    - name: Git from Lux
+      yum:
+        name: git
+        enablerepo: lux
+        state: latest
+      when: ansible_distribution_major_version|int <= 7
+      tags: [ packages, git ]
 
-- name: yum memcached client package
-  yum:
-    name: "php-pecl-memcached"
-  when: php_memcached_client
-  tags: [ packages, memcached ]
+    - name: yum memcached client package
+      yum:
+        name: "php-pecl-memcached"
+      when: php_memcached_client
+      tags: [ packages, memcached ]
+  when: ansible_distribution_major_version|int <= 7
+
+- name: DNF
+  block:
+    - name: dnf common packages
+      dnf:
+        name: "{{ php_common_packages }}"
+        state: present
+      tags: [ packages ]
+
+    - name: dnf memcached client package
+      dnf:
+        name: "php-pecl-memcached"
+      when: php_memcached_client
+      tags: [ packages, memcached ]
+  when: ansible_distribution_major_version|int > 7
 ...

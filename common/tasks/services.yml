@@ -8,9 +8,9 @@
   with_items:
     - NetworkManager
     - chronyd
-  when: >
-    ( ansible_distribution == "Fedora" ) or
-    ( ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7 )
+  when: 
+    - ansible_distribution_major_version|int >= 7
+    - not common_leave_networkmanager|d()
   ignore_errors: yes
   tags: [ services ]
 
@@ -23,7 +23,7 @@
   with_items:
     - firewalld
   when: 
-    - ansible_distribution_major_version|int >= 7
+    - ansible_distribution_major_version|int == 7
     - '"bitrix-env" not in roles'
   ignore_errors: yes
   tags: [ services ]
@@ -47,10 +47,16 @@
   block:
     - include_tasks: ipset.yml
     - include_tasks: iptables.yml
-  when: common_iptables_enable
+  when:
+    - common_iptables_enable
+    - ansible_distribution_major_version|int <= 7
 
 - name: "Enable and start network service"
-  service: name=network enabled=yes state=started
+  service:
+    name: network
+    enabled: yes
+    state: started
+  when: ansible_distribution_major_version|int <= 7
   ignore_errors: yes
   tags: [ services ]
 
@@ -92,6 +98,7 @@
   with_items: [ ipset, iptables ]
   when:
     - '"bitrix-env" not in roles'
+    - ansible_distribution_major_version|int <= 7
   tags: [ services, iptables, ipset ]
 
 - name: "Enable and start other services"

@@ -131,23 +131,26 @@
     loop_var: multi
     label: "{{ multi[0].name }}:{{ multi[1].name }}"
 
-- name: Find acl flag files
-  find:
-    paths: [ '/var/lib/flags' ]
-    patterns: "acl_*"
-  register: reg_find_acl_flags
+- name: ACL
+  block:
+    - name: Find acl flag files
+      find:
+        paths: [ '/var/lib/flags' ]
+        patterns: "acl_*"
+      register: reg_find_acl_flags
 
-- name: Set acl flags list
-  set_fact:
-    acl_flags: "{{ reg_find_acl_flags.files|json_query('[*].path') }}"
+    - name: Set acl flags list
+      set_fact:
+        acl_flags: "{{ reg_find_acl_flags.files|json_query('[*].path') }}"
 
-- name: Include acl
-  include_tasks: bitrix-acl.yml
-  when:
-    - acl.state|d(true)
-    - acl.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    loop_var: acl
-    label: "{{ acl.name }}"
+    - name: Include acl
+      include_tasks: bitrix-acl.yml
+      when:
+        - acl.state|d(true)
+        - acl.nginx_301_only is not defined
+      with_items: "{{ vhost }}"
+      loop_control:
+        loop_var: acl
+        label: "{{ acl.name }}"
+  when: vhost_bx_acl|d()
 ...

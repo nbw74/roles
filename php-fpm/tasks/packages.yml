@@ -1,15 +1,35 @@
 ---
-- name: yum common packages
-  yum:
-    name: "{{ php_fpm_common_packages }}"
-    state: present
-  tags: [ packages ]
+- name: YUM
+  block:
+    - name: yum common packages
+      yum:
+        name: "{{ php_fpm_common_packages }}"
+        state: present
+      tags: [ packages ]
 
-- name: yum additional packages
-  yum:
-    name: "{{ php_fpm_add_packages }}"
-    state: present
-  when: php_fpm_add_packages|length > 0
-  notify: config reload php-fpm
-  tags: [ packages ]
+    - name: yum additional packages
+      yum:
+        name: "{{ php_fpm_add_packages }}"
+        state: present
+      when: php_fpm_add_packages|length > 0
+      notify: config reload php-fpm
+      tags: [ packages ]
+  when: ansible_distribution_major_version|int <= 7
+
+- name: DNF
+  block:
+    - name: dnf common packages
+      dnf:
+        name: "{{ php_fpm_common_packages }}"
+        state: present
+      tags: [ packages ]
+
+    - name: dnf additional packages
+      dnf:
+        name: "{{ php_fpm_add_packages }}"
+        state: present
+      when: php_fpm_add_packages|length > 0
+      notify: config reload php-fpm
+      tags: [ packages ]
+  when: ansible_distribution_major_version|int > 7
 ...
