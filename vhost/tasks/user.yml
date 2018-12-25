@@ -42,8 +42,8 @@
 - name: set password
   user:
     name: "{{ item.user|d(item.name) }}"
-    password: "{{ item.password|password_hash('sha512') }}"
-    update_password: on_create
+    password: "{{ item.password|password_hash('sha512', 'bzzz') }}"
+    update_password: always
   when:
     - item.state|d(true)
     - item.password is defined
