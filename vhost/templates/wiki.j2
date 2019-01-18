@@ -1,4 +1,4 @@
-
+{% if item[0].wikimarkup|d(true) %}
 h3. Web
 
 *URI:* http://{{ item[0].name }}
@@ -17,7 +17,7 @@ h3. Web
 *DocumentRoot:* @{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[1].webroot|d('www') }}@
 {% endif %}
 
-h3. SSH Access
+h3. SSH
 
 *Host:* @{{ ansible_fqdn }}@
 *User:* @{{ item[1].name }}@
@@ -52,4 +52,50 @@ h3. Database
 *DB name:* @{{ item[0].db.name }}@
 *DB user:* @{{ item[0].db.name }}:{{ item[0].db.pass }}@
 {% endif %}
+{% else %}
 
+URI: http://{{ item[0].name }}
+{% if item[0].mobile|d() %}
+URI (mob): http://m.{{ item[0].name }}
+{% endif %}
+{% if item[0].bitrix_multisite is defined %}
+{% for domain in item[0].bitrix_multisite %}
+URI ({{ domain.name|regex_replace('^([-a-zA-Z0-9]+).*$','\\1') }}): http://{{ domain.name }}
+{% endfor %}
+{% endif %}
+Software versions: {{ vhost_nginx_version }}, {{ vhost_php_version }}
+{%- if vhost_backend == 'apache' %}, {{ vhost_apache_version }}{% endif %}
+{%- if vhost_backend == 'bitrix' %}, {{ vhost_apache_version }}, {{ vhost_bitrix_version }}{% endif %}
+{% if vhost_backend == 'bitrix' %}
+DocumentRoot: {{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[1].webroot|d('www') }}
+{% endif %}
+
+SSH
+
+Host: {{ ansible_fqdn }}
+User: {{ item[1].name }}
+Private Key:
+{{ lookup('file', '/tmp/vhost_' + item[1].name + '_' + item[1].ssh_key_file|basename) }}
+
+{% if item[0].db is defined %}
+Database
+
+DBMS: {{ item[0].db.type }}
+{% if item[0].db.pgbouncer is defined %}
+DB host: {{ item[0].db.pgbouncer.host }}
+{% else %}
+DB host: {{ item[0].db.host }}
+{% endif %}
+{% if item[0].db.type == 'mysql' %}
+DB port: {{ item[0].db.port|d('3306') }}
+{% elif item[0].db.type == 'postgresql' %}
+{% if item[0].db.pgbouncer is defined %}
+DB port: {{ item[0].db.pgbouncer.port|d('6432') }}
+{% else %}
+DB port: {{ item[0].db.port|d('5432') }}
+{% endif %}
+{% endif %}
+DB name: {{ item[0].db.name }}
+DB user: {{ item[0].db.name }}:{{ item[0].db.pass }}
+{% endif %}
+{% endif %}

@@ -149,6 +149,7 @@ vhost:
     notify: "string" # optional
     zone: "string" # default is common_icinga2_satellite_zone value
   webroot: "www/public" # optional; default is "www"
+  wikimarkup: bool # optional; default: true; write textile markup in wiki file
 
 ```
 ### fpm['template']
@@ -156,6 +157,17 @@ Nginx website configuration for use with php-fpm PHP backend. Currently supporte
 + generic (default)
 + opencart
 + phalcon
+## Configuration examples
+### Simple NginX proxy
+```yaml
+vhost_backend: "reverse-proxy"
+
+vhost:
+
+- name: example.com
+  proxy_pass: "http://inside.example.com"
+  proxy_host_header: external
+```
 ## Required OS
 CentOS 7
 ## Required packages

@@ -12,7 +12,7 @@
 
 - name: get first private address
   set_fact:
-    vhost_ipv4_private: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
+    vhost_ipv4_private: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first | d('empty') }}"
   tags: [ webcheck ]
 
 - name: determine if prod circuit
