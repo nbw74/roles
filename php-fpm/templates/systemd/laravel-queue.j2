@@ -13,8 +13,9 @@ User=%i
 Group=%i
 Restart=always
 Environment=QUEUE_WORKER_TRIES=1
+Environment=QUEUE_WORKER_OPTS=
 EnvironmentFile=/var/www/%i/www/.env
-ExecStart=/usr/bin/php /var/www/%i/www/artisan queue:work {{ ( item.args is defined )|ternary(item.args|d('') ~ ' ','') }}--tries=${QUEUE_WORKER_TRIES}
+ExecStart=/usr/bin/php /var/www/%i/www/artisan queue:work {{ ( item.args is defined )|ternary(item.args|d('') ~ ' ','') }}--tries=${QUEUE_WORKER_TRIES} ${QUEUE_WORKER_OPTS}
 ExecReload=/usr/bin/php /var/www/%i/www/artisan queue:restart
 KillMode=process
 
