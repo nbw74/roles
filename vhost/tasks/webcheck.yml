@@ -24,7 +24,8 @@
         not (item.webcheck|default(dict(enable=true)))['enable']|d(true) or
         not item.state|d(true) or
         item.disabled|d()
-    - not (item.webcheck|default(dict(ignore=false)))['ignore']|d()
+    - not (item.webcheck|de fault(dict(ignore=false)))['ignore']|d()
+    - common_icinga2_master_zone_net_list is defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
