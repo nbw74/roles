@@ -11,16 +11,29 @@
 
 - meta: flush_handlers
 
+- name: "Check iptables config presence"
+  stat:
+    path: "/etc/sysconfig/iptables"
+  register: common_reg_ipt
+
 - name: "Check SSH-DIRECT in iptables config"
-  shell: "cat /etc/sysconfig/iptables"
+  command: >
+    cat /etc/sysconfig/iptables
   changed_when: false
   register: common_check_iptables
+  when: common_reg_ipt.stat.exists
+
+- name: Create empty dict
+  command: >
+    true
+  register: common_check_iptables
+  when: not common_reg_ipt.stat.exists
 
 - name: "Copy IPTables config"
   copy:
     src: "{{ item }}"
     dest: /etc/sysconfig
-    force: "{{ (ansible_user == 'root')|ternary('yes','no') }}"
+    force: "{{ (ansible_user|d('UNDEF') == 'root')|ternary('yes','no') }}"
   with_items:
     - iptables
     - ip6tables
