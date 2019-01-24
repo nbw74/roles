@@ -23,6 +23,9 @@
     option: date.timezone
     value: "{{ timezone|default('Europe/Moscow') }}"
     create: no
+  notify:
+    - reload httpd
+    - reload php-fpm
   tags: [ timezone ]
 
 - name: Custom php.ini options
@@ -32,6 +35,9 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     create: no
+  notify:
+    - reload httpd
+    - reload php-fpm
   with_items: "{{ php_options }}"
 
 - name: Memcached PHP module settings
