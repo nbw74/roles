@@ -16,7 +16,6 @@
   tags: [ nginx, templates ]
 
 - include_tasks: tls.yml
-  when: not alien
   tags: [ tls ]
 
 - name: Template nginx.conf
