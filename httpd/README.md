@@ -2,6 +2,8 @@
 Роль для развёртывания типового веб-хостинга с веб-сервером httpd (Apache)
 ## Variables
 ```yaml
+httpd_add_packages: []
+
 remi_php_version: int # Версия PHP для установки из репозитория remi. Например, 56, 71 и т.д.
 
 selinux_state: "enforcing|permissive|disabled" # default: "disabled"

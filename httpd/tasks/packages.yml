@@ -1,7 +1,15 @@
 ---
-- name: Install packages
+- name: yum common packages
   yum:
     state: present
     name: "{{ httpd_packages }}"
+  tags: [ packages ]
+
+- name: yum additional packages
+  yum:
+    name: "{{ httpd_add_packages }}"
+    state: present
+  when: httpd_add_packages|length > 0
+  notify: config reload httpd
   tags: [ packages ]
 ...

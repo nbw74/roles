@@ -6,6 +6,9 @@
 - name: config restart httpd
   service: name=httpd enabled=yes state=restarted
 
+- name: config reload httpd
+  service: name=httpd enabled=yes state=reloaded
+
 - name: config reboot
   shell: shutdown -r +1
   ignore_errors: True

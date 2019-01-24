@@ -6,4 +6,5 @@ a2d: "/etc/httpd/conf.d"
 httpd_packages:
   - httpd
   - httpd-itk
+  - php
 ...
