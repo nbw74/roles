@@ -1,8 +1,8 @@
 ---
 - name: Check if role assigned to host
   fail:
-    msg: "ROLE 'ftp' IS NOT ASSIGNED TO THIS HOST"
-  when: "'ftp' not in roles"
+    msg: "ROLE 'ftpd' IS NOT ASSIGNED TO THIS HOST"
+  when: "'ftpd' not in roles"
 
 - name: Check OS version
   fail:
