@@ -16,6 +16,15 @@
     path: "/etc/sysconfig/iptables"
   register: common_reg_ipt
 
+# - debug:
+#     msg: "{{ common_reg_ipt }}"
+
+- name: Create empty dict
+  command: >
+    true
+  register: common_check_iptables
+  when: not common_reg_ipt.stat.exists
+
 - name: "Check SSH-DIRECT in iptables config"
   command: >
     cat /etc/sysconfig/iptables
@@ -23,11 +32,8 @@
   register: common_check_iptables
   when: common_reg_ipt.stat.exists
 
-- name: Create empty dict
-  command: >
-    true
-  register: common_check_iptables
-  when: not common_reg_ipt.stat.exists
+# - debug:
+#     msg: "{{ common_check_iptables }}"
 
 - name: "Copy IPTables config"
   copy:
