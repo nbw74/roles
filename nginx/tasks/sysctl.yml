@@ -1,0 +1,16 @@
+---
+- name: Copy sysctl variables
+  copy:
+    src: 20-nginx.conf
+    dest: /etc/sysctl.d/20-nginx.conf
+    owner: root
+    group: root
+    mode: 0440
+  notify: systemd-sysctl restart
+
+- name: Service systemd-sysctl enabled
+  systemd:
+    name: systemd-sysctl.service
+    enabled: true
+    state: started
+...

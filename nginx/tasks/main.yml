@@ -4,19 +4,23 @@
     msg: "ROLE 'nginx' IS NOT ASSIGNED TO THIS HOST"
   when: "'nginx' not in roles"
 
-- import_tasks: packages.yml
+- name: Import packages
+  import_tasks: packages.yml
 
-- import_tasks: html.yml
+- name: Import html
+  import_tasks: html.yml
 
-- import_tasks: default.d.yml
+- name: Import default.d
+  import_tasks: default.d.yml
 
-- import_tasks: include.d.yml
+- name: Import include.d
+  import_tasks: include.d.yml
 
-- include_tasks: conf.d.yml
-  tags: [ nginx, templates ]
+- name: Import conf.d
+  import_tasks: conf.d.yml
 
-- include_tasks: tls.yml
-  tags: [ tls ]
+- name: Import TLS tasks
+  import_tasks: tls.yml
 
 - name: Template nginx.conf
   template:
@@ -27,10 +31,16 @@
   notify: config restart nginx
   tags: [ nginx ]
 
-- import_tasks: iptables.yml
+- name: Include iptables
+  include_tasks: iptables.yml
   when: ansible_distribution_major_version|int <= 7
 
-- import_tasks: logrotate.yml
+- name: Import sysctl
+  import_tasks: sysctl.yml
 
-- import_tasks: awstats.yml
+- name: Import logrotate
+  import_tasks: logrotate.yml
+
+- name: Import awstats
+  import_tasks: awstats.yml
 ...

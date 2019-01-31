@@ -8,6 +8,11 @@
 - name: config reload nginx
   service: name=nginx enabled=yes state=reloaded
 
+- name: systemd-sysctl restart
+  systemd:
+    name: systemd-sysctl.service
+    state: restarted
+
 #####
 # Awstats
 - name: awstats patch
