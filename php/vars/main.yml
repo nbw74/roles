@@ -5,6 +5,7 @@ php_common_packages:
   - php-xml
   - php-gd
   - php-intl
+  - php-json
   - php-pgsql
   - php-mbstring
   - php-nette-tokenizer
