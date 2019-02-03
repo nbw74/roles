@@ -1,0 +1,24 @@
+---
+- name: Check if role assigned to host
+  fail:
+    msg: "ROLE 'nodejs' IS NOT ASSIGNED TO THIS HOST"
+  when: "'nodejs' not in roles"
+
+- name: Fail if old or unknown OS
+  fail:
+    msg: "INCOMPATIBLE OPERATING SYSTEM"
+  when: >
+    ansible_os_family != "RedHat"
+    or ansible_distribution_major_version|int < 7
+
+- name: "curl/bash install repo"
+  shell: >
+    curl -sL https://rpm.nodesource.com/setup_{{ nodejs_major_version }}.x | bash -
+  args:
+    warn: false
+    creates: "/etc/yum.repos.d/nodesource-el{{ ansible_distribution_major_version }}.repo"
+
+- name: Yum install packages
+  yum:
+    name: nodejs
+...
