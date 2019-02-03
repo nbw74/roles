@@ -9,7 +9,7 @@
 - name: "Set Listen directive"
   lineinfile:
     dest: /etc/httpd/conf/httpd.conf
-    regexp: '^Listen *'
+    regexp: '^Listen 127.0.0.1:'
     line: "Listen 127.0.0.1:{{ httpd_port |d('8888') }}"
   tags: [conf]
   notify: config restart httpd
