@@ -37,6 +37,7 @@
 
 - name: Import sysctl
   import_tasks: sysctl.yml
+  when: ansible_virtualization_type != 'openvz'
 
 - name: Import logrotate
   import_tasks: logrotate.yml
