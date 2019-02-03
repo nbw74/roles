@@ -90,24 +90,41 @@
   when: ansible_product_name == "VMware Virtual Platform"
   tags: [ services, vmware ]
 
-- name: "Manage ipset and iptables services"
+- name: "Manage iptables service"
   service:
-    name: "{{ item }}"
+    name: "iptables"
     enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
     state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
-  with_items: [ ipset, iptables ]
   when:
     - '"bitrix-env" not in roles'
     - ansible_distribution_major_version|int <= 7
   tags: [ services, iptables, ipset ]
 
+- name: "Manage ipset service"
+  service:
+    name: "ipset"
+    enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
+    state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
+  when:
+    - '"bitrix-env" not in roles'
+    - ansible_distribution_major_version|int <= 7
+    - ansible_virtualization_type != 'openvz'
+  tags: [ services, iptables, ipset ]
+
 - name: "Enable and start other services"
   service: name={{ item }} enabled=yes state=started
   with_items:
-    - ntpd
     - rsyslog
     - postfix
+  tags: [ services, snmp ]
+
+- name: "Enable and start other services (not openvz)"
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+    - ntpd
     - snmpd
+  when:
+    - ansible_virtualization_type != 'openvz'
   tags: [ services, snmp ]
 
 - name: Set mdraid presence
@@ -115,6 +132,7 @@
     mdraid_is_present: >-
       {{ ansible_device_links.ids | d('') | string | regex_search('md[0-9]') |
       string | regex_replace('[Nn]one','') | length > 0 }}
+  when: ansible_virtualization_type != 'openvz'
 
 - name: Set LVM presence
   set_fact:
@@ -136,7 +154,7 @@
 
 - debug:
     msg:
-      - "mdraid_is_present: {{ mdraid_is_present }}"
+      - "mdraid_is_present: {{ mdraid_is_present|d('NONONO') }}"
       - "lvm_is_present: {{ lvm_is_present }}"
       - "trim_is_supported: {{ trim_is_supported }}"
 

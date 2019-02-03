@@ -21,5 +21,12 @@
     - ansible_fqdn not in common_check_hostname.stdout
   tags: [ hostname ]
 
+- name: Add record in /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^.*{{ inventory_hostname }}$'
+    line: "127.0.0.1\t{{ inventory_hostname }}"
+  tags: [ hostname ]
+
 - meta: flush_handlers
 ...

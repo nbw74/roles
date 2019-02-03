@@ -36,9 +36,9 @@
 #     msg: "{{ common_check_iptables }}"
 
 - name: "Copy IPTables config"
-  copy:
-    src: "{{ item }}"
-    dest: /etc/sysconfig
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/sysconfig/{{ item }}"
     force: "{{ (ansible_user|d('UNDEF') == 'root')|ternary('yes','no') }}"
   with_items:
     - iptables

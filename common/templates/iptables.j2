@@ -8,14 +8,24 @@
 -A INPUT -p icmp -j ACCEPT
 -A INPUT -m conntrack --ctstate INVALID -j DROP
 -A INPUT -p tcp -m tcp --dport 22 -m conntrack --ctstate NEW -j INSSH
+{% if not alien %}
 -A INPUT -p tcp -m tcp --dport 9102 -m conntrack --ctstate NEW -j ACCEPT
 -A INPUT -p udp -m multiport --dports 123,161 -j ACCEPT
+{% endif %}
+{% if 'nginx' in roles %}
+-A INPUT -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW -j ACCEPT
+{% endif %}
 -A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
 -A INPUT -p tcp -j REJECT --reject-with tcp-reset
 -A INPUT -j REJECT --reject-with icmp-proto-unreachable
+{% if ansible_virtualization_type == 'openvz' %}
+{% for item in common_ssh_direct_list %}
+-A INSSH -s {{ item }} -j ACCEPT
+{% endfor %}
+{% else %}
 -A INSSH -m set --match-set SSH-DIRECT src -j ACCEPT
 -A INSSH -p tcp -m recent --rcheck --seconds 60 --hitcount 2 --rttl --name sshbf --rsource -j DROP
 -A INSSH -p tcp -m recent --rcheck --seconds 7200 --hitcount 6 --rttl --name sshbf --rsource -j REJECT --reject-with tcp-reset
 -A INSSH -p tcp -m recent --set --name sshbf --rsource -j ACCEPT
+{% endif %}
 COMMIT
-

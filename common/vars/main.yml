@@ -17,7 +17,6 @@ common_required_base_packages:
   - bc
   - bzip2
   - gdisk
-  - ipset
   - libselinux-python
   - mailx
   - man
@@ -30,6 +29,9 @@ common_required_base_packages:
   - tuned
   - vim
   - zsh
+
+common_required_base_packages_full:
+  - ipset
 
 common_required_base_packages_7:
   - ipset-service
