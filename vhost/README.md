@@ -22,7 +22,7 @@ vhost_basedir: "filesystem_path"                # default is "/var/www"
 vhost_frontuser: "string"                       # default is "nginx"
 vhost_backuser: "string"                        # default is "apache"
 vhost_logbuffer: "intUNIT|none"                 # default is "128k"
-vhost_db_pgsql_admin_user: "string"             # mandatory if use postgresql
+vhost_db_pgsql_admin_user: "string"             # default is "ansible"
 vhost_db_pgsql_admin_pass: "string"             # mandatory if use postgresql
 vhost_db_mysql_admin_user: "string"             # mandatory if use mysql
 vhost_db_mysql_admin_pass: "string"             # mandatory if use mysql

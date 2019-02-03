@@ -77,7 +77,9 @@
   tags: [ version ]
 
 - name: get postgresql datadir
-  shell: pgrep -af '.*(postgres|postmaster)\s+-D\s+.*'|awk '{ match($0, /-D[[:space:]]+[/.a-z0-9]+/); dir=substr($0, RSTART, RLENGTH); sub(/-D[[:space:]]+/, "", dir); sub(/\/$/, "", dir); print dir; exit }'
+  shell: >
+    pgrep -af '.*(postgres|postmaster)\s+-D\s+.*'
+    |awk '{ match($0, /-D[[:space:]]+[/.a-z0-9]+/); dir=substr($0, RSTART, RLENGTH); sub(/-D[[:space:]]+/, "", dir); sub(/\/$/, "", dir); print dir; exit }'
   register: vhost_pgsql_datadir
   delegate_to: "{{ item.db.host }}"
   when:

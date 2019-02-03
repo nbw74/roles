@@ -1,4 +1,52 @@
 ---
+- name: Check flags dir
+  file:
+    path: "{{ flags_dir }}/postgresql"
+    state: directory
+    owner: postgres
+  delegate_to: "{{ item.db.host }}"
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: [ db ]
+
+- name: Psql create ansible database manager
+  become: true
+  become_user: postgres
+  shell: >
+    psql -c "CREATE ROLE {{ vhost_db_pgsql_admin_user }} WITH LOGIN SUPERUSER PASSWORD '{{ vhost_db_pgsql_admin_pass }}'"
+    && touch "{{ flags_dir }}/postgresql/ansible_role_created"
+  args:
+    creates: "{{ flags_dir }}/postgresql/ansible_role_created"
+  delegate_to: "{{ item.db.host }}"
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: [ db ]
+
+- name: Psql create ansible management database
+  become: true
+  become_user: postgres
+  shell: >
+    psql -c "CREATE DATABASE ansible OWNER {{ vhost_db_pgsql_admin_user }}"
+    && touch "{{ flags_dir }}/postgresql/ansible_database_created"
+  args:
+    creates: "{{ flags_dir }}/postgresql/ansible_database_created"
+  delegate_to: "{{ item.db.host }}"
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+  with_items: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: [ db ]
+
 - name: Attempt dump and manage postgresql database
   block:
     - name: dump postgresql database
