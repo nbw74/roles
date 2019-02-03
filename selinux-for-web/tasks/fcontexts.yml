@@ -35,6 +35,9 @@
     - name: "Laravel framework storage"
       setype: httpd_sys_rw_content_t
       target: '/var/www/[-a-zA-Z0-9\.]+/www/storage(/.*)?'
+    - name: "Laravel framework storage logs"
+      setype: httpd_log_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/storage/logs(/.*)?'
     - name: "CakePHP tmp"
       setype: httpd_sys_rw_content_t
       target: '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp(/.*)?'
