@@ -50,6 +50,7 @@
   when:
     - common_iptables_enable
     - ansible_distribution_major_version|int <= 7
+    - '"bitrix-env" not in roles'
 
 - name: "Enable and start network service"
   service:
@@ -89,27 +90,6 @@
   service: name=vmtoolsd enabled=yes state=started
   when: ansible_product_name == "VMware Virtual Platform"
   tags: [ services, vmware ]
-
-- name: "Manage iptables service"
-  service:
-    name: "iptables"
-    enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
-    state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
-  when:
-    - '"bitrix-env" not in roles'
-    - ansible_distribution_major_version|int <= 7
-  tags: [ services, iptables, ipset ]
-
-- name: "Manage ipset service"
-  service:
-    name: "ipset"
-    enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
-    state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
-  when:
-    - '"bitrix-env" not in roles'
-    - ansible_distribution_major_version|int <= 7
-    - ansible_virtualization_type != 'openvz'
-  tags: [ services, iptables, ipset ]
 
 - name: "Enable and start other services"
   service: name={{ item }} enabled=yes state=started

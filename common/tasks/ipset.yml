@@ -1,11 +1,18 @@
 ---
-- name: "Template ipset config"
-  template:
-    src: "ipset.j2"
-    dest: "/etc/sysconfig/ipset"
-    force: no
-  when:
-    - '"bitrix-env" not in roles'
-    - not alien
-  tags: [ services, iptables, ipset ]
+- name: Ipset section
+  block:
+    - name: "Template ipset config"
+      template:
+        src: "ipset.j2"
+        dest: "/etc/sysconfig/ipset"
+        force: no
+      tags: [ services, iptables, ipset ]
+
+    - name: "Manage ipset service"
+      service:
+        name: "ipset"
+        enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
+        state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
+      tags: [ services, iptables, ipset ]
+  when: ansible_virtualization_type != 'openvz'
 ...

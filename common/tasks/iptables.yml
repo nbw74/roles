@@ -45,7 +45,13 @@
     - ip6tables
   when:
     - common_check_iptables.stdout.find('SSH-DIRECT') == -1
-    - '"bitrix-env" not in roles'
   notify: config restart iptables
   tags: [ iptables ]
+
+- name: "Manage iptables service"
+  service:
+    name: "iptables"
+    enabled: "{{ common_iptables_enable|ternary('true', 'false') }}"
+    state: "{{ common_iptables_enable|ternary('started', 'stopped') }}"
+  tags: [ services, iptables, ipset ]
 ...
