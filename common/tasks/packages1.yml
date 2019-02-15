@@ -28,7 +28,7 @@
     name: "*"
     state: latest
   when:
-    - ansible_distribution_major_version|int <= 7
+    - ansible_distribution_major_version|int > 7
     - pkgupdate
   tags: [ packages, update ]
 # -------------------------------------------------------------
