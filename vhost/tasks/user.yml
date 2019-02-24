@@ -83,14 +83,13 @@
     label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
 
-- name: add web-server users to the new user group
+- name: add web-server users to the user group
   user:
     name: "{{ item[0] }}"
     append: yes
     groups: "{{ item[1].name }}"
   when:
-    - item[1].changed
-    - item[1].state == 'present'
+    - item[1].state|d('absent') == 'present'
   with_nested:
     - [ '{{ vhost_frontuser }}', '{{ vhost_backuser }}' ]
     - "{{ vhost_user.results }}"
