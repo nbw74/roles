@@ -1,5 +1,4 @@
 ; THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-; vim: ft=dosini:
 [{{ item.user|d(item.name) }}]
 prefix = {{ vhost_basedir }}/$pool
 user = apache

@@ -46,6 +46,7 @@
 
 - include_tasks: redmine.yml
   when: vhost_backend != 'reverse-proxy'
+  tags: [ user, redmine ]
 
 - include_tasks: repo.yml
   when: vhost_backend != 'reverse-proxy'

@@ -49,6 +49,7 @@
     - vhost_backend == 'php-fpm'
     - item.state|d(true)
     - item.nginx_301_only is not defined
+    - item.fpm is defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
@@ -64,6 +65,7 @@
     - vhost_backend == 'php-fpm'
     - not item.state|d(true)
     - item.nginx_301_only is not defined
+    - item.fpm is defined
   with_items: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"

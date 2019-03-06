@@ -1,5 +1,5 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-{% if vhost_backend == 'php-fpm' %}
+{% if vhost_backend == 'php-fpm' and item.fpm is defined %}
 
 upstream fpm{{ item.fpm.port }} {
     server		127.0.0.1:{{ item.fpm.port }};

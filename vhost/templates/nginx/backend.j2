@@ -3,7 +3,7 @@
 {{ item.nginx_server_snippet }}
 # SNIPPET END
 {% endif %}
-{% if vhost_backend == 'php-fpm' %}
+{% if vhost_backend == 'php-fpm' and item.fpm is defined %}
 {% include "fpm/" ~ item.fpm.template|d('generic') ~ ".j2" %}
 {% elif vhost_backend == 'apache' %}
 {% include "nginx/apache-generic.j2" %}
