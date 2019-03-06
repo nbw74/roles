@@ -7,6 +7,7 @@ Very simple role for nodejs installing
 ## Variables
 ```yaml
 nodejs_major_version: int # Mandatory
+nodejs_yarn_install: bool # default: false
 ```
 ## Dependencies
 -

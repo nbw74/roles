@@ -11,14 +11,29 @@
     ansible_os_family != "RedHat"
     or ansible_distribution_major_version|int < 7
 
-- name: "curl/bash install repo"
+- name: Create nodejs repo with curl
   shell: >
     curl -sL https://rpm.nodesource.com/setup_{{ nodejs_major_version }}.x | bash -
   args:
     warn: false
     creates: "/etc/yum.repos.d/nodesource-el{{ ansible_distribution_major_version }}.repo"
 
-- name: Yum install packages
+- name: Yum install nodejs
   yum:
     name: nodejs
+
+- name: Yarn section
+  block:
+    - name: Create yarn repo with curl
+      shell: >
+        curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo > /etc/yum.repos.d/yarn.repo
+        && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg
+      args:
+        warn: false
+        creates: /etc/yum.repos.d/yarn.repo
+
+    - name: Yum install yarn
+      yum:
+        name: yarn
+  when: nodejs_yarn_install|d()
 ...
