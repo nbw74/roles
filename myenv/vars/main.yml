@@ -1,4 +1,11 @@
 ---
 repo: "https://github.com/nbw74/dotfiles.git"
 prompt_file: .prompt.attr
+
+env_color:
+  production: RED
+  testing: GREEN
+  staging: YELLOW
+  auxiliary: BLUE
+  localhost: MAGENTA
 ...

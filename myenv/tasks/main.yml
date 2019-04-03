@@ -12,8 +12,7 @@
     - libselinux-python
   when:
     - ansible_os_family == "RedHat"
-    - ansible_distribution_major_version|int <= 21
-    - not requiretty
+    - ansible_distribution_major_version|int < 8
 
 - name: Sudoers (I)
   become: yes
@@ -22,7 +21,6 @@
     regexp: '^(Defaults\s+always_set_home)'
     line: '# \1'
     backrefs: yes
-  when: not requiretty
 
 - name: Check if path exists
   stat:
@@ -45,9 +43,33 @@
     clone: yes
     accept_hostkey: yes
   when: check_path.stat.exists == false
-  notify: touch zshrc
 
-- meta: flush_handlers
+- name: Check symlinks
+  file:
+    src: '.dotfiles/{{ item }}'
+    path: '{{ item }}'
+    state: link
+    force: yes
+  with_items:
+    - .vim
+    - .zsh
+    - .gitconfig
+    - .tmux.conf
+    - .vimrc
+    - .zlogin
+    - .zlogout
+    - .zshrc
+
+- name: Check MC config dir
+  file:
+    path: .config/mc
+    state: directory
+
+- name: Check MC ini symlink
+  file:
+    src: '../../.dotfiles/.config/mc/ini'
+    path: '.config/mc/ini'
+    state: link
 
 - name: Attrib file (touch)
   file:
@@ -67,6 +89,10 @@
     prompt_color_root: 'YELLOW'
   when: ansible_virtualization_role == "guest"
 
+- name: Set env color
+  set_fact:
+    prompt_color_env: "{{ env_color[env|d('auxiliary')] }}"
+
 - name: Attrib file
   blockinfile:
     dest: "/home/{{ username }}/{{ prompt_file }}"
@@ -75,8 +101,8 @@
       PR_USER=${PR_BR_{{ prompt_color_user }}}
       # Root user color (phy=RED, virt=YELLOW)
       PR_ROOT=${PR_BR_{{ prompt_color_root }}}
-      # Hostname color (prod=RED, dev=GREEN, test=YELLOW, net=BLUE, localhost=MAGENTA)
-      PR_HOST=${PR_BR_YELLOW}
+      # Hostname color (prod=RED, test=GREEN, staging=YELLOW, aux=BLUE, localhost=MAGENTA)
+      PR_HOST=${PR_BR_{{ prompt_color_env }}}
 
 - name: Check tmp dir
   file:
@@ -91,14 +117,12 @@
     path: "/home/{{ username }}/.viminfo"
     owner: "{{ username }}"
   changed_when: false
-  when: not requiretty
 
 - name: Check user shell
   become: yes
   user:
     name: "{{ username }}"
     shell: "/bin/zsh"
-  when: not requiretty
 
 - name: SSH key
   authorized_key:
