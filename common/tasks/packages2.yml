@@ -4,14 +4,14 @@
     name: "{{ common_unnecessary_packages }}"
     state: absent
   when: ansible_distribution_major_version|int <= 7
-  tags: [packages]
+  tags: [ packages ]
 
 - name: "Remove unnecessary packages (DNF)"
   dnf:
     name: "{{ common_unnecessary_packages }}"
     state: absent
   when: ansible_distribution_major_version|int > 7
-  tags: [packages]
+  tags: [ packages ]
 
 - name: NoNM section
   block:
@@ -20,13 +20,19 @@
         name: "{{ common_unnecessary_packages_nm }}"
         state: absent
       when: ansible_distribution_major_version|int <= 7
-      tags: [packages]
+      tags: [ packages ]
 
     - name: "Remove unnecessary NM packages (DNF)"
       dnf:
         name: "{{ common_unnecessary_packages_nm }}"
         state: absent
       when: ansible_distribution_major_version|int > 7
-      tags: [packages]
+      tags: [ packages ]
   when: not common_leave_networkmanager
+
+- name: Yum install additional packages
+  yum:
+    name: "{{ common_add_packages }}"
+  when: ansible_distribution_major_version|int <= 7
+  tags: [ packages ]
 ...

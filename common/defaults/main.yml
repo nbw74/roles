@@ -1,5 +1,6 @@
 ---
 alien: false
+common_add_packages: []
 common_cron_user_tasks: []
 common_facts: {}
 common_icinga2_conf: []

@@ -5,6 +5,8 @@
 ```yaml
 alien: bool # default: true :Указывает на то, что хост не принадлежит к сети организации
 
+common_add_packages: []
+
 common_aliases_root: "string" # Почтовый адрес для пересылки почты суперпользователя
 
 common_cron_user_tasks:
