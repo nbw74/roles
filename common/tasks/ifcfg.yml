@@ -35,6 +35,7 @@
         group: root
         mode: 0644
       when: item.state|d(true)
+      register: common_ifcfg_result
       loop: "{{ common_ifcfg|flatten(levels=1) }}"
       loop_control:
         label: "{{ item.dev }}"
@@ -69,13 +70,14 @@
 
 - name: Populate array with dev names of changed ifcfgs
   set_fact:
-    common_ifcfg_changed: "{{ common_ifcfg_changed }} + [ '{{ item.item[0].dev }}' ]"
+    common_ifcfg_changed: "{{ common_ifcfg_changed }} + [ '{{ item.item.dev }}' ]"
   when:
     - common_ifcfg_result.results is defined
     - item.changed
+    - item.item.variables.ONBOOT|d('no') | regex_search('[Yy][Ee][Ss]')
   loop: "{{ common_ifcfg_result.results|flatten(levels=1) }}"
   loop_control:
-    label: "{{ item.item[0].dev }}"
+    label: "{{ item.item.dev }}"
   tags: [ ifcfg ]
 
 - name: "Restart changed interfaces"

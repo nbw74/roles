@@ -14,7 +14,7 @@
   yum:
     name: "postgresql{{ item.0|string|regex_replace('\\.', '') }}{{ item.1 }}"
     state: present
-  loop: "{{ pwa_postgresql_versions|product('', '-server', '-contrib')|list }}"
+  loop: "{{ pwa_postgresql_versions|product([ '', '-server', '-contrib' ])|list }}"
 
 - name: Other packages
   yum:
