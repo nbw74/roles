@@ -48,11 +48,22 @@ common_icinga2_satellite_zone: "string" # default: none :Сателлит-зон
 common_icinga2_satellite_zone_net_list: # default: none :Сети для автоопределения занесения хоста в сателлит-зону
   - "ipv4/prefix"
 
-common_ifcfg_line: # Добавить или удалить переменные в /etc/sysconfig/network-scripts/ifcfg-<dev>.
-  - dev: "device_name" # ...Default: not defined
+## IFCFG
+# common_ifcfg: - переписывает файл конфига ЦЕЛИКОМ
+# common_ifcfg_vars: - добавляет или удаляет строчки из файла конфига
+# Использовать как взаимоисключающие.
+
+common_ifcfg: # (default: []) шаблонизация файлов /etc/sysconfig/network-scripts/ifcfg-<dev>
+  - dev: device_name
+    state: bool # (default: true) При false удаляет конфиг интерфейса
     variables:
-      - { key: "VAR_NAME", value: "value"[, state: bool] }
-      - ...
+      KEY: "value"  # KEY="value"
+
+common_ifcfg_vars: # (default: []) добавление переменных в /etc/sysconfig/network-scripts/ifcfg-<dev>
+  - dev: device_name
+    variables:
+      KEY: "value"  # KEY="value"
+# чтобы удалить переменную, присвойте ей значение 'no' или 'false' без кавычек.
 
 common_journal_gateway_enable: bool # default: false
 

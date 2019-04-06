@@ -1,0 +1,11 @@
+---
+- name: "lineinfile add in network-scripts/ifcfg-"
+  lineinfile:
+    dest: "{{ common_network_scripts }}/ifcfg-{{ ifcfg.dev }}"
+    regexp: '^[ #]*{{ item.key }}='
+    line: '{{ item.key }}="{{ item.value|d("") }}"'
+    state: "{{ item.value|ternary('present','absent') }}"
+    create: yes
+  loop: "{{ ifcfg.variables|dict2items }}"
+  tags: [ ifcfg ]
+...

@@ -6,7 +6,7 @@
         dest: "/etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}"
         state: absent
         regexp: "{{ item }}"
-      with_items:
+      loop:
         - '^DEFROUTE='
         - '^PEERDNS='
         - '^PEERROUTES='
@@ -19,27 +19,48 @@
         dest: "/etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
-      with_items:
+      loop:
         - { regexp: '^IPV6INIT=', line: 'IPV6INIT="no"' }
       tags: [ services, ifcfg ]
       ignore_errors: yes
   when: not common_leave_networkmanager
 
-- name: "lineinfile add in network-scripts/ifcfg-"
-  lineinfile:
-    dest: "{{ common_network_scripts }}/ifcfg-{{ item.0.dev }}"
-    regexp: '^[ #]*{{ item.1.key }}='
-    line: '{{ item.1.key }}="{{ item.1.value|d("") }}"'
-    state: "{{ item.1.state|d(true)|ternary('present','absent') }}"
-    create: yes
-  when: common_ifcfg_line is defined
-  with_subelements:
-    - "{{ common_ifcfg_line }}"
-    - variables
-  loop_control:
-    label: "{{ item.0.dev }}:{{ item.1.key }}={{ item.1.value|d('') }}"
-  register: common_ifcfg_result
-  tags: [ ifcfg ]
+- name: Ifcfg template section
+  block:
+    - name: Template ifcfg
+      template:
+        src: ifcfg.j2
+        dest: "{{ common_network_scripts }}/ifcfg-{{ item.dev }}"
+        owner: root
+        group: root
+        mode: 0644
+      when: item.state|d(true)
+      loop: "{{ common_ifcfg|flatten(levels=1) }}"
+      loop_control:
+        label: "{{ item.dev }}"
+      tags: [ ifcfg ]
+
+    - name: Remove ifcfg
+      file:
+        path: "{{ common_network_scripts }}/ifcfg-{{ item.dev }}"
+        state: absent
+      when: not item.state|d(true)
+      loop: "{{ common_ifcfg|flatten(levels=1) }}"
+      loop_control:
+        label: "{{ item.dev }}"
+      tags: [ ifcfg ]
+  when: common_ifcfg|length > 0
+
+- name: Ifcfg line section
+  block:
+    - name: Include ifcfg loop
+      include_tasks: ifcfg_vars.yml
+      loop: "{{ common_ifcfg_vars|flatten(levels=1) }}"
+      loop_control:
+        loop_var: ifcfg
+        label: "{{ ifcfg.dev }}"
+      tags: [ ifcfg ]
+  when: common_ifcfg_vars|length > 0
 
 - name: Initialize array
   set_fact:
@@ -52,7 +73,7 @@
   when:
     - common_ifcfg_result.results is defined
     - item.changed
-  with_items: "{{ common_ifcfg_result.results }}"
+  loop: "{{ common_ifcfg_result.results|flatten(levels=1) }}"
   loop_control:
     label: "{{ item.item[0].dev }}"
   tags: [ ifcfg ]
@@ -63,7 +84,7 @@
   async: 45
   poll: 5
   when: common_ifcfg_changed|length > 0
-  with_items: "{{ common_ifcfg_changed|unique }}"
+  loop: "{{ common_ifcfg_changed|unique|flatten(levels=1) }}"
   loop_control:
     label: "{{ item }}"
   ignore_errors: yes

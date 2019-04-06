@@ -1,0 +1,4 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% for key, value in item.variables|dictsort %}
+{{ key }}="{{ value }}"
+{% endfor %}
