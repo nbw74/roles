@@ -26,5 +26,13 @@
     enabled: no
     masked: yes
   loop: "{{ pwa_postgresql_versions|flatten(levels=1) }}"
+  when: "ansible_service_mgr == 'systemd'"
+
+- name: disable services
+  service:
+    name: postgresql-{{ item|string }}
+    enabled: no
+  loop: "{{ pwa_postgresql_versions|flatten(levels=1) }}"
+  when: "ansible_service_mgr == 'upstart'"
 
 ...
