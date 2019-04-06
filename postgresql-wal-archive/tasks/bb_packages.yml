@@ -8,15 +8,13 @@
     gpgcheck: yes
     enabled: yes
     gpgkey: "http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ item|string|regex_replace('\\.', '') }}"
-  with_items: "{{ pwa_postgresql_versions }}"
+  loop: "{{ pwa_postgresql_versions|flatten(levels=1) }}"
 
 - name: PostgreSQL packages
   yum:
     name: "postgresql{{ item.0|string|regex_replace('\\.', '') }}{{ item.1 }}"
     state: present
-  with_nested:
-    - "{{ pwa_postgresql_versions }}"
-    - [ '', '-server', '-contrib' ]
+  loop: "{{ pwa_postgresql_versions|product('', '-server', '-contrib')|list }}"
 
 - name: Other packages
   yum:
@@ -27,6 +25,6 @@
     name: postgresql-{{ item|string }}.service
     enabled: no
     masked: yes
-  with_items: "{{ pwa_postgresql_versions }}"
+  loop: "{{ pwa_postgresql_versions|flatten(levels=1) }}"
 
 ...

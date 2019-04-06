@@ -21,6 +21,6 @@
     minute: "{{ item.minute|d('*/19')}}"
     name: "walarchive schedule"
     user: "{{ pwa_walarchive_user }}"
-  with_dict: "{{ pwa_walarchive_cron }}"
+  loop: "{{ pwa_walarchive_cron|dict2items }}"
   notify: reload crond
 ...

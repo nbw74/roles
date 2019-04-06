@@ -21,7 +21,8 @@ pwa_basebackup_cron:
     job:
       addr:
         - <ip_or_fqdn> # MANDATORY; PostgreSQL instance address for backup
-      depth: int # default: 3; number of full backups stored
+      basedir: path # Default: {{ pwa_basebackup_home }}; base directory for backups
+      depth: int # Default: 3; number of full backups stored
       strip_last_dash: bool # Default: false
 
 pwa_basebackup_home: string # default: '/srv/{{ pwa_basebackup_user }}'

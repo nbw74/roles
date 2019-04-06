@@ -25,7 +25,7 @@
       /usr/local/bin/pwa_basebackupwrapper.sh
       -D {{ cron.job.depth|d('3') }}
       -U {{ pwa_basebackup_user }}
-      -b {{ pwa_basebackup_home }}
+      -b {{ cron.job.basedir|d(pwa_basebackup_home) }}
       {%- if strip_last_dash|d() %}-s{% endif %}
       {%- for item in cron.job.addr %}
       {{ item }}
@@ -35,7 +35,7 @@
     name: "{{ cron.name }}"
     user: "{{ pwa_basebackup_user }}"
     weekday: "{{ cron.weekday|d('*')}}"
-  with_items: "{{ pwa_basebackup_cron }}"
+  loop: "{{ pwa_basebackup_cron|flatten(levels=1) }}"
   loop_control:
     loop_var: cron
   notify: reload crond

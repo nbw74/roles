@@ -24,7 +24,7 @@
     key: "{{ item.type|d('ssh-ed25519') }} {{ item.data }}"
     comment: "{{ item.comment }}"
     state: "{{ item.state|d(true)|ternary('present','absent') }}"
-  with_items: "{{ pwa_walarchive_keys }}"
+  loop: "{{ pwa_walarchive_keys|flatten(levels=1) }}"
 
 - name: Set walarchive homedir perms
   file:
