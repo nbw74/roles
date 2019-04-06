@@ -1,4 +1,15 @@
 ---
-- name: import main handlers
-  import_tasks: ../../main/handlers/main.yml
+- name: reload crond (sysvinit)
+  service:
+    name: crond
+    state: reloaded
+  listen: "reload crond"
+  when: "ansible_service_mgr == 'upstart'"
+
+- name: reload crond (systemd)
+  systemd:
+    name: crond.service
+    state: reloaded
+  listen: "reload crond"
+  when: "ansible_service_mgr == 'systemd'"
 ...
