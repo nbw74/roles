@@ -21,7 +21,7 @@ host	all		all		127.0.0.1/32		md5
 # IPv4 remote connections
 {% if postgresql_hba_tcp is defined %}
 {% for item in postgresql_hba_tcp %}
-host	{{ item.db }}		{{ item.user }}		{{ item.address }}		md5
+host	{{ item.db }}		{{ item.user }}		{{ item.address }}		{{ item.method|d('md5') }}
 {% endfor %}
 {% endif %}
 {% if postgresql_hba_tcp_ident is defined %}

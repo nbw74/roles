@@ -1,0 +1,41 @@
+---
+- name: Check if basebackup home is mountpoint
+  command: >
+    mountpoint -q {{ pwa_basebackup_home }}
+  register: pwa_vol_stat
+  failed_when: false
+  changed_when: false
+
+- name: Fail if is not a mountpoint
+  fail:
+    msg: "{{ pwa_basebackup_user }} homedir must be a mountpoint!"
+  when:
+    - pwa_vol_stat.rc != 0
+    - not pwa_allow_rootfs
+
+- name: Create basebackup user
+  user:
+    name: "{{ pwa_basebackup_user }}"
+    home: "{{ pwa_basebackup_home }}"
+    groups: postgres
+    append: yes
+
+- name: Add basebackup user into walarchive group
+  user:
+    name: "{{ pwa_basebackup_user }}"
+    groups: "{{ pwa_walarchive_user|d('NOGROUP') }}"
+    append: yes
+  when: "'walarchive' in pwa_server_roles"
+
+- name: Set basebackup homedir perms
+  file:
+    path: "{{ pwa_basebackup_home }}"
+    owner: "{{ pwa_basebackup_user }}"
+    group: "{{ pwa_basebackup_user }}"
+    mode: "0700"
+
+- name: Set /var/run/postgresql perms
+  file:
+    path: /var/run/postgresql
+    mode: g+w
+...

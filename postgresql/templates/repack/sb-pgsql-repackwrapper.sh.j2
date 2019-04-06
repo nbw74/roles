@@ -11,7 +11,7 @@ set -o nounset
 # CONSTANTS BEGIN
 # shellcheck disable=SC1083
 readonly PATH=/usr/pgsql-{{ postgresql_version_raw }}/bin:/bin:/usr/bin:/sbin:/usr/sbin
-# {% raw %}
+{% raw %}
 readonly CONFIG_PATH=/usr/local/etc:/srv/southbridge/etc
 readonly bn="$(basename "$0")"
 readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
@@ -26,6 +26,7 @@ typeset MAIL_SUBJ="ERRORS REPORTED: PostgreSQL pg_repack error Log"
 typeset -i FREE_SPACE_THRESHOLD_MB=500
 typeset -i FREE_SPACE_SCALE_FACTOR=2
 typeset -i WAIT_TIMEOUT_SECS=60
+typeset -i FORCE=0
 # DEFAULTS END
 
 typeset -i VERBOSE=0 NOMAIL=0
@@ -61,8 +62,12 @@ main() {
         (( VERBOSE )) && echo "relation: '${TBL[$i]}', required_space, MB: $(( required_space / 1048576 ))"
 
         if (( free_bytes < required_space )); then
-            echo "Not enough free disk space for pg_repack" >>"$LOGERR"
-            false
+	    if (( FORCE )); then
+		echo "Not enough free disk space for pg_repack, but force flag is present, continuing" >>"$LOGERR"
+	    else
+		echo "Not enough free disk space for pg_repack, exiting" >>"$LOGERR"
+		false
+	    fi
         fi
 
         TBL[$i]="-t ${TBL[$i]}"
@@ -265,6 +270,7 @@ myexit() {
 usage() {
     echo -e "\\tUsage: $bn [-v] -d database -t table_name [ -t table_name ... ]\\n
 \\t-d db_name\\t\\tSpecifies the name of the database to be reorganized.
+\\t-f\\t\\t\\tForce repack even if not enough free space
 \\t-t [schema.]table_name\\tReorganize the specified table(s). Multiple tables may be reorganized by writing multiple -t switches.
 \\t-v\\t\\t\\tVerbose mode
 \\t-h\\t\\t\\tPrint this help.
@@ -272,10 +278,12 @@ usage() {
 "
 }
 
-while getopts "d:t:hvM" OPTION; do
+while getopts "d:ft:hvM" OPTION; do
     case $OPTION in
         d) DB=$OPTARG
             ;;
+	f) FORCE=1
+	    ;;
         t) TBL+=("$OPTARG")
             ;;
         v) VERBOSE=1
@@ -295,5 +303,5 @@ fi
 
 main
 
-# {% endraw %}
+{% endraw %}
 ## EOF ##

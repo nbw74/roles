@@ -12,8 +12,8 @@ set -o pipefail
 typeset SOURCE=""
 typeset -i DAY=0 VERBOSE=0 NOSESSION=0
 typeset -i MAXLENGTH=4096
-typeset LOGDIR="/var/log/pglog"
-typeset REPORTS="/opt/reports"
+typeset LOGDIR="{{ plc_logs }}"
+typeset REPORTS="{{ plc_reports.path|d(plc_reports_path_default) }}"
 typeset TITLE="$(hostname -d)"
 typeset TRUNCATE="" NOUSER=""
 # DEFAULTS END
@@ -22,9 +22,10 @@ typeset TRUNCATE="" NOUSER=""
 readonly PATH=/bin:/usr/bin:/sbin:/usr/sbin
 readonly bn="$(basename "$0")"
 readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
-readonly BIN_REQUIRED="pgbadger bc"
+readonly BIN_REQUIRED="bc"
 # CONSTANTS END
 
+{% raw %}
 main() {
     local fn=${FUNCNAME[0]}
 
@@ -117,12 +118,17 @@ _pgbadger() {
 	    m="--maxlength $MAXLENGTH"
 	fi
     fi
+
+    if [[ ! -f "${logdir}/postgresql-${date}.log" ]]; then
+	return 0
+    fi
+{% endraw %}
     # shellcheck disable=SC2086
-    pgbadger --incremental --format syslog --jobs "$n" --average 1 \
+    {{ plc_pgbadger.home }}/app/pgbadger --incremental --format syslog --jobs "$n" --average 1 \
 	--retention 12 --extra-files --outdir "$outdir" $m $s $v $u \
 	--start-monday --title "$TITLE" --timezone "${timezone:-+03}" \
 	"${logdir}/postgresql-${date}.log"
-
+{% raw %}
 }
 
 checks() {
@@ -231,5 +237,5 @@ while true; do
 done
 
 main
-
+{% endraw %}
 ## EOF ##

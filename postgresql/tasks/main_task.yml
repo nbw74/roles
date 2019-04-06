@@ -2,7 +2,14 @@
 - name: Check OS version
   fail:
     msg: "This role is intended for RHEL (CentOS) version 6 or above"
-  when: ansible_distribution_major_version|int < 6
+  when: >
+    ansible_distribution_file_variety != "RedHat"
+    or ansible_distribution_major_version|int < 6
+
+- name: "Are we in the GCP yet?"
+  stat:
+    path: "{{ postgresql_gcp_hostname }}"
+  register: postgresql_gcp_detect
 
 - name: Check required dirs
   file:
@@ -14,8 +21,17 @@
     - "{{ postgresql_sb_etc }}"
     - "{{ postgresql_sb_bin }}"
 
-- import_tasks: "packages.yml"
+- include_tasks: "packages.yml"
   tags: [ packages ]
+
+- name: postgres homedir owner and mode
+  file:
+    path: "{{ postgresql_homedir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0750
+  tags: [ initdb ]
 
 - name: DB cluster initialization
   become: yes
@@ -28,13 +44,6 @@
           --lc-messages={{ postgresql_lc_messages }}"
   args:
     creates: "{{ postgresql_datadir }}/PG_VERSION"
-  tags: [ initdb ]
-
-- name: postgres homedir access mode
-  file:
-    path: "{{ postgresql_homedir }}"
-    state: directory
-    mode: 0750
   tags: [ initdb ]
 
 - name: Custom config and WAL backup dirs
@@ -55,6 +64,7 @@
   blockinfile:
     path: "{{ postgresql_datadir }}/postgresql.conf"
     insertafter: EOF
+    create: yes
     block: |
       include_dir {{ postgresql_include_dir }}
   tags: [ initdb ]
@@ -66,6 +76,7 @@
     src: "{{ postgresql_custom_config }}.j2"
     dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config }}"
     mode: 0600
+  notify: reload postgresql direct
   tags: [ initdb ]
 
 - name: PG_IDENT configuration file
@@ -74,6 +85,7 @@
   blockinfile:
     path: "{{ postgresql_datadir }}/pg_ident.conf"
     insertafter: EOF
+    create: yes
     block: |
       supervisor      postgres                postgres
       supervisor      zabbix                  postgres
@@ -83,6 +95,7 @@
       {{ item.map }} {{ item.sysuser}} {{ item.pguser }}
       {% endfor %}
       {% endif %}
+  notify: reload postgresql direct
   tags: [ initdb ]
 
 - name: PG_HBA configuration file
@@ -93,6 +106,7 @@
     dest: "{{ postgresql_datadir }}/pg_hba.conf"
     mode: 0600
   when: postgresql_hba_enable
+  notify: reload postgresql direct
   tags: [ initdb, hba ]
 
 - name: PostgreSQL service enabled and started
@@ -102,15 +116,31 @@
     enabled: yes
   when: not postgresql_pcmk_enable
 
-- import_tasks: "repack.yml"
+- name: Import repack tasks
+  import_tasks: repack.yml
 
-- import_tasks: "walbackup.yml"
+- name: Include service shell scripts tasks
+  import_tasks: svcsh.yml
+
+- include_tasks: "backup.yml"
+  when: postgresql_backup_enable
+
+- include_tasks: "nobackup.yml"
+  when: not postgresql_backup_enable
+
+- include_tasks: "walbackup.yml"
   when: postgresql_wal_backup_enable
 
-- import_tasks: "iptables.yml"
+- include_tasks: "iptables.yml"
   when: postgresql_iptables_enable
 
-- import_tasks: "pcmk.yml"
+- name: Pacemaker tasks section
+  block:
+    - name: Include Pacemaker tasks
+      include_tasks: "pcmk.yml"
+
+    - name: Include pgsql rmlock tasks
+      include_tasks: "pcmk_rmlock.yml"
   when: postgresql_pcmk_enable
 
 - name: Template rsyslog config

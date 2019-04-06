@@ -1,4 +1,4 @@
 ---
-- import_tasks: main_task.yml
+- include_tasks: main_task.yml
   when: "'postgresql' in roles"
 ...

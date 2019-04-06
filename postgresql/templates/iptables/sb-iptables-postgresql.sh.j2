@@ -30,7 +30,7 @@ set -o nounset
 set -E
 
 readonly PATH=/bin:/sbin:/usr/bin:/usr/sbin
-readonly bn=$(basename $0)
+readonly bn="$(basename "$0")"
 
 # Configuration
 readonly dstport={{ postgresql_conf['port']|default('5432') }}
@@ -45,9 +45,9 @@ readonly w=""
 trap except ERR
 
 start() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
-    if iptables-save | fgrep -q ":$chain"; then
+    if iptables-save | grep -Fq ":$chain"; then
         return
     else
         iptables $w -N $chain
@@ -56,16 +56,15 @@ start() {
 }
 
 reload() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
     if [[ ! -f "$whitelist" ]]; then
         echo "${bn}: main configuration file is missing" 1>&2
         false
     fi
 
-    if ! iptables-save | fgrep -q ":$chain"; then
-        echo "${bn}: chain '$chain' not found" 1>&2
-        false
+    if ! iptables-save | grep -Fq ":$chain"; then
+        iptables $w -N $chain
     fi
 
 {% if ansible_distribution_major_version|int < 7 %}
@@ -74,13 +73,13 @@ reload() {
     iptables $w -F $chain
     iptables $w -A $chain -m addrtype --src-type LOCAL -j ACCEPT
 
-    for src in $(egrep -v '^#|^$|^\s+$' $whitelist | awk '{ print $1 }' | sort | uniq); do
-        iptables $w -A $chain -s $src -j ACCEPT
+    for src in $(grep -Ev '^#|^$|^\s+$' $whitelist | awk '{ print $1 }' | sort | uniq); do
+        iptables $w -A $chain -s "$src" -j ACCEPT
     done
 
     iptables $w -A $chain -j REJECT --reject-with icmp-host-prohibited
     removejump
-    iptables $w -I INPUT $(find_insert_position) -m tcp -p tcp --dport $dstport -j $chain
+    iptables $w -I INPUT "$(find_insert_position)" -m tcp -p tcp --dport $dstport -j $chain
 {% if ansible_distribution_major_version|int < 7 %}
     success; echo
 {% endif %}
@@ -96,13 +95,13 @@ removejump() {
 
 # Если есть правило с ESTABLISHED - то вставляем после него, если нет - в начало
 find_insert_position() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
     local -i pos=0
 
-    pos=$(iptables-save -t filter | fgrep -- '-A INPUT' | awk '/ESTABLISHED/ { print NR + 1; exit }')
+    pos=$(iptables-save -t filter | grep -F -- '-A INPUT' | awk '/ESTABLISHED/ { print NR + 1; exit }')
 
     if (( pos )); then
-        printf "%i" $pos
+        printf "%i" "$pos"
     else
         printf "%i" 1
     fi
@@ -121,9 +120,9 @@ stop() {
 }
 
 status() {
-    local FN=$FUNCNAME
+    local FN=${FUNCNAME[0]}
 
-    if iptables-save | fgrep -q ":$chain"; then
+    if iptables-save | grep -Fq ":$chain"; then
         iptables $w -t filter -n -v -L $chain
     else
         echo "${bn}: chain '$chain' not found" 1>&2

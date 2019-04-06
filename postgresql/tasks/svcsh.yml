@@ -1,0 +1,11 @@
+---
+- name: Copy service scripts
+  copy:
+    src: "{{ item.file }}"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: "{{ item.mode|d('0755') }}"
+  with_items:
+    - file: pgsql-lock-view.sh
+...

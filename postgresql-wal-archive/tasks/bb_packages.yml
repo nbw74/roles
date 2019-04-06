@@ -1,0 +1,32 @@
+---
+- name: PostgreSQL repos
+  yum_repository:
+    name: "pgdg{{ item|string|regex_replace('\\.', '') }}"
+    description: "PostgreSQL {{ item|string }} $releasever - $basearch"
+    baseurl: "https://download.postgresql.org/pub/repos/yum/{{ item|string }}/redhat/rhel-$releasever-$basearch"
+    file: "pgdg-{{ item|string|regex_replace('\\.', '') }}-centos"
+    gpgcheck: yes
+    enabled: yes
+    gpgkey: "http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ item|string|regex_replace('\\.', '') }}"
+  with_items: "{{ pwa_postgresql_versions }}"
+
+- name: PostgreSQL packages
+  yum:
+    name: "postgresql{{ item.0|string|regex_replace('\\.', '') }}{{ item.1 }}"
+    state: present
+  with_nested:
+    - "{{ pwa_postgresql_versions }}"
+    - [ '', '-server', '-contrib' ]
+
+- name: Other packages
+  yum:
+    name: "{{ pwa_common_packages|union(pwa_add_packages) }}"
+
+- name: mask services
+  systemd:
+    name: postgresql-{{ item|string }}.service
+    enabled: no
+    masked: yes
+  with_items: "{{ pwa_postgresql_versions }}"
+
+...

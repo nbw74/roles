@@ -1,0 +1,6 @@
+---
+pwa_common_packages:
+  - lbzip2
+  - mailx
+  - rsync
+...

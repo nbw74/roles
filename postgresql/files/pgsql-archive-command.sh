@@ -11,7 +11,7 @@ set -o pipefail
 
 # DEFAULTS BEGIN
 typeset FULLNAME="" BASENAME="" PG_VERSION="" BACKUPSERVER="" BACKUPDIR=""
-typeset BACKUPUSER="walbackup"
+typeset BACKUPUSER="walarchive"
 BACKUPDIR="$(hostname -s)"
 # DEFAULTS END
 
@@ -19,12 +19,18 @@ BACKUPDIR="$(hostname -s)"
 readonly bn=$(basename "$0")
 readonly BIN_REQUIRED="lbzip2 rsync logger"
 readonly LOGERR=$(mktemp --tmpdir "${bn%\.*}.XXXX")
-readonly rsync_opts="-ab --backup-dir=../${BACKUPDIR}-dupbak --suffix=.$(hostname -s).$(shuf -i 1000-9999 -n 1)"
+typeset -a rsync_opts=(
+    "-ab"
+    "--backup-dir=../${BACKUPDIR}-dupbak"
+    "--suffix=.$(hostname -s).$(shuf -i 1000-9999 -n 1)"
+    "-e"
+    "ssh -o StrictHostKeyChecking=no"
+    )
 # CONSTANTS END
 
 main() {
     local fn=${FUNCNAME[0]}
-    local -i warn=0
+    local -i warn=0 error=0
 
     trap 'except $LINENO' ERR
     trap _exit EXIT
@@ -40,6 +46,8 @@ main() {
     if [[ ! -d "$PGARCHIVE" ]]; then
 	mkdir "$PGARCHIVE"
     fi
+
+    _log "archiving WAL segment '$BASENAME'"
     # if WAL archive file already exists - create backup for it
     backup "${PGARCHIVE}/${BASENAME}"
     # Copy WAL file into pg_archive directory
@@ -49,15 +57,25 @@ main() {
     # Compress WAL archive file with lbzip2
     lbzip2 "${PGARCHIVE}/$BASENAME"
 
-    warn=1
     # Copy compressed file to remote server
+    warn=1
     # shellcheck disable=SC2086
-    if rsync $rsync_opts "${PGARCHIVE}/${BASENAME}.bz2" ${BACKUPUSER}@${BACKUPSERVER}:${BACKUPDIR}/ >/dev/null
-    then
-        rm "${PGARCHIVE}/${BASENAME}.bz2"
+    rsync "${rsync_opts[@]}" "${PGARCHIVE}/${BASENAME}.bz2" ${BACKUPUSER}@${BACKUPSERVER}:${BACKUPDIR}/ >/dev/null
+    warn=0
+    if (( error )); then
+	_log "rsync failed, don't removing compressed segment" warning
+    else
+	rm "${PGARCHIVE}/${BASENAME}.bz2"
     fi
 
     exit 0
+}
+
+_log() {
+    local fn=${FUNCNAME[0]}
+    local arg2="${2:-info}"
+
+    logger -p "user.$arg2" -t "$bn" "${arg2^^}: $1"
 }
 
 backup() {
@@ -65,7 +83,8 @@ backup() {
     local arg1="${1:?}"
 
     if [[ -f "$arg1" ]]; then
-        mv "$arg1" "${arg1}-$(shuf -i 1000-9999 -n 1)"
+	_log "file '$arg1' already exists, moving old file to backup" warning
+	mv "$arg1" "${arg1}-$(shuf -i 1000-9999 -n 1)"
     fi
 }
 
@@ -89,15 +108,16 @@ except() {
     local ret=$?
     local no=${1:-no_line}
 
-    logger -p user.warning -t "$bn" "* ERROR occured in function '$fn' on line ${no}. Command output: '$(awk '$1=$1' ORS=' ' "${LOGERR:-NOFILE}")'"
+    logger -p user.warning -t "$bn" "WARNING: error occured in function '$fn' on line ${no}. Command output: '$(awk '$1=$1' ORS=' ' "${LOGERR:-NOFILE}")'"
 
     if (( warn )); then
-        logger -p user.warning -t "$bn" "* WARNING: continuing..."
-        return $ret
+	_log "continuing..."
+	error=1
+	return $ret
     else
-        logger -p user.err -t "$bn" "* FATAL: exiting..."
-        [[ -f $LOGERR ]] && rm "$LOGERR"
-        exit $ret
+	_log "exiting..." err
+	[[ -f $LOGERR ]] && rm "$LOGERR"
+	exit $ret
     fi
 }
 
@@ -117,8 +137,8 @@ usage() {
     -p, --fullname <path>	path name of the file to archive (REQUIRED)
     -f, --basename <file>	only the file name (REQUIRED)
     -H, --server <addr>		archive server address (REQUIRED)
-    -U, --user <name>		user on server (default is 'walbackup')
-    -D, --dir <name>		dir for WALs on server (default is '$(hostname -s)')
+    -U, --user <name>		user on the server (default is '$BACKUPUSER')
+    -D, --dir <name>		dir for WALs on the server (default is '$(hostname -s)')
     -V, --pg-version <ver>	PostgreSQL major version (9.4, 10 ... - REQUIRED)
     -h, --help			print help
 "

@@ -1,7 +1,9 @@
 ---
-- name: Template WAL backup script
+- name: Copy WAL backup script
   copy:
     src: "{{ postgresql_wal_backup_script }}"
-    dest: "{{ postgresql_sb_libexec }}/"
+    dest: "{{ postgresql_libexec }}/"
+    owner: root
+    group: root
     mode: 0755
 ...

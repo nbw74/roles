@@ -1,0 +1,5 @@
+---
+plc_pgbadger_update: false
+plc_pgbadger_version: "HEAD"
+plc_reports: {}
+...

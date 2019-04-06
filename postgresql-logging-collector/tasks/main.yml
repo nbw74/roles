@@ -1,0 +1,5 @@
+---
+- name: Conditional include
+  include_tasks: main_task.yml
+  when: "'postgresql-logging-collector' in roles"
+...

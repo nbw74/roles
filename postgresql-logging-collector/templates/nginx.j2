@@ -1,0 +1,14 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+server {
+    listen                      {{ plc_nginx.listen|d('80') }};
+    server_name                 {{ plc_nginx.server_name|d(ansible_default_ipv4.address) }};
+
+    location / {
+        root                    {{ plc_reports.path|d(plc_reports_path_default) }};
+        autoindex               on;
+        autoindex_exact_size    off;
+        autoindex_localtime     on;
+        auth_basic              on;
+        auth_basic_user_file    {{ plc_htpasswd }};
+    }
+}

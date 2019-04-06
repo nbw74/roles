@@ -2,15 +2,14 @@
 # THIS FILE IS ANSIBLE MANAGED
 #
 # Script for copying data to PostgreSQL replica
-# Southbridge LLC, 2017 A.D.
+# Southbridge LLC, 2017-2019 A.D.
 #
 
 set -o nounset
 
 arg1=${1:-NOP}
 
-readonly pg_ver="{{ postgresql_version_raw  }}"
-readonly preset_master_ip="{{ postgresql_pcmk_ip_repl }}"
+readonly preset_master_ip="{{ postgresql_pcmk_ip_repl|d(postgresql_pcmk_ip_main) }}"
 readonly pgdata="/var/lib/pgsql/{{ postgresql_version_raw }}/data"
 readonly lockfile="/var/lib/pgsql/{{ postgresql_version_raw }}/tmp/PGSQL.lock"
 readonly authfile="/var/lib/pgsql/.pgpass"
@@ -23,7 +22,8 @@ typeset master_ip="$preset_master_ip"
 typeset -i CLEANUP=0
 
 main() {
-    local -i warn=0
+    local -i warn=0 pg_ver_num=0
+    local pg_ver="" xlog=""
 
     trap 'except $LINENO' ERR
 
@@ -37,6 +37,57 @@ main() {
         echo_err "* ERROR: Parameter not recognized"
         false
     fi
+
+    checks
+    get_version
+
+    echo_info "* INFO: Recreating instance data directory..."
+    $pg_sudo rm -rf "$pgdata"
+    $pg_sudo mkdir -m 0700 "$pgdata"
+
+    echo_info "* INFO: Running pg_basebackup..."
+    warn=1
+
+    if (( pg_ver_num < 100000 )); then
+	xlog=xlog
+    else
+	xlog=wal
+    fi
+
+    $pg_sudo pg_basebackup --host="$master_ip" --username="$username" --pgdata="$pgdata" --${xlog}-method=stream --status-interval=1 --progress
+
+    warn=0
+
+    if $pg_sudo test -f "$lockfile"
+    then
+        echo_warn "* WARN: Lock file found."
+        $pg_sudo rm -v "$lockfile"
+    fi
+
+    if (( CLEANUP )); then
+        warn=1
+        echo_info "* INFO: cleanup current node errors"
+        sudo pcs resource cleanup PGSQL --node "$(uname -n)"
+        echo_info "* INFO: clear PGGSL constraint"
+        sudo pcs resource clear PGSQL "$(uname -n)"
+        warn=0
+    fi
+
+    echo_ok "* DONE"
+}
+
+get_version() {
+
+    pg_ver=$(psql -AtXc 'SHOW server_version;' -U "$username" -h "$master_ip" template1|sed -r 's/\.[0-9]+$//')
+    pg_ver_num=$(psql -AtXc 'SHOW server_version_num;' -U "$username" -h "$master_ip" template1)
+
+    if [[ -z "$pg_ver" || $pg_ver_num == 0 ]]; then
+	echo "cannot get PostgreSQL version, exiting" >&2
+	false
+    fi
+}
+
+checks() {
 
     for i in $BIN_REQUIRED; do
         if ! hash "$i" 2>/dev/null
@@ -78,31 +129,6 @@ main() {
         false
     fi
 
-    echo_info "* INFO: Recreating instance data directory..."
-    $pg_sudo rm -rf "$pgdata"
-    $pg_sudo mkdir -m 0700 "$pgdata"
-
-    echo_info "* INFO: Running pg_basebackup..."
-    warn=1
-    $pg_sudo pg_basebackup --host="$master_ip" --username="$username" --pgdata="$pgdata" --xlog-method=stream --status-interval=1 --progress
-    warn=0
-
-    if $pg_sudo test -f "$lockfile"
-    then
-        echo_warn "* WARN: Lock file found."
-        $pg_sudo rm -v "$lockfile"
-    fi
-
-    if (( CLEANUP )); then
-        warn=1
-        echo_info "* INFO: cleanup current node errors"
-        sudo pcs resource cleanup PGSQL --node "$(uname -n)"
-        echo_info "* INFO: clear PGGSL constraint"
-        sudo pcs resource clear PGSQL "$(uname -n)"
-        warn=0
-    fi
-
-    echo_ok "* DONE"
 }
 
 echo_err() { $C_WHITE; echo "$@" 1>&2; $C_RST; }

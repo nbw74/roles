@@ -1,0 +1,9 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+# Cleanup emply log dirs
+16 * * * * root /usr/bin/find {{ plc_logs }} -mindepth 1 -type d -empty -delete
+# Generate hourly report
+17 * * * * pgbadger {{ plc_pgbadger.wrapper }} --today --company="{{ plc_reports.title|d('NOCOMPANY') }}" {{ plc_reports.options|d('') }}
+# Generate daily report
+40 00 * * * pgbadger {{ plc_pgbadger.wrapper }} --yesterday --company="{{ plc_reports.title|d('NOCOMPANY') }}" {{ plc_reports.options|d('') }}
+# Delete old logs
+3 00 * * * root /usr/bin/find {{ plc_logs }} -mindepth 1 -type f -mtime +6 -delete

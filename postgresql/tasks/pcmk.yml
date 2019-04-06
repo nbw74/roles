@@ -12,6 +12,7 @@
     src: "{{ postgresql_custom_config_pcmk }}.j2"
     dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config_pcmk }}"
     mode: 0600
+  notify: reload postgresql direct
 
 - name: Archive and tmp dirs
   become: yes
@@ -24,33 +25,54 @@
     - "pg_archive"
     - "tmp"
 
-- name: "Directory for custom resource agent"
+- name: "Directories for pcmk stuff"
   file:
-    path: "{{ postgresql_pcmk_ra_dir }}"
+    path: "{{ item }}"
     state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ postgresql_pcmk_ra_dir }}"
+    - "{{ postgresql_pcmk_rmlock_status|dirname }}"
 
-- name: "Custom resource agent"
+- name: "Copy custom resource agent pgsql"
   copy:
-    src: "pgsql_resource_agent"
+    src: "resource-agents/pgsql"
     dest: "{{ postgresql_pcmk_ra_dir }}/pgsql"
     owner: root
     group: root
     mode: 0755
     force: "{{ postgresql_pcmk_force_ra_update|ternary('yes','no') }}"
 
-- name: "pcs init script"
+- name: "Copy custom resource agent GCP"
+  copy:
+    src: "resource-agents/{{ item.path|basename }}"
+    dest: "{{ item.path }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode|d('0644') }}"
+    force: "{{ postgresql_pcmk_force_ra_update|ternary('yes','no') }}"
+  when: postgresql_gcp_detect.stat.exists
+  with_items:
+    - path: "{{ postgresql_pcmk_ra_dir }}/gcp-vpc-move-ip"
+      mode: "0755"
+    - path: "/usr/share/man/man7/ocf_heartbeat_gcp-vpc-move-ip.7.gz"
+  notify: update mandb
+
+- name: "Template pcs init script"
   template:
-    src: "pgsql.pcs"
-    dest: "{{ postgresql_pcmk_scripts_dir }}/"
+    src: "pgsql.pcs.j2"
+    dest: "{{ postgresql_pcmk_scripts_dir }}/pgsql.pcs"
     owner: root
     group: root
     mode: 0755
     force: "{{ postgresql_pcmk_force_pcs_update|ternary('yes','no') }}"
 
-- name: "slave copy script"
+- name: "Template slave copy script"
   template:
-    src: "pgsql-pcmk-slave-copy.sh"
-    dest: "{{ postgresql_pcmk_bin_dir }}/"
+    src: "pgsql-pcmk-slave-copy.sh.j2"
+    dest: "{{ postgresql_pcmk_bin_dir }}/pgsql-pcmk-slave-copy.sh"
     owner: root
     group: root
     mode: 0755

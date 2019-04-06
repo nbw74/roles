@@ -1,0 +1,35 @@
+---
+- name: Check if walarchive home is mountpoint
+  command: >
+    mountpoint -q {{ pwa_walarchive_home }}
+  register: pwa_vol_stat
+  failed_when: false
+  changed_when: false
+
+- name: Fail if is not a mountpoint
+  fail:
+    msg: "{{ pwa_walarchive_user }} homedir must be a mountpoint!"
+  when:
+    - pwa_vol_stat.rc != 0
+    - not pwa_allow_rootfs
+
+- name: Create walarchive user
+  user:
+    name: "{{ pwa_walarchive_user }}"
+    home: "{{ pwa_walarchive_home }}"
+
+- name: Set authorized_keys
+  authorized_key:
+    user: "{{ pwa_walarchive_user }}"
+    key: "{{ item.type|d('ssh-ed25519') }} {{ item.data }}"
+    comment: "{{ item.comment }}"
+    state: "{{ item.state|d(true)|ternary('present','absent') }}"
+  with_items: "{{ pwa_walarchive_keys }}"
+
+- name: Set walarchive homedir perms
+  file:
+    path: "{{ pwa_walarchive_home }}"
+    owner: "{{ pwa_walarchive_user }}"
+    group: "{{ pwa_walarchive_user }}"
+    mode: "0750"
+...

@@ -1,0 +1,3 @@
+{% for item in pwa_pgpass_entries %}
+{{ item.host }}:{{ item.port|d('*') }}:*:{{ item.user|d('replicator') }}:{{ item.password }}
+{% endfor %}

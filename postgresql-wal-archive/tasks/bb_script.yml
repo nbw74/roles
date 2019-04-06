@@ -1,0 +1,42 @@
+---
+- name: Copy pg_basebackup wrapper
+  copy:
+    src: pwa_basebackupwrapper.sh
+    dest: /usr/local/bin
+    owner: root
+    group: "{{ pwa_basebackup_user }}"
+    mode: 0654
+
+- name: Template .pgpass
+  template:
+    src: pgpass.j2
+    dest: "{{ pwa_basebackup_home }}/.pgpass"
+    owner: "{{ pwa_basebackup_user }}"
+    group: "{{ pwa_basebackup_user }}"
+    mode: 0400
+
+- name: Basebackup crontab
+  cron:
+    cron_file: postgresql-wal-archive
+    day: "{{ cron.day|d('*/3')}}"
+    disabled: "{{ cron.disabled|d(false) }}"
+    hour: "{{ cron.hour|d('4')}}"
+    job: >
+      /usr/local/bin/pwa_basebackupwrapper.sh
+      -D {{ cron.job.depth|d('3') }}
+      -U {{ pwa_basebackup_user }}
+      -b {{ pwa_basebackup_home }}
+      {%- if strip_last_dash|d() %}-s{% endif %}
+      {%- for item in cron.job.addr %}
+      {{ item }}
+      {%- endfor %}
+    minute: "{{ cron.minute|d('20')}}"
+    month: "{{ cron.month|d('*')}}"
+    name: "{{ cron.name }}"
+    user: "{{ pwa_basebackup_user }}"
+    weekday: "{{ cron.weekday|d('*')}}"
+  with_items: "{{ pwa_basebackup_cron }}"
+  loop_control:
+    loop_var: cron
+  notify: reload crond
+...

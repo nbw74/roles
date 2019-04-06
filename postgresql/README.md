@@ -1,22 +1,13 @@
-# postgresql
+postgresql
+==========
 
 Роль для развёртывания СУБД PostgreSQL.
 
 ## Описание переменных для host_vars:
 
 ```yaml
-postgresql_version: int.int # (default: 9.6) Версия PostgreSQL для развёртывания и поддержки
-postgresql_datadir: "/path" # (default: /var/lib/pgsql/<version>/data) Каталог с базой
-
-postgresql_encoding: "string" # (default: utf8) Кодировка инстанса
-postgresql_locale: "string" # (default: ru_RU.UTF-8) Локаль для БД по-умолчанию
-postgresql_lc_messages: "string" # (default: en_US.UTF-8) Локаль для сообщений
-
-postgresql_iptables_enable: bool # (default: true) Включать ли кастомную цепочку iptables
-
-postgresql_extended_logging: bool # (default: false) Включить расширенное журналирование
-postgresql_rsyslog_address: "string|ipv4" # (default: none) Адрес сервера rsyslog. Обязателен если postgresql_extended_logging.
-postgresql_rsyslog_port: int # (default: 514)
+postgresql_additional_packages: # Дополнительно установить указанные пакеты
+  - "package1"
 
 postgresql_conf: # Параметры конфигурации СУБД
     listen_addresses: "ipaddr,ipaddr" # default: * (change requires restart)
@@ -27,16 +18,19 @@ postgresql_conf: # Параметры конфигурации СУБД
     work_mem: intUNIT # default: 1% from total RAM
     maintenance_work_mem: intUNIT # default: 4% from total RAM
     max_stack_depth: intUNIT # default: none, PostgreSQL default: 2MB. Suitable value is $(($(ulimit -s)-2048))
+    shared_preload_libraries: [ string, ... ] # default: none
     effective_io_concurrency: int # default: 2 (for HDD RAID 10). For SSD set > 100
     max_wal_size: intUNIT # default: none (PostgreSQL default: 1GB)
     random_page_cost: float # default: none, PostgreSQL default: 4.0 (suitable for HDD). For SSD set to 1.1 - 1.3
     effective_cache_size: intUNIT # default: 1/2 RAM
     log_timezone: "string" # default: W-SU (MSK)
+    track_activity_query_size: int # default: none (PostgreSQL default: 1024)
     autovacuum_max_workers: int # default: 3 (change requires restart)
     autovacuum_vacuum_threshold: int # default: 50
     autovacuum_analyze_threshold: int # default: 50
     autovacuum_vacuum_scale_factor: float # default: 0.2
     autovacuum_analyze_scale_factor: float # default: 0.1
+    datestyle: "string" # default: 'iso, dmy'
     timezone: "string" # default: W-SU (MSK)
     archive_command: "string" # default: "cp %p /var/lib/pgsql/X.X/pg_archive/%f"
     wal_keep_segments: int # default: 32
@@ -49,15 +43,13 @@ postgresql_conf: # Параметры конфигурации СУБД
     log_lock_waits: bool # default: on
     log_temp_files: int # default: 0
 
-postgresql_ident_local: # peer/ident map для локальных соединений socket
-  - { map: 'string', sysuser: 'string', pguser: 'string' }
-# для локальных подключений использовать map 'supervisor',
-# для удалённых - 'remote'
-
+postgresql_datadir: "/path" # (default: /var/lib/pgsql/<version>/data) Каталог с базой
+postgresql_encoding: "string" # (default: utf8) Кодировка инстанса
+postgresql_extended_logging: bool # (default: false) Включить расширенное журналирование
 postgresql_hba_enable: bool # Включать ли управление файлом pg_hba; default: true
 
 postgresql_hba_tcp: # HBA для удаленных tcp-соединений с аутентификацией md5
-  - { db: 'string', user: 'string', address: 'CIDR' }
+  - { db: 'string', user: 'string', address: 'CIDR' [, method: 'string'] }
 
 postgresql_hba_tcp_local: # HBA для локальных tcp-соединений с аутентификацией md5
   - { db: 'string', user: 'string' }
@@ -65,19 +57,28 @@ postgresql_hba_tcp_local: # HBA для локальных tcp-соединени
 postgresql_hba_tcp_ident: # HBA для удаленных tcp-соединений с аутентификацией ident
   - { db: 'string', user: 'string', address: 'CIDR' }
 
-postgresql_backup_enable: bool # (default: true) Включение в штатную систему резервного копирования Southbridge
+postgresql_ident_local: # peer/ident map для локальных соединений socket
+  - { map: 'string', sysuser: 'string', pguser: 'string' }
+# для локальных подключений использовать map 'supervisor',
+# для удалённых - 'remote'
 
-postgresql_wal_backup_enable: bool # (default: false) Включение архивирования WAL на архивный сервер
-postgresql_wal_backup_server: "ipv4" # (default: none) Адрес архивного сервера
-postgresql_wal_backup_user: "string" # (default: "walbackup") Пользователь для архивирования WAL
-postgresql_wal_backup_dir: "string" # (default: ansible_hostname) Каталог для архивов на сервере
-
-postgresql_additional_packages: # Дополнительно установить указанные пакеты
-  - "package1"
+postgresql_iptables_enable: bool # (default: true) Включать ли кастомную цепочку iptables
+postgresql_locale: "string" # (default: ru_RU.UTF-8) Локаль для БД по-умолчанию
+postgresql_lc_messages: "string" # (default: en_US.UTF-8) Локаль для сообщений
 
 postgresql_repack_tables: # Включение периодического выполнения pg_repack на указанных таблицах
   - { db: 'string', tables: [ 'string', 'string', ... ], cron: 'string' } # где строку для cron указать в обычном формате cronjob '* * * * *'
 
+postgresql_reload_direct: bool # (default: false) выполнить reload через pg_ctl после изменений кофингурации
+postgresql_rsyslog_address: "string|ipv4" # (default: none) Адрес сервера rsyslog. Обязателен если postgresql_extended_logging.
+postgresql_rsyslog_port: int # (default: 514)
+
+postgresql_wal_backup_enable: bool # (default: false) Включение архивирования WAL на архивный сервер
+postgresql_wal_backup_server: "ipv4" # (default: none) Адрес архивного сервера
+postgresql_wal_backup_user: "string" # (default: "walbackup") Пользователь для архивирования WAL
+postgresql_wal_backup_dir: "string" # (default: {{ ansible_nodename.split('.')[0] }}) Каталог для архивов на сервере
+
+postgresql_version: int.int # (default: 9.6) Версия PostgreSQL для развёртывания и поддержки
 ```
 
 ## Кластер Pacemaker
@@ -99,15 +100,18 @@ postgresql_repack_tables: # Включение периодического вы
 
 ```yaml
 postgresql_pcmk_enable: bool # (default: false) Включить кластеризацию. Выставить true;
-postgresql_pcmk_ip_main: ipv4 # (default: none) Виртуальный IPv4-адрес для запросов к БД. Используется Pacemaker;
+postgresql_pcmk_ip_main: ipv4 # MANDATORY if postgresql_pcmk_enable. Виртуальный IPv4-адрес для запросов к БД;
 postgresql_pcmk_ip_repl: ipv4 # (default: none) Виртуальный IPv4-адрес для репликации;
-		# все вышеуказанные параметры являются обязательными при настройке кластера Postgresql
-postgresql_pcmk_force_ra_update: bool # (default: false) Не включать для продакшен-серверов! Форсировать обновление ресурс-агента
+		# если не указан -- используется postgresql_pcmk_ip_main
+postgresql_pcmk_vpc_network: string # MANDATORY if GCP
+postgresql_pcmk_force_ra_update: bool # (default: false) Форсировать обновление ресурс-агента
 postgresql_pcmk_force_pcs_update: bool # (default: false) Форсировать обновление скрипта инициализации кластера
 
 postgresql_pcmk_pcsd_restart_enable: bool # (default: false) Включить периодически перезапуск pcsd (если жрёт память)
 postgresql_pcmk_pcsd_restart_hour: int # (default: 37) Перезапуск pcsd каждые int часов
 postgresql_pcmk_pcsd_restart_minute: int # (default: 37) Минута часа, в которую происходит перезапуск pcsd
+
+postgresql_pcmk_rmlock_enable: bool # (default: false) Автоматически удалять PGSQL.lock при PGSQL-status: STOP
 ```
 
 ### pg_hba
@@ -126,7 +130,7 @@ sudo -iu postgres
 /usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data start
 sleep 10
 psql -c "CREATE ROLE replicator WITH LOGIN REPLICATION CONNECTION LIMIT 10 PASSWORD 'PASSWORD';"
-echo '*:*:replication:replicator:PASSWORD' >> .pgpass
+echo '*:*:*:replicator:PASSWORD' >> .pgpass
 chmod 0600 .pgpass
 ```
 
@@ -136,7 +140,7 @@ chmod 0600 .pgpass
 ```shell
 sudo -iu postgres
 /usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data stop
-echo '*:*:replication:replicator:PASSWORD' >> .pgpass
+echo '*:*:*:replicator:PASSWORD' >> .pgpass
 chmod 0600 .pgpass
 ```
 а затем стянуть базу; скрипту в качестве параметра передаём IP-адрес текущего мастера (запустить от postgres или root)
@@ -300,7 +304,20 @@ pcs resource clear PGSQL SLOW_NODE
 /srv/southbridge/bin/pgsql-pcmk-slave-copy.sh
 pcs resource clear PGSQL NODENAME
 ```
-
+## Подсказки
+#### `postgresql_pcmk_rmlock_enable`
+Просмотр нужных параметров:
+```shell
+pcs property show --full | grep cluster-recheck-interval
+pcs status resources --full | grep 'Meta Attrs'
+```
+Установка параметров:
+```shell
+pcs property set maintenance-mode=true
+pcs resource meta PGSQL failure-timeout=120
+pcs property set cluster-recheck-interval=60
+pcs property set maintenance-mode=false
+```
 ## Зависимости
 -
 

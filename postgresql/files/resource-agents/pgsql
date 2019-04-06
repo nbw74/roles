@@ -295,7 +295,7 @@ for replication (in postgresql.conf and pg_hba.conf).
 
 "slave" means that RA only makes recovery.conf before starting
 to connect to primary which is running somewhere.
-It dosen't need master/slave setting.
+It doesn't need master/slave setting.
 It requires master_ip restore_command parameters.
 </longdesc>
 <shortdesc lang="en">rep_mode</shortdesc>
@@ -389,7 +389,7 @@ their slots, the slots names are "sample_node1" and "sample_node2".
 If the node name contains a upper case letter, hyphen and dot, those characters will be converted to a lower case letter or an underscore.
 For example, Node-1.example.com to node_1_example_com.
 
-pgsql RA doesn't monitor and delete the repliation slot.
+pgsql RA doesn't monitor and delete the replication slot.
 When the slave node has been disconnected in failure or the like, execute one of the following manually.
 Otherwise it may eventually cause a disk full because the master node will continue to accumulate the unsent WAL.
 1. recover and reconnect the slave node to the master node as soon as possible.
@@ -607,6 +607,8 @@ pgsql_real_start() {
         check_socket_dir
     fi
 
+    check_stat_temp_directory
+
     if [ "$OCF_RESKEY_rep_mode" = "slave" ]; then
         rm -f $RECOVERY_CONF
         make_recovery_conf || return $OCF_ERR_GENERIC
@@ -670,6 +672,7 @@ pgsql_real_start() {
 
 pgsql_replication_start() {
     local rc
+    local synchronous_standby_names
 
     # initializing for replication
     change_pgsql_status "$NODENAME" "STOP"
@@ -690,6 +693,13 @@ pgsql_replication_start() {
     if [ $? -ne $OCF_SUCCESS ]; then
         return $OCF_ERR_GENERIC
     fi
+
+    synchronous_standby_names=$(exec_sql "${CHECK_SYNCHRONOUS_STANDBY_NAMES_SQL}")
+    if [ -n "${synchronous_standby_names}" ]; then
+        ocf_exit_reason "Invalid synchronous_standby_names is set in postgresql.conf."
+        return $OCF_ERR_CONFIGURED
+    fi
+
     change_pgsql_status "$NODENAME" "HS:alone"
     return $OCF_SUCCESS
 }
@@ -707,6 +717,7 @@ pgsql_start() {
 
 #pgsql_promote: Promote PostgreSQL
 pgsql_promote() {
+    local output
     local target
     local rc
 
@@ -714,6 +725,18 @@ pgsql_promote() {
         ocf_exit_reason "Not in a replication mode."
         return $OCF_ERR_CONFIGURED
     fi
+
+    output=`exec_sql "${CHECK_MS_SQL}"`
+    if [ $? -ne 0 ]; then
+        report_psql_error $rc $loglevel "Can't get PostgreSQL recovery status on promote."
+        return $OCF_ERR_GENERIC
+    fi
+
+    if [ "$output" = "f" ]; then
+        ocf_log info "PostgreSQL is alredy Master. Don't execute promote."
+        return $OCF_SUCCESS
+    fi
+
     rm -f ${XLOG_NOTE_FILE}.*
 
     for target in $NODE_LIST; do
@@ -725,15 +748,6 @@ pgsql_promote() {
     ocf_log info "Creating $PGSQL_LOCK."
     touch $PGSQL_LOCK
     show_master_baseline
-
-    # create replication slots on master before promotion
-    if use_replication_slot; then
-        create_replication_slots
-        if [ $? -eq $OCF_ERR_GENERIC ]; then
-            ocf_exit_reason "PostgreSQL can't create replication_slot."
-            return $OCF_ERR_GENERIC
-        fi
-    fi
 
     if ocf_is_true ${OCF_RESKEY_restart_on_promote}; then
         ocf_log info "Restarting PostgreSQL instead of promote."
@@ -772,6 +786,15 @@ pgsql_promote() {
             ocf_log debug "PostgreSQL still hasn't promoted yet. Waiting..."
         done
         ocf_log info "PostgreSQL is promoted."
+    fi
+
+    # create replication slots on master after promotion
+    if use_replication_slot; then
+	create_replication_slots
+	if [ $? -eq $OCF_ERR_GENERIC ]; then
+	    ocf_exit_reason "PostgreSQL can't create replication_slot."
+	    return $OCF_ERR_GENERIC
+	fi
     fi
 
     change_data_status "$NODENAME" "LATEST"
@@ -940,7 +963,7 @@ pgsql_wal_receiver_status() {
     local pgsql_real_monitor_status=$1
 
     PID=`head -n 1 $PIDFILE`
-    receiver_parent_pids=`ps -ef | tr -s " " | grep "[w]al receiver process" | cut -d " " -f 3`
+    receiver_parent_pids=`ps -ef | tr -s " " | grep -E "wal[[:space:]]*receiver[[:space:]]+(process)*[[:space:]]*streaming" | cut -d " " -f 3`
 
     if echo "$receiver_parent_pids" | grep -q -w "$PID" ; then
         attrd_updater -n "$PGSQL_WAL_RECEIVER_STATUS_ATTR" -v "normal" -q
@@ -1846,6 +1869,7 @@ pgsql_validate_all() {
     local check_config_rc
     local rep_mode_string
     local socket_directories
+    local rc
 
     version=`cat $OCF_RESKEY_pgdata/PG_VERSION`
 
@@ -1928,8 +1952,10 @@ pgsql_validate_all() {
         PROMOTE_ME="1000"
 
         CHECK_MS_SQL="select pg_is_in_recovery()"
+        CHECK_SYNCHRONOUS_STANDBY_NAMES_SQL="show synchronous_standby_names"
         ocf_version_cmp "$version" "10"
-        if [ $? -eq 1 ] || [ $? -eq 2 ]; then
+        rc=$?
+        if [ $rc -eq 1 ]||[ $rc -eq 2 ]; then
             CHECK_XLOG_LOC_SQL="select pg_last_wal_replay_lsn(),pg_last_wal_receive_lsn()"
         else
             CHECK_XLOG_LOC_SQL="select pg_last_xlog_replay_location(),pg_last_xlog_receive_location()"
@@ -1959,7 +1985,7 @@ pgsql_validate_all() {
         if [ $check_config_rc -eq 0 ]; then
             rep_mode_string="include '$REP_MODE_CONF' # added by pgsql RA"
             if [ "$OCF_RESKEY_rep_mode" = "sync" ]; then
-                if ! grep -q "$rep_mode_string" $OCF_RESKEY_config; then
+                if ! grep -q "^[[:space:]]*$rep_mode_string" $OCF_RESKEY_config; then
                     ocf_log info "adding include directive into $OCF_RESKEY_config"
                     echo "$rep_mode_string" >> $OCF_RESKEY_config
                 fi
@@ -1986,12 +2012,13 @@ pgsql_validate_all() {
 
     if use_replication_slot; then
         ocf_version_cmp "$version" "9.4"
-        if [ $? -eq 0 -o $? -eq 3 ]; then
+        rc=$?
+        if [ $rc -eq 0 ]||[ $rc -eq 3 ]; then
             ocf_exit_reason "Replication slot needs PostgreSQL 9.4 or higher."
             return $OCF_ERR_CONFIGURED
         fi
 
-        echo "$OCF_RESKEY_replication_slot_name" | grep -q -e [^a-z0-9_]
+        echo "$OCF_RESKEY_replication_slot_name" | grep -q -e '[^a-z0-9_]'
         if [ $? -eq 0 ]; then
             ocf_exit_reason "Invalid replication_slot_name($OCF_RESKEY_replication_slot_name). only use lower case letters, numbers, and the underscore character."
             return $OCF_ERR_CONFIGURED
@@ -2007,7 +2034,7 @@ pgsql_validate_all() {
 #
 
 check_log_file() {
-    if [ ! -f "$1" ]
+    if [ ! -e "$1" ]
     then
         touch $1 > /dev/null 2>&1
         chown $OCF_RESKEY_pgdba:`getent passwd $OCF_RESKEY_pgdba | cut -d ":" -f 4` $1
@@ -2020,6 +2047,43 @@ check_log_file() {
     fi
 
     return 0
+}
+
+#
+# Check if we need to create stats temp directory in tmpfs
+#
+
+check_stat_temp_directory() {
+    local stats_temp
+
+    stats_temp=`get_pgsql_param stats_temp_directory`
+
+    if [ -z "$stats_temp" ]; then
+        return
+    fi
+
+    if [ "${stats_temp#/}" = "$stats_temp" ]; then
+        stats_temp="$OCF_RESKEY_pgdata/$stats_temp"
+    fi
+
+    if [ -d "$stats_temp" ]; then
+        return
+    fi
+
+    if ! mkdir -p "$stats_temp"; then
+        ocf_exit_reason "Can't create directory $stats_temp"
+        exit $OCF_ERR_PERM
+    fi
+
+    if ! chown $OCF_RESKEY_pgdba: "$stats_temp"; then
+        ocf_exit_reason "Can't change ownership for $stats_temp"
+        exit $OCF_ERR_PERM
+    fi
+
+    if ! chmod 700 "$stats_temp"; then
+        ocf_exit_reason "Can't change permissions for $stats_temp"
+        exit $OCF_ERR_PERM
+    fi
 }
 
 #

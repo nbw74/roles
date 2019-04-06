@@ -1,0 +1,34 @@
+---
+- name: Set crm_mon.service options
+  lineinfile:
+    path: "/etc/sysconfig/crm_mon"
+    regexp: '^#?OPTIONS='
+    line: 'OPTIONS="-Adh {{ postgresql_pcmk_rmlock_status }}"'
+  when: postgresql_pcmk_rmlock_enable
+  notify: restart crm_mon
+
+- name: Set crm_mon.service state
+  systemd:
+    name: crm_mon.service
+    state: "{{ postgresql_pcmk_rmlock_enable|ternary('started', 'stopped') }}"
+    enabled: "{{ postgresql_pcmk_rmlock_enable|ternary('true', 'false') }}"
+  register: postgresql_reg_crm_mon_service
+
+- name: "Copy rmlock script"
+  copy:
+    src: "rmlock.sh"
+    dest: "/usr/local/bin/rmlock.sh"
+    owner: root
+    group: root
+    mode: 0755
+  when: postgresql_pcmk_rmlock_enable
+
+- name: Manage rmlock cronjob
+  cron:
+    name: "Remove pgsql resource agent lock file if PGSQL-status is STOP"
+    cron_file: pgsql-rmlock
+    job: "/usr/local/bin/rmlock.sh -V {{ postgresql_version_raw }}"
+    user: root
+    state: "{{ postgresql_pcmk_rmlock_enable|ternary('present', 'absent') }}"
+  notify: reload crond
+...

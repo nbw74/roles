@@ -2,6 +2,7 @@
 postgresql_sb_bin: "/usr/local/bin"
 postgresql_sb_etc: "/usr/local/etc"
 postgresql_sb_libexec: "/usr/local/libexec"
+postgresql_libexec: "/usr/local/libexec"
 postgresql_sb_check: "/usr/local/check/hourly"
 postgresql_flag_file: "/root/.postgresql"
 
@@ -16,9 +17,14 @@ postgresql_iptables_chain: "SB.postgresql"
 
 postgresql_user: "postgres"
 
+postgresql_pcmk_packages: [ 'pacemaker', 'pcs', 'resource-agents' ]
+postgresql_pcmk_rmlock_packages: [ 'python2-html2text' ]
 postgresql_pcmk_ra_dir: "/usr/lib/ocf/resource.d/{{ postgresql_pcmk_ra_org }}"
 postgresql_pcmk_scripts_dir: "/usr/local/scripts"
 postgresql_pcmk_bin_dir: "/usr/local/bin"
+postgresql_pcmk_rmlock_status: "/var/spool/crm_mon/status.html"
+postgresql_pcmk_alerts_dir: "/usr/local/share/pacemaker/alerts"
+postgresql_gcp_hostname: "/usr/bin/google_set_hostname"
 
 postgresql_wal_backup_script: "pgsql-archive-command.sh"
 postgresql_repack_script: "sb-pgsql-repackwrapper.sh"

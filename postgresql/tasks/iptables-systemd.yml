@@ -22,12 +22,16 @@
   systemd:
     name: "{{ postgresql_iptables_service }}"
     state: reloaded
-  when: postgresql_whitelist.changed
+  when:
+    - postgresql_iptables_enable
+    - postgresql_whitelist.changed
 
 - name: "{{ postgresql_iptables_service }} service restarted (systemd)"
   systemd:
     name: "{{ postgresql_iptables_service }}"
     state: restarted
     daemon_reload: yes
-  when: postgresql_iptables_unit.changed
+  when:
+    - postgresql_iptables_enable
+    - postgresql_iptables_unit.changed
 ...

@@ -5,6 +5,10 @@
 {% set ignored = postgresql_hba_tcp_addresses.append( item.address ) %}
 {% endfor %}
 {% for address in postgresql_hba_tcp_addresses|unique %}
+{% if address == 'all' %}
+0.0.0.0/0
+{% else %}
 {{ address }}
+{% endif %}
 {% endfor %}
 {% endif %}

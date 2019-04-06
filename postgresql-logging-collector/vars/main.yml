@@ -1,0 +1,17 @@
+---
+plc_crontab: "/etc/cron.d/postgresql-logging-collector"
+plc_htpasswd: "/etc/nginx/passwd"
+plc_logs: "/var/log/pglog"
+plc_reports_path_default: "/opt/pgbadger/reports"
+
+plc_pgbadger:
+  home: "/opt/pgbadger"
+  repo: "https://github.com/darold/pgbadger.git"
+  wrapper: "/usr/local/bin/pgbadger_wrapper.sh"
+
+plc_packages:
+  - nginx
+  - python-passlib
+  - git
+  - bc
+...

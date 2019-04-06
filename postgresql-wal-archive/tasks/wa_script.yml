@@ -1,0 +1,26 @@
+---
+- name: Copy wal pruner script
+  copy:
+    src: pwa_wal_pruner.sh
+    dest: /usr/local/bin
+    owner: root
+    group: "{{ pwa_walarchive_user }}"
+    mode: 0654
+
+- name: WAL pruner crontab
+  cron:
+    cron_file: postgresql-wal-archive
+    disabled: "{{ item.disabled|d(false) }}"
+    job: >
+      /usr/local/bin/pwa_wal_pruner.sh
+      -m {{ pwa_walarchive_cron.job.min_age|d('12') }}
+      -r {{ pwa_walarchive_cron.job.rm_count|d('100') }}
+      -u {{ pwa_walarchive_cron.job.max_used|d('86') }}
+      -U {{ pwa_walarchive_user }}
+      -b {{ pwa_walarchive_home }}
+    minute: "{{ item.minute|d('*/19')}}"
+    name: "walarchive schedule"
+    user: "{{ pwa_walarchive_user }}"
+  with_dict: "{{ pwa_walarchive_cron }}"
+  notify: reload crond
+...

@@ -20,20 +20,24 @@
 
 - name: Pacemaker packages
   yum:
-    name: "{{ item }}"
+    name: "{{ postgresql_pcmk_packages }}"
     state: present
-  with_items:
-    - "pacemaker"
-    - "pcs"
-    - "resource-agents"
   when: postgresql_pcmk_enable
+  tags: [ packages ]
+
+- name: Pacemaker rmlock packages
+  yum:
+    name: "{{ postgresql_pcmk_rmlock_packages }}"
+    state: present
+  when:
+    - postgresql_pcmk_enable
+    - postgresql_pcmk_rmlock_enable
   tags: [ packages ]
 
 - name: Additional packages
   yum:
-    name: "{{ item }}"
+    name: "{{ postgresql_additional_packages }}"
     state: present
-  with_items: "{{ postgresql_additional_packages }}"
   when: postgresql_additional_packages is defined
   tags: [ packages ]
 ...

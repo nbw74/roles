@@ -3,7 +3,7 @@
 #
 # Script for PostgreSQL cluster initialization
 # source: https://wiki.clusterlabs.org/wiki/PgSQL_Replicated_Cluster
-# Southbridge LLC, 2017 A.D.
+# Southbridge LLC, 2017-2019 A.D.
 #
 
 main() {
@@ -16,17 +16,43 @@ main() {
 
     pcs -f PGSQL_CFG property set no-quorum-policy="stop"
     pcs -f PGSQL_CFG property set stonith-enabled="false"
+{% if postgresql_pcmk_rmlock_enable %}
+    pcs -f PGSQL_CFG property set cluster-recheck-interval="60"
+{% endif %}
     pcs -f PGSQL_CFG resource defaults resource-stickiness="INFINITY"
     pcs -f PGSQL_CFG resource defaults migration-threshold="1"
 
+{% if postgresql_gcp_detect.stat.exists %}
+    pcs -f PGSQL_CFG resource create VADDR-MAIN ocf:{{ postgresql_pcmk_ra_org }}:gcp-vpc-move-ip \
+       ip="{{ postgresql_pcmk_ip_main }}" \
+       vpc_network="{{ postgresql_pcmk_vpc_network }}" \
+       route_name="pcmk-$(pcs status | awk '/Cluster name:/ { print tolower($3) }')-main" \
+       meta migration-threshold="0" \
+       op start   timeout="180s" interval="0s"  on-fail="restart" \
+       op monitor timeout="40s"  interval="60s" on-fail="restart" \
+       op stop    timeout="180s" interval="0s"  on-fail="block"
+
+{% if postgresql_pcmk_ip_repl is defined %}
+    pcs -f PGSQL_CFG resource create VADDR-REPL ocf:{{ postgresql_pcmk_ra_org }}:gcp-vpc-move-ip \
+       ip="{{ postgresql_pcmk_ip_repl }}" \
+       vpc_network="{{ postgresql_pcmk_vpc_network }}" \
+       route_name="pcmk-$(pcs status | awk '/Cluster name:/ { print tolower($3) }')-repl" \
+       meta migration-threshold="0" \
+       op start   timeout="180s" interval="0s"  on-fail="restart" \
+       op monitor timeout="40s"  interval="60s" on-fail="restart" \
+       op stop    timeout="180s" interval="0s"  on-fail="block"
+{% endif %}
+{% else %}
     pcs -f PGSQL_CFG resource create VADDR-MAIN ocf:heartbeat:IPaddr2 \
        ip="{{ postgresql_pcmk_ip_main }}" \
        nic="eth0" \
        cidr_netmask="24" \
+       meta migration-threshold="0" \
        op start   timeout="60s" interval="0s"  on-fail="restart" \
        op monitor timeout="60s" interval="10s" on-fail="restart" \
        op stop    timeout="60s" interval="0s"  on-fail="block"
 
+{% if postgresql_pcmk_ip_repl is defined %}
     pcs -f PGSQL_CFG resource create VADDR-REPL ocf:heartbeat:IPaddr2 \
        ip="{{ postgresql_pcmk_ip_repl }}" \
        nic="eth0" \
@@ -35,6 +61,8 @@ main() {
        op start   timeout="60s" interval="0s"  on-fail="stop" \
        op monitor timeout="60s" interval="10s" on-fail="restart" \
        op stop    timeout="60s" interval="0s"  on-fail="ignore"
+{% endif %}
+{% endif %}
 
     pcs -f PGSQL_CFG resource create PGSQL ocf:{{ postgresql_pcmk_ra_org }}:pgsql \
        pgctl="/usr/pgsql-{{ postgresql_version_raw }}/bin/pg_ctl" \
@@ -49,10 +77,13 @@ main() {
        repuser="replicator" \
        primary_conninfo_opt="keepalives_idle=60 keepalives_interval=5 keepalives_count=5" \
        tmpdir="/var/lib/pgsql/{{ postgresql_version_raw }}/tmp" \
-       master_ip="{{ postgresql_pcmk_ip_repl }}" \
+       master_ip="{{ postgresql_pcmk_ip_repl|d(postgresql_pcmk_ip_main) }}" \
        restart_on_promote='true' \
        check_wal_receiver='true' \
        node_list="$nodelist" \
+{% if postgresql_pcmk_rmlock_enable %}
+       meta failure-timeout=120 \
+{% endif %}
        op start   timeout="60s" interval="0s" on-fail="restart" \
        op monitor timeout="60s" interval="4s" on-fail="restart" \
        op monitor timeout="60s" interval="3s" on-fail="restart" role="Master" \
@@ -64,7 +95,11 @@ main() {
     pcs -f PGSQL_CFG resource master PG-MASTER PGSQL \
        master-max=1 master-node-max=1 clone-max=3 clone-node-max=1 notify=true
 
+{% if postgresql_pcmk_ip_repl is defined %}
     pcs -f PGSQL_CFG resource group add MASTER-GROUP VADDR-MAIN VADDR-REPL
+{% else %}
+    pcs -f PGSQL_CFG resource group add MASTER-GROUP VADDR-MAIN
+{% endif %}
 
     pcs -f PGSQL_CFG constraint colocation add MASTER-GROUP with Master PG-MASTER INFINITY
     pcs -f PGSQL_CFG constraint order promote PG-MASTER then start MASTER-GROUP symmetrical=false score=INFINITY

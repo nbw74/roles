@@ -1,0 +1,13 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+$ModLoad imudp
+$UDPServerRun 514
+
+$RepeatedMsgReduction off
+
+$umask 0022
+
+$template PGLOG,"{{ plc_logs }}/%HOSTNAME%/postgresql-%$YEAR%-%$MONTH%-%$DAY%.log" 
+
+local5.*        -?PGLOG
+local5.*        stop
+## EOF ##

@@ -1,0 +1,17 @@
+---
+pwa_add_packages: []
+pwa_allow_rootfs: false
+
+pwa_basebackup_user: basebackup
+pwa_basebackup_home: "/srv/{{ pwa_basebackup_user }}"
+
+pwa_walarchive_user: walarchive
+pwa_walarchive_home: "/srv/{{ pwa_walarchive_user }}"
+
+pwa_walarchive_cron:
+  job: {}
+
+pwa_walarchive_keys: []
+
+pwa_postgresql_versions: []
+...

@@ -14,7 +14,7 @@ wal_log_hints			= on
 
 archive_mode			= on
 {% if postgresql_wal_backup_enable %}
-archive_command			= '{{ postgresql_sb_libexec ~ '/' ~ postgresql_wal_backup_script ~ ' -V ' ~ postgresql_version_raw ~ ' -H ' ~ postgresql_wal_backup_server ~ ' -U ' ~ postgresql_wal_backup_user ~ ' -D ' ~ postgresql_wal_backup_dir ~ ' -p %p -f %f' }}'
+archive_command			= '{{ postgresql_libexec }}/{{ postgresql_wal_backup_script }} -V {{ postgresql_version_raw }} -H {{ postgresql_wal_backup_server }} -U {{ postgresql_wal_backup_user }} -D {{ postgresql_wal_backup_dir }} -p %p -f %f'
 {% else %}
 archive_command			= '{{ postgresql_conf['archive_command']|default('cp %p /var/lib/pgsql/' ~ postgresql_version_raw ~ '/pg_archive/%f') }}'
 {% endif %}

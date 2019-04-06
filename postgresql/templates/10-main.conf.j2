@@ -20,6 +20,12 @@ maintenance_work_mem		= {{ postgresql_conf['maintenance_work_mem']|default(auto_
 max_stack_depth			= {{ postgresql_conf['max_stack_depth'] }}
 {% endif %}
 
+# - Disk -
+
+{% if postgresql_conf['shared_preload_libraries'] is defined %}
+shared_preload_libraries	= '{{ postgresql_conf['shared_preload_libraries']|join(',') }}'
+{% endif %}
+
 # - Asynchronous Behavior -
 
 effective_io_concurrency	= {{ postgresql_conf['effective_io_concurrency']|default('2') }}
@@ -63,6 +69,12 @@ log_temp_files			= {{ postgresql_conf['log_temp_files']|default('0') }}
 
 log_timezone			= '{{ postgresql_conf['log_timezone']|default('W-SU') }}'
 
+# - Query/Index Statistics Collector -
+
+{% if postgresql_conf['track_activity_query_size'] is defined %}
+track_activity_query_size	= {{ postgresql_conf['track_activity_query_size'] }}
+{% endif %}
+
 # - Autovacuum Parameters -
 
 autovacuum			= on
@@ -77,6 +89,7 @@ autovacuum_analyze_scale_factor	= {{ postgresql_conf['autovacuum_analyze_scale_f
 
 # - Locale and Formatting -
 
+datestyle			= '{{ postgresql_conf['datestyle']|default('iso, dmy') }}'
 timezone			= '{{ postgresql_conf['timezone']|default('W-SU') }}'
 lc_messages			= '{{ postgresql_extended_logging|ternary('C',postgresql_lc_messages) }}'
 lc_monetary			= '{{ postgresql_lc_monetary|default(postgresql_locale) }}'

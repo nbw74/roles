@@ -3,4 +3,12 @@
   systemd:
     name: rsyslog.service
     state: restarted
+
+- name: reload postgresql direct
+  become: yes
+  become_user: postgres
+  command: >
+    /usr/pgsql-{{ postgresql_version_raw }}/bin/pg_ctl -D {{ postgresql_datadir }} reload
+  when:
+    - postgresql_reload_direct
 ...
