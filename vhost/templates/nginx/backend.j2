@@ -13,5 +13,10 @@
 	proxy_pass			{{ item.proxy_pass }};
 {% include "nginx/proxy.j2" %}
     }
+{% elif vhost_backend == 'php-fpm' and item.fpm is not defined %}
+    set $root_path	'{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}';
+    root		$root_path;
+    index		{{ item.index|d('index.html') }};
+    charset		utf-8;
 {% endif %}
 
