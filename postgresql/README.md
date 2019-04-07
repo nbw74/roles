@@ -34,6 +34,7 @@ postgresql_conf: # Параметры конфигурации СУБД
     timezone: "string" # default: W-SU (MSK)
     archive_command: "string" # default: "cp %p /var/lib/pgsql/X.X/pg_archive/%f"
     wal_keep_segments: int # default: 32
+    wal_log_hints: bool # default: false
     deadlock_timeout: "string" # default: none (PostgreSQL default: time: 1s)
     # нижеуказанные переменные эффективны только при "postgresql_extended_logging: true"
     log_min_duration_statement: int # default: 1000
@@ -69,13 +70,16 @@ postgresql_lc_messages: "string" # (default: en_US.UTF-8) Локаль для с
 postgresql_repack_tables: # Включение периодического выполнения pg_repack на указанных таблицах
   - { db: 'string', tables: [ 'string', 'string', ... ], cron: 'string' } # где строку для cron указать в обычном формате cronjob '* * * * *'
 
+postgresql_replication_enable: bool # (default: false) Включение секций конфига, нужных для репликации.
+    # Файл recovery.conf автоматически не создаётся и репликация не настраивается!
+
 postgresql_reload_direct: bool # (default: false) выполнить reload через pg_ctl после изменений кофингурации
 postgresql_rsyslog_address: "string|ipv4" # (default: none) Адрес сервера rsyslog. Обязателен если postgresql_extended_logging.
 postgresql_rsyslog_port: int # (default: 514)
 
 postgresql_wal_backup_enable: bool # (default: false) Включение архивирования WAL на архивный сервер
 postgresql_wal_backup_server: "ipv4" # (default: none) Адрес архивного сервера
-postgresql_wal_backup_user: "string" # (default: "walbackup") Пользователь для архивирования WAL
+postgresql_wal_backup_user: "string" # (default: "walarchive") Пользователь для архивирования WAL
 postgresql_wal_backup_dir: "string" # (default: {{ ansible_nodename.split('.')[0] }}) Каталог для архивов на сервере
 
 postgresql_version: int.int # (default: 9.6) Версия PostgreSQL для развёртывания и поддержки

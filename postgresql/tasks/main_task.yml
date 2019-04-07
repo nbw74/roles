@@ -122,12 +122,6 @@
 - name: Include service shell scripts tasks
   import_tasks: svcsh.yml
 
-- include_tasks: "backup.yml"
-  when: postgresql_backup_enable
-
-- include_tasks: "nobackup.yml"
-  when: not postgresql_backup_enable
-
 - include_tasks: "walbackup.yml"
   when: postgresql_wal_backup_enable
 

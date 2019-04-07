@@ -5,13 +5,12 @@
     enabled: no
     masked: yes
 
-- name: "Template custom config (pcmk)"
+- name: "Remove old custom config (pcmk)"
   become: yes
   become_user: "{{ postgresql_user }}"
-  template:
-    src: "{{ postgresql_custom_config_pcmk }}.j2"
+  file:
     dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config_pcmk }}"
-    mode: 0600
+    state: absent
   notify: reload postgresql direct
 
 - name: Archive and tmp dirs

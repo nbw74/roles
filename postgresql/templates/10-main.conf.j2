@@ -22,18 +22,59 @@ max_stack_depth			= {{ postgresql_conf['max_stack_depth'] }}
 
 # - Disk -
 
-{% if postgresql_conf['shared_preload_libraries'] is defined %}
-shared_preload_libraries	= '{{ postgresql_conf['shared_preload_libraries']|join(',') }}'
-{% endif %}
-
 # - Asynchronous Behavior -
 
 effective_io_concurrency	= {{ postgresql_conf['effective_io_concurrency']|default('2') }}
+
+# - WAL Settings -
+
+{% if postgresql_pcmk_enable or postgresql_replication_enable or postgresql_wal_backup_enable %}
+{% if postgresql_version_raw is version('10.0', '>') %}
+wal_level			= replica
+{% else %}
+wal_level			= hot_standby
+{% endif %}
+{% else %}
+wal_level			= minimal
+{% endif %}
+wal_log_hints			= {{ postgresql_conf['wal_log_hints']|d()|ternary('on','off') }}
 
 # - Checkpoints -
 
 {% if postgresql_conf['max_wal_size'] is defined %}
 max_wal_size			= {{ postgresql_conf['max_wal_size'] }}
+{% endif %}
+
+# - Archiving -
+
+{% if postgresql_wal_backup_enable %}
+archive_mode			= on
+archive_command			= '{{ postgresql_libexec }}/{{ postgresql_wal_backup_script }} -V {{ postgresql_version_raw }} -H {{ postgresql_wal_backup_server }} -U {{ postgresql_wal_backup_user }} -D {{ postgresql_wal_backup_dir }} -p %p -f %f'
+{% else %}
+archive_mode			= off
+{% endif %}
+
+{% if postgresql_pcmk_enable %}
+# - Replication: Sending Server -
+
+max_wal_senders			= 10
+wal_keep_segments		= {{ postgresql_conf['wal_keep_segments']|default('32') }}
+wal_sender_timeout		= 5000
+max_replication_slots		= 10
+
+# - Replication: Standby Servers -
+
+hot_standby			= on
+max_standby_archive_delay	= -1
+max_standby_streaming_delay	= -1
+wal_receiver_status_interval	= 2
+wal_receiver_timeout		= 5000
+{% elif postgresql_replication_enable %}
+# - Replication: Sending Server -
+
+# - Replication: Standby Servers -
+
+hot_standby			= on
 {% endif %}
 
 # - Planner Cost Constants -
@@ -97,10 +138,24 @@ lc_numeric			= '{{ postgresql_lc_numeric|default(postgresql_locale) }}'
 lc_time				= '{{ postgresql_lc_time|default(postgresql_locale) }}'
 default_text_search_config	= '{{ postgresql_conf['default_text_search_config']|default('pg_catalog.russian') }}'
 
+# - Shared Library Preloading -
+
+{% if postgresql_conf['shared_preload_libraries'] is defined %}
+shared_preload_libraries	= '{{ postgresql_conf['shared_preload_libraries']|join(',') }}'
+{% endif %}
+
 # - Lock management -
 
 {% if postgresql_conf['deadlock_timeout'] is defined %}
 deadlock_timeout		= {{ postgresql_conf['deadlock_timeout'] }}
+{% endif %}
+
+# - Error Handling
+
+{% if postgresql_pcmk_enable %}
+restart_after_crash		= false
+{% else %}
+restart_after_crash		= true
 {% endif %}
 
 # - The End -

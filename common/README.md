@@ -59,6 +59,8 @@ common_ifcfg: # (default: []) шаблонизация файлов /etc/sysconf
     variables:
       KEY: "value"  # KEY="value"
 
+common_ifcfg_restart: bool # (default: true) перезапуск интефейса после изменения common_ifcfg
+
 common_ifcfg_vars: # (default: []) добавление переменных в /etc/sysconfig/network-scripts/ifcfg-<dev>
   - dev: device_name
     variables:

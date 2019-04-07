@@ -7,6 +7,7 @@ common_icinga2_conf: []
 common_icinga2_enable: true
 common_ifcfg: []
 common_ifcfg_vars: []
+common_ifcfg_restart: true
 common_iptables_enable: true
 common_journal_gateway_enable: false
 common_leave_networkmanager: false

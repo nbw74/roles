@@ -63,32 +63,35 @@
       tags: [ ifcfg ]
   when: common_ifcfg_vars|length > 0
 
-- name: Initialize array
-  set_fact:
-    common_ifcfg_changed: []
-  tags: [ ifcfg ]
+- name: Interfaces restart section
+  block:
+    - name: Initialize array
+      set_fact:
+        common_ifcfg_changed: []
+      tags: [ ifcfg ]
 
-- name: Populate array with dev names of changed ifcfgs
-  set_fact:
-    common_ifcfg_changed: "{{ common_ifcfg_changed }} + [ '{{ item.item.dev }}' ]"
-  when:
-    - common_ifcfg_result.results is defined
-    - item.changed
-    - item.item.variables.ONBOOT|d('no') | regex_search('[Yy][Ee][Ss]')
-  loop: "{{ common_ifcfg_result.results|flatten(levels=1) }}"
-  loop_control:
-    label: "{{ item.item.dev }}"
-  tags: [ ifcfg ]
+    - name: Populate array with dev names of changed ifcfgs
+      set_fact:
+        common_ifcfg_changed: "{{ common_ifcfg_changed }} + [ '{{ item.item.dev }}' ]"
+      when:
+        - common_ifcfg_result.results is defined
+        - item.changed
+        - item.item.variables.ONBOOT|d('no') | regex_search('[Yy][Ee][Ss]')
+      loop: "{{ common_ifcfg_result.results|flatten(levels=1) }}"
+      loop_control:
+        label: "{{ item.item.dev }}"
+      tags: [ ifcfg ]
 
-- name: "Restart changed interfaces"
-  shell: >
-    ifdown {{ item }} ; ifup {{ item }}
-  async: 45
-  poll: 5
-  when: common_ifcfg_changed|length > 0
-  loop: "{{ common_ifcfg_changed|unique|flatten(levels=1) }}"
-  loop_control:
-    label: "{{ item }}"
-  ignore_errors: yes
-  tags: [ ifcfg ]
+    - name: "Restart changed interfaces"
+      shell: >
+        ifdown {{ item }} ; ifup {{ item }}
+      async: 45
+      poll: 5
+      when: common_ifcfg_changed|length > 0
+      loop: "{{ common_ifcfg_changed|unique|flatten(levels=1) }}"
+      loop_control:
+        label: "{{ item }}"
+      ignore_errors: yes
+      tags: [ ifcfg ]
+  when: common_ifcfg_restart
 ...
