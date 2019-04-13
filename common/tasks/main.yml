@@ -1,66 +1,70 @@
 ---
-- import_tasks: packages1.yml
+- name: Import packages1
+  import_tasks: packages1.yml
 
-- import_tasks: hostname.yml
+- name: Import hostname
+  import_tasks: hostname.yml
 
-- import_tasks: selinux.yml
+- name: Import selinux
+  import_tasks: selinux.yml
 
-- import_tasks: ifcfg.yml
+- name: Import ifcfg
+  import_tasks: ifcfg.yml
 
-- include_tasks: routes.yml
+- name: Include routes
+  include_tasks: routes.yml
   when: common_static_route is defined
 
-- import_tasks: ntp.yml
+- name: Import ntp
+  import_tasks: ntp.yml
 
-- import_tasks: snmpd.yml
+- name: Import snmpd
+  import_tasks: snmpd.yml
 
-- import_tasks: mail.yml
+- name: Import mail
+  import_tasks: mail.yml
 
-- import_tasks: services.yml
+- name: Include sysctl
+  include_tasks: sysctl.yml
+  when: common_sysctl_vars|length > 0
 
-- import_tasks: journal.yml
+- name: Import services
+  import_tasks: services.yml
 
-- import_tasks: console.yml
-  when:
-    - 'ansible_virtualization_role == "guest"'
-    - not alien
+- name: Import journal
+  import_tasks: journal.yml
 
-- import_tasks: packages2.yml
+- name: Import packages2
+  import_tasks: packages2.yml
 
-- import_tasks: colorize.yml
+- name: Import colorize
+  import_tasks: colorize.yml
 
-- name: "Check if already enrolled"
-  shell: "getent group sysadmins || :"
-  register: common_getent_sysadmins
-  changed_when: false
-  tags: [domain]
+- name: Import etckeeper
+  import_tasks: etckeeper.yml
 
-- import_tasks: domain.yml
-  when:
-    - common_getent_sysadmins.stdout.find('sysadmins') == -1
-    - not alien
-
-- name: get first private address
-  set_fact:
-    common_ipv4_private: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
-  when:
-    - not alien
-  tags: [ icinga2 ]
-
-- import_tasks: icinga2.yml
-  when:
-    - not alien
-
-- import_tasks: etckeeper.yml
-
-- import_tasks: rsyslog.yml
-  when:
-    - not alien
-
-- include_tasks: cron.yml
+- name: Include cron
+  include_tasks: cron.yml
   when:
     - common_cron_user_tasks|length > 0
   tags: [ cron ]
+
+- name: Intranet section
+  block:
+    - name: Include console
+      include_tasks: console.yml
+      when: "ansible_virtualization_role == 'guest'"
+
+    - name: Include domain
+      include_tasks: domain.yml
+
+    - name: Include icinga2
+      include_tasks: icinga2.yml
+      tags: [ icinga2 ]
+
+    - name: Include rsyslog
+      include_tasks: rsyslog.yml
+  when: not alien
 
 - name: Reboot system if packages updated
   block:
@@ -82,6 +86,6 @@
       when: reg_reboothint.rc == 1
   when:
     - pkgupdate
-    - ansible_distribution_major_version >= 7
+    - ansible_distribution_major_version|int >= 7
 
 ...

@@ -67,6 +67,9 @@ common_ifcfg_vars: # (default: []) добавление переменных в 
       KEY: "value"  # KEY="value"
 # чтобы удалить переменную, присвойте ей значение 'no' или 'false' без кавычек.
 
+common_ipa_principal: string # Mandatory if not alien
+common_ipa_password: string # Mandatory if not alien
+
 common_journal_gateway_enable: bool # default: false
 
 common_leave_networkmanager: bool # default: false
@@ -100,6 +103,9 @@ common_static_route: # Добавить статичные маршруты в /
 
 selinux_custom_booleans:
   - { name: 'boolean_name'[, state: 'bool'] }
+
+common_sysctl_vars:
+  key: value
 
 selinux_state: bool # default: "enforcing"
 

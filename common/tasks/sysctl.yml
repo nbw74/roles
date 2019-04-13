@@ -1,0 +1,9 @@
+---
+- name: Template sysctl custom vars
+  template:
+    src: sysctl.j2
+    dest: "{{ common_sysctl_file }}"
+    owner: root
+    mode: 0644
+  notify: config set sysctl
+...

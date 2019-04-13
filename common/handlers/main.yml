@@ -119,6 +119,12 @@
   service: name=sshd state=reloaded
 
 ####
+# Sysctl
+- name: config set sysctl
+  command: >
+    sysctl -p {{ common_sysctl_file }}
+
+####
 # Sosnole
 - name: initctl
   command: "initctl start ttyS0"

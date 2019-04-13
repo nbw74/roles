@@ -1,0 +1,5 @@
+; THIS FILE IS ANSIBLE MANAGED
+; User vars
+{% for key, value in common_sysctl_vars|dictsort %}
+{{ key }} = {{ value }}
+{% endfor %}
