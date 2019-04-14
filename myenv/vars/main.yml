@@ -4,8 +4,8 @@ prompt_file: .prompt.attr
 
 env_color:
   production: RED
-  testing: GREEN
-  staging: YELLOW
+  development: GREEN
+  testing: YELLOW
   auxiliary: BLUE
   localhost: MAGENTA
 ...
