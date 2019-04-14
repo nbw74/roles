@@ -22,6 +22,8 @@ postgresql_pcmk_pcsd_restart_enable: false
 postgresql_pcmk_pcsd_restart_hour: 37
 postgresql_pcmk_pcsd_restart_minute: 37
 
+postgresql_pgpass_entries: []
+postgresql_recovery_conf: {}
 postgresql_replication_enable: false
 
 postgresql_backup_enable: true

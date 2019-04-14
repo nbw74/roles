@@ -109,6 +109,24 @@
   notify: reload postgresql direct
   tags: [ initdb, hba ]
 
+- name: Template .pgpass
+  template:
+    src: pgpass.j2
+    dest: "{{ postgresql_homedir }}/.pgpass"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_user }}"
+    mode: 0400
+  when: postgresql_pgpass_entries|length > 0
+
+- name: Template recovery.conf
+  template:
+    src: recovery.conf.j2
+    dest: "{{ postgresql_datadir }}/recovery.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_user }}"
+    mode: 0644
+  when: postgresql_recovery_conf|length > 0
+
 - name: PostgreSQL service enabled and started
   service:
     name: "postgresql-{{ postgresql_version_raw }}"

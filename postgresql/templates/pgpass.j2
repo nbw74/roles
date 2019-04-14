@@ -1,0 +1,3 @@
+{% for item in postgresql_pgpass_entries %}
+{{ item.hostname|d('*') }}:{{ item.port|d('*') }}:{{ item.database|d('*') }}:{{ item.username|d('*') }}:{{ item.password }}
+{% endfor %}

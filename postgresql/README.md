@@ -67,6 +67,27 @@ postgresql_iptables_enable: bool # (default: true) Включать ли кас�
 postgresql_locale: "string" # (default: ru_RU.UTF-8) Локаль для БД по-умолчанию
 postgresql_lc_messages: "string" # (default: en_US.UTF-8) Локаль для сообщений
 
+postgresql_pgpass_entries: # Добавить пользователю postgres файл .pgpass
+  - hostname: string # default: '*'
+    port: int # default: '*'
+    database: string # default: '*'
+    username: string # default: '*'
+    password: string # MANDATORY
+
+postgresql_recovery_conf:
+  primary_conninfo:
+    host: string # MANDATORY
+    port: int # default: 5432
+    user: string # default: replicator
+    application_name: string # default: ansible_nodename.split('.')[0]
+    keepalives_idle: int # default: 20
+    keepalives_interval: int # default: 5
+    keepalives_count: int # default: 5
+  recovery_min_apply_delay: time # default: not set; valid units for this parameter are "ms", "s", "min", "h", and "d"
+  recovery_target_timeline: string # default: 'latest'
+  restore_command: string # default: not set
+  standby_mode: on|off # default: on
+
 postgresql_repack_tables: # Включение периодического выполнения pg_repack на указанных таблицах
   - { db: 'string', tables: [ 'string', 'string', ... ], cron: 'string' } # где строку для cron указать в обычном формате cronjob '* * * * *'
 
