@@ -29,7 +29,7 @@ effective_io_concurrency	= {{ postgresql_conf['effective_io_concurrency']|defaul
 # - WAL Settings -
 
 {% if postgresql_pcmk_enable or postgresql_replication_enable or postgresql_wal_backup_enable %}
-{% if postgresql_version_raw is version('10.0', '>') %}
+{% if postgresql_version_raw is version('10.0', '>=') %}
 wal_level			= replica
 {% else %}
 wal_level			= hot_standby
