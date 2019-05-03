@@ -8,4 +8,60 @@
     mode: "{{ item.mode|d('0755') }}"
   with_items:
     - file: pgsql-lock-view.sh
+
+- name: Pgmetrics block
+  block:
+    - name: "pgmetrics: get download url"
+      set_fact:
+        pg_pgmetrics_download_url: >
+          {{ lookup('url', 'https://api.github.com/repos/rapidloop/pgmetrics/releases/latest')
+          | from_json | json_query('assets[2].browser_download_url') | string }}
+
+    - name: "pgmetrics: get latest version"
+      set_fact:
+        pg_pgmetrics_version_latest: >
+          {{ pg_pgmetrics_download_url | regex_replace('.*\/v([.0-9]+)\/.*', '\1') }}
+
+    - name: "pgmetrics: get installed stats"
+      stat:
+        path: /usr/local/bin/pgmetrics
+      register: pg_reg_pgmetrics_stat
+
+    - name: get local version
+      block:
+        - name: "pgmetrics: get local version register"
+          command: >
+            /usr/local/bin/pgmetrics --version
+          register: pg_reg_pgmetrics_version
+          changed_when: false
+
+        - name: "pgmetrics: get local version"
+          set_fact:
+            pg_pgmetrics_version_local: >
+              {{ pg_reg_pgmetrics_version.stdout | regex_replace('.*([.0-9]+).*', '\1') }}
+      when: pg_reg_pgmetrics_stat.stat.exists
+
+    - name: get binary file
+      block:
+        - name: "pgmetrics: unarchive url"
+          unarchive:
+            src: "{{ pg_pgmetrics_download_url }}"
+            dest: /tmp
+            remote_src: yes
+
+        - name: "pgmetrics: update"
+          copy:
+            src: "/tmp/pgmetrics_{{ pg_pgmetrics_version_latest|trim }}_linux_amd64/pgmetrics"
+            dest: /usr/local/bin/pgmetrics
+            mode: 0755
+            owner: root
+            remote_src: yes
+      when: >
+        not pg_reg_pgmetrics_stat.stat.exists
+        or pg_pgmetrics_version_local is version(pg_pgmetrics_version_latest, '<')
+  rescue:
+    - debug:
+        msg: "Non-critical exception, continuing..."
+  tags: [ pgmetrics ]
+
 ...

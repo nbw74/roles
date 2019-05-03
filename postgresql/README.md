@@ -343,6 +343,10 @@ pcs resource meta PGSQL failure-timeout=120
 pcs property set cluster-recheck-interval=60
 pcs property set maintenance-mode=false
 ```
+## Скрипты и утилиты
++ `/usr/local/bin/pgmetrics` всякая разная полезная статистика
++ `/usr/local/bin/pgsql-lock-view.sh` просмотр блокировок (обёртка над https://wiki.postgresql.org/wiki/Lock_Monitoring)
++ `/srv/southbridge/bin/pgsql-pcmk-slave-copy.sh` копирование экземпляра с мастера на слейв (обёртка над `pg_basebackup`)
 ## Зависимости
 -
 

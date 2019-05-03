@@ -7,8 +7,7 @@
 
 set -o nounset
 
-arg1=${1:-NOP}
-
+readonly bn="$(basename "$0")"
 readonly preset_master_ip="{{ postgresql_pcmk_ip_repl|d(postgresql_pcmk_ip_main) }}"
 readonly pgdata="/var/lib/pgsql/{{ postgresql_version_raw }}/data"
 readonly lockfile="/var/lib/pgsql/{{ postgresql_version_raw }}/tmp/PGSQL.lock"
@@ -18,24 +17,19 @@ readonly master_port=5432
 
 readonly BIN_REQUIRED="pidof tcping pg_basebackup pcs"
 
-typeset master_ip="$preset_master_ip"
 typeset -i CLEANUP=0
 
 main() {
     local -i warn=0 pg_ver_num=0
-    local pg_ver="" xlog=""
+    local pg_ver="" xlog="" master_ip=""
+    local arg1=${1:-NOP}
 
     trap 'except $LINENO' ERR
 
     if [[ $arg1 == NOP ]]; then
-        true
-    elif [[ $arg1 =~ ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4} ]]; then
-        master_ip="$arg1"
-    elif [[ $arg1 =~ ^(cleanup|c)$ ]]; then
-        CLEANUP=1
+	master_ip="$preset_master_ip"
     else
-        echo_err "* ERROR: Parameter not recognized"
-        false
+	master_ip="$arg1"
     fi
 
     checks
@@ -78,8 +72,8 @@ main() {
 
 get_version() {
 
-    pg_ver=$(psql -AtXc 'SHOW server_version;' -U "$username" -h "$master_ip" template1|sed -r 's/\.[0-9]+$//')
-    pg_ver_num=$(psql -AtXc 'SHOW server_version_num;' -U "$username" -h "$master_ip" template1)
+    pg_ver=$($pg_sudo psql -AtXc 'SHOW server_version;' -U "$username" -h "$master_ip" template1|sed -r 's/\.[0-9]+$//')
+    pg_ver_num=$($pg_sudo psql -AtXc 'SHOW server_version_num;' -U "$username" -h "$master_ip" template1)
 
     if [[ -z "$pg_ver" || $pg_ver_num == 0 ]]; then
 	echo "cannot get PostgreSQL version, exiting" >&2
@@ -148,11 +142,41 @@ except() {
     fi
 }
 
+usage() {
+    echo -e "\\n    Usage: $bn [OPTIONS] [IPADDR or DNS_NAME]\\n
+    Options:
+
+    -c, --cleanup	    perform 'pcs cleanup' and 'pcs clear' after instance copying
+    -h, --help		    print help
+"
+}
+
 readonly C_RST="tput sgr0"
 readonly C_RED="tput setaf 1"
 readonly C_GREEN="tput setaf 2"
 readonly C_YELLOW="tput setaf 3"
 readonly C_BLUE="tput setaf 4"
 readonly C_WHITE="tput setaf 7"
+# Getopts
+getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-main
+if ! TEMP=$(getopt -o ch --longoptions cleanup,help -n "$bn" -- "$@")
+then
+    echo "Terminating..." >&2
+    exit 1
+fi
+
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+    case $1 in
+	-c|--cleanup)		CLEANUP=1 ;	shift	;;
+	-h|--help)		usage ;		exit 0	;;
+	--)			shift ;		break	;;
+	*)			usage ;		exit 1
+    esac
+done
+
+main "$@"
+

@@ -11,6 +11,7 @@ set -o pipefail
 
 # DEFAULTS BEGIN
 typeset -i LINES=100
+typeset -i STDOUT=0
 # DEFAULTS END
 
 # CONSTANTS BEGIN
@@ -30,14 +31,18 @@ main() {
 
     checks
 
-    local xpaste="" command_sudo=""
+    local xpaste="" command_sudo="false"
     local -i NO_RM_OUT=0
 
-    if [[ $(whoami) != 'postgres' ]]; then
-	command_sudo="sudo -iu postgres"
+    if [[ $(whoami) == 'postgres' ]]; then
+	command_sudo="psql"
+    elif [[ $(whoami) == 'zabbix' ]]; then
+	command_sudo="sudo /usr/bin/psql -U postgres"
+    else
+	command_sudo="sudo -iu postgres psql"
     fi
 # shellcheck disable=SC2024
-    $command_sudo psql <<'EOF' > "$LOGOUT"
+    $command_sudo <<'EOF' > "$LOGOUT"
   SELECT blocked_locks.pid     AS blocked_pid,
          blocked_activity.usename  AS blocked_user,
          blocking_locks.pid     AS blocking_pid,
@@ -63,15 +68,21 @@ main() {
 EOF
 
     if ! grep -qF '(0 rows)' "$LOGOUT"; then
-	NO_RM_OUT=1
-	head -n $LINES "$LOGOUT" > "$LOGCUT"
-	echo "[...]" >> "$LOGCUT"
-	tail -n 2 "$LOGOUT" >> "$LOGCUT"
-	xpaste=$(curl -H "Content-Type: text/plain" --data-binary "@$LOGCUT" "https://xpaste.pro/paste-file?language=sql&ttl_days=7")
-	echo_info "$xpaste"
-	echo_info "$LOGOUT"
+	if (( STDOUT )); then
+	    cat "$LOGOUT"
+	else
+	    NO_RM_OUT=1
+	    head -n $LINES "$LOGOUT" > "$LOGCUT"
+	    echo "[...]" >> "$LOGCUT"
+	    tail -n 2 "$LOGOUT" >> "$LOGCUT"
+	    xpaste=$(curl -H "Content-Type: text/plain" --data-binary "@$LOGCUT" "https://xpaste.pro/paste-file?language=sql&ttl_days=7")
+	    echo_info "$xpaste"
+	    echo_info "$LOGOUT"
+	fi
     else
-	echo_info "No locks found."
+	if (( ! STDOUT )); then
+	    echo_info "No locks found."
+	fi
     fi
 
     exit 0
@@ -101,6 +112,15 @@ except() {
     exit $ret
 }
 
+usage() {
+    echo -e "\\n    Usage: $bn [OPTIONS]\\n
+    Options:
+
+    -c, --stdout	    print locks to stdout
+    -h, --help		    print help
+"
+}
+
 _exit() {
     local ret=$?
 
@@ -128,6 +148,26 @@ else
     echo_ok()		{ echo "* OK" ;		}
 fi
 
+# Getopts
+getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
+
+if ! TEMP=$(getopt -o ch --longoptions stdout,help -n "$bn" -- "$@")
+then
+    echo "Terminating..." >&2
+    exit 1
+fi
+
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+    case $1 in
+	-c|--stdout)		STDOUT=1 ;	shift	;;
+	-h|--help)		usage ;		exit 0	;;
+	--)			shift ;		break	;;
+	*)			usage ;		exit 1
+    esac
+done
 main
 
 ## EOF ##

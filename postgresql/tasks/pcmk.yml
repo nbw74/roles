@@ -33,6 +33,7 @@
     mode: 0755
   with_items:
     - "{{ postgresql_pcmk_ra_dir }}"
+    - "{{ postgresql_pcmk_scripts_dir }}"
     - "{{ postgresql_pcmk_rmlock_status|dirname }}"
 
 - name: "Copy custom resource agent pgsql"
@@ -86,4 +87,5 @@
     hour: "*/{{ postgresql_pcmk_pcsd_restart_hour }}"
     minute: "{{ postgresql_pcmk_pcsd_restart_minute }}"
     state: "{{ postgresql_pcmk_pcsd_restart_enable|ternary('present','absent') }}"
+  notify: reload crond
 ...
