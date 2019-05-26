@@ -2,14 +2,7 @@
 - name: Packages installed
   become: yes
   yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - zsh
-    - vim
-    - tree
-    - git
-    - libselinux-python
+    name: "{{ env_packages }}"
   when:
     - ansible_os_family == "RedHat"
     - ansible_distribution_major_version|int < 8
@@ -50,7 +43,7 @@
     path: '{{ item }}'
     state: link
     force: yes
-  with_items:
+  loop:
     - .vim
     - .zsh
     - .gitconfig

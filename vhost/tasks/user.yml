@@ -37,7 +37,7 @@
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   notify: restorecon command
-  tags: [ user, db ]
+  tags: [ user, db, redmine ]
 
 - name: set password
   user:
