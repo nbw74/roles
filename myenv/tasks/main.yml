@@ -121,6 +121,27 @@
   authorized_key:
     user: "{{ username }}"
     state: present
-    key: "{{ lookup('file', '/home/{{ addkey_user|default(username) }}/.ssh/id_rsa.pub') }}"
+    key: "{{ lookup('file', '/home/' ~ addkey_user|default(username) ~ '/.ssh/id_rsa.pub') }}"
   when: addkey
+
+- name: Check if psql present
+  stat:
+    path: /usr/bin/psql
+  register: myenv_reg_psql
+
+- name: psqlrc section
+  block:
+    - name: env block
+      blockinfile:
+        path: "/home/{{ username }}/.zshenv"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: PSQLRC"
+        block: |
+          export PGUSER="postgres"
+        create: yes
+
+    - name: psqlrc
+      copy:
+        src: psqlrc
+        dest: "/home/{{ username }}/.psqlrc"
+  when: myenv_reg_psql.stat.exists
 ...
