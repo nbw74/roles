@@ -130,6 +130,7 @@
   loop_control:
     loop_var: multi
     label: "{{ multi[0].name }}:{{ multi[1].name }}"
+  tags: [ crypto ]
 
 - name: ACL
   block:

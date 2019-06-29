@@ -13,7 +13,7 @@
     label: "{{ item.name }}"
   delegate_to: "{{ common_icinga2_master }}"
   notify: config reload icinga2
-  tags: [ webcheck ]
+  tags: [ webcheck, crypto ]
 
 - name: unset webcheck
   file:
@@ -31,5 +31,5 @@
     label: "{{ item.name }}"
   delegate_to: "{{ common_icinga2_master }}"
   notify: config reload icinga2
-  tags: [ webcheck ]
+  tags: [ webcheck, crypto ]
 ...

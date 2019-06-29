@@ -3,6 +3,7 @@
   set_fact:
     multi_dir: "{{ vhost_basedir }}/{{ multi[0].user|d(multi[0].name) }}/{{ multi[1].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
     multi_user: "{{ multi[0].user|d(multi[0].name) }}"
+  tags: [ crypto ]
 
 - name: Multisite dirs
   file:
@@ -43,6 +44,7 @@
         mode: 0400
       notify: validate nginx
   when: multi[1].crypto|d('none') != 'none'
+  tags: [ crypto ]
 
 - name: Present .htsecure if redirect
   copy:
@@ -54,6 +56,7 @@
     mode: 0644
   when:
     - multi[1].crypto|d('none') == 'redirect'
+  tags: [ crypto ]
 
 - name: Absent .htsecure if no redirect
   file:
@@ -61,4 +64,5 @@
     state: absent
   when:
     - multi[1].crypto|d('none') != 'redirect'
+  tags: [ crypto ]
 ...

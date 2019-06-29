@@ -1,6 +1,6 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 
-{% if item.crypto|d('none') == 'none' %}
+{% if item.crypto|d('none') in [ 'none', 'both' ] %}
 server {
 {% include "nginx/listen-plain.j2" %}
 {% if item.idna|d() %}

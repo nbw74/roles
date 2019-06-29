@@ -10,6 +10,7 @@
 
 - include_tasks: bitrix.yml
   when: vhost_backend == 'bitrix'
+  tags: [ crypto ]
 
 - include_tasks: hosts.yml
   when: vhost_backend == 'bitrix'
@@ -25,9 +26,11 @@
 
 - include_tasks: nginx.yml
   when: vhost_backend != 'bitrix'
+  tags: [ crypto ]
 
 - include_tasks: nginx-bx.yml
   when: vhost_backend == 'bitrix'
+  tags: [ crypto ]
 
 - include_tasks: apache.yml
   when: vhost_backend == 'apache' or vhost_backend == 'bitrix'
@@ -44,6 +47,9 @@
 
 - include_tasks: postgresql.yml
   when: vhost_backend != 'reverse-proxy'
+
+- name: Flush handlers
+  meta: flush_handlers
 
 - include_tasks: redmine.yml
   when: vhost_backend != 'reverse-proxy'

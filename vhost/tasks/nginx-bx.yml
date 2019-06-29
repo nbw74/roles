@@ -11,7 +11,7 @@
     label: "{{ item.name }}"
   register: vhost_bx_nginx_conf
   notify: validate nginx
-  tags: [ conf ]
+  tags: [ conf, crypto ]
 
 - name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
   file:
@@ -24,6 +24,6 @@
   loop_control:
     label: "{{ item[0].dest|d('null')|basename }}"
   notify: validate nginx
-  tags: [ conf ]
+  tags: [ conf, crypto ]
 
 ...
