@@ -5,6 +5,7 @@
     section: Journal
     option: "{{ item.option }}"
     value: "{{ item.value }}"
+    no_extra_spaces: yes
   with_items:
     - { option: 'Storage', value: 'persistent' }
     - { option: 'Compress', value: 'yes' }

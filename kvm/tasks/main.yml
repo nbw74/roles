@@ -1,13 +1,9 @@
 ---
-- name: Abort if system is not RHEL 7 or above
-  fail:
-    msg: "THIS ROLE IS DESIGNED FOR RHEL/CentOS 7"
-  when: ansible_distribution_major_version|int != 7
-
-- name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'kvm' IS NOT ASSIGNED TO THIS HOST"
-  when: "'kvm' not in roles"
+- name: Check role requirements
+  assert:
+    that:
+      - ansible_distribution_major_version|int == 7
+      - kvm_pool|length > 0
 
 - name: Get TRIM support
   shell: >
