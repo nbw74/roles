@@ -1,4 +1,3 @@
-<!-- vim: set ft=ansible: -->
 # php-fpm
 Роль для развёртывания бэкенда PHP-FPM для веб-сервера Nginx
 ## Variables
@@ -8,7 +7,8 @@ php_fpm_add_packages: [ string, ... ] # default: none -- Additional packages
 php_laravel_units: # Laravel queue worker using systemd
   - name: "string" # default: laravel-queue-worker; Unit name
     description: "string" # optional
-    args: "string" # optional arguments after "queue:work"
+    command: string # default: 'queue:work'
+    args: "string" # optional arguments after `command` (e.q. '--queue=export --tries=1')
     state: bool # default: yes
 
 php_logrotate_laravel_enable: bool # default: false
