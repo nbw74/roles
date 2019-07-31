@@ -1,8 +1,8 @@
 /* THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST */
 {% if item.crypto|d('none') == 'none' %}
-    vars.www["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.name) }}"] = {
+    vars.www["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.idna|d()|ternary(item.name.encode('idna'), item.name)) }}"] = {
 {% else %}
-    vars.www_tls["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.name) }}"] = {
+    vars.www_tls["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.idna|d()|ternary(item.name.encode('idna'), item.name)) }}"] = {
 {% endif %}
         http_string = "{{ (item.webcheck|default(dict(content=vhost_default_content)))['content']|d(vhost_default_content) }}"
 {% if item.webcheck is defined %}

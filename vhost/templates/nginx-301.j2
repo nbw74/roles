@@ -3,13 +3,8 @@
 {% if item.crypto|d('none') in [ 'none', 'both' ] %}
 server {
 {% include "nginx/listen-plain.j2" %}
-{% if item.idna|d() %}
-    server_name		{{ item.name.encode('idna') }}
-			www.{{ item.name.encode('idna') }}
-{% else %}
-    server_name		{{ item.name }}
-			www.{{ item.name }}
-{% endif %}
+    server_name		{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
+			www.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
 {% if item.alias is defined %}
 {% for name in item.alias %}
 			{{ name }}

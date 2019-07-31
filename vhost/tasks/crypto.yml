@@ -1,7 +1,7 @@
 ---
 - name: copy certificates
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/{{ item.name }}.crt"
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}.crt"
     dest: "/etc/pki/tls/certs/"
     owner: root
     group: root
@@ -19,7 +19,7 @@
 
 - name: copy keys
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/{{ item.name }}.key"
+    src: "{{ inventory_dir }}/../files/crypto/{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}.key"
     dest: "/etc/pki/tls/private/"
     owner: root
     group: root

@@ -4,8 +4,8 @@
 server {
 
 {% include "nginx/listen-plain.j2" %}
-    server_name		{{ item.name }}
-			www.{{ item.name }}
+    server_name		{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
+			www.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
 {% if item.alias is defined %}
 {% for name in item.alias %}
 			{{ name }}
@@ -39,8 +39,8 @@ server {
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		{{ item.name }}
-			www.{{ item.name }}
+    server_name		{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
+			www.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
 			;
 {% if item.disabled|d() %}
 

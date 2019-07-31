@@ -4,8 +4,8 @@
 <VirtualHost 127.0.0.1:8888>
 	ServerAdmin webmaster@{{ item.name }}
 	DocumentRoot {{ siteroot }}
-	ServerName {{ item.name }}
-	ServerAlias www.{{ item.name }}
+	ServerName {{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
+	ServerAlias www.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}
 {% if item.alias is defined %}
 {% for name in item.alias %}
 	ServerAlias {{ name }}
