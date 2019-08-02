@@ -2,13 +2,13 @@
 - name: set default ip address if public
   set_fact:
     vhost_default_ipaddr: "{{ ansible_all_ipv4_addresses | ipaddr('public') | first | d('empty') }}"
-  tags: [ conf ]
+  tags: [ conf, crypto ]
 
 - name: set default ip address if private only
   set_fact:
     vhost_default_ipaddr: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
   when: vhost_default_ipaddr == 'empty'
-  tags: [ conf ]
+  tags: [ conf, crypto ]
 
 - name: get first private address
   set_fact:
