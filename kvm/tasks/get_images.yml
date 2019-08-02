@@ -13,6 +13,7 @@
       get_url:
         url: "{{ kvm_templates_uri }}/{{ item.template_name|d(kvm_template_default) }}.bz2"
         dest: "{{ kvm_templates_path }}/{{ item.template_name|d(kvm_template_default) }}.bz2"
+        tmp_dest: "{{ kvm_templates_path }}"
         mode: 0640
         force: no
       when:

@@ -8,31 +8,30 @@
   loop_control:
     label: "{{ item }}"
 
-- name: Template ansible config files (I)
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ kvm_templates_path }}/{{ item.dest }}"
-  when: not kvm_common_case
-  with_items:
-    - { src: "../../ansible-sshd/templates/etc/ssh_ansible/sshd_config", dest: "sshd_config" }
-    - { src: "../../ansible-sshd/templates/etc/pam.d/sshd_ansible", dest: "sshd_ansible" }
-    - { src: "../../ansible-sshd/templates/etc/ansible-sshd-passwd", dest: "ansible-sshd-passwd" }
-    - { src: "../../ansible-sshd/templates/etc/rsyslog.d/ansible-sshd.conf", dest: "ansible-sshd.conf" }
-    - { src: "../../ansible-sshd/templates/etc/systemd/system/sshd_ansible.service", dest: "sshd_ansible.service" }
-  loop_control:
-    label: "{{ item.dest }}"
+- name: not kvm_common_case section
+  block:
+    - name: Template ansible config files (I)
+      template:
+        src: "../../ansible-sshd/templates/{{ item.src }}.j2"
+        dest: "{{ kvm_templates_path }}/{{ item.dest }}"
+      with_items:
+        - { src: "etc/ssh_ansible/sshd_config", dest: "sshd_config" }
+        - { src: "etc/rsyslog.d/sshd_ansible.conf", dest: "sshd_ansible.conf" }
+        - { src: "etc/logrotate.d/sshd_ansible", dest: "sshd_ansible" }
+      loop_control:
+        label: "{{ item.dest }}"
 
-- name: Copy ansible config files (II)
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ kvm_templates_path_bis }}/{{ item.dest }}"
+    - name: Copy ansible config files (II)
+      copy:
+        src: "../../ansible-sshd/files/{{ item.src }}"
+        dest: "{{ kvm_templates_path_bis }}/{{ item.dest }}"
+      with_items:
+        - { src: "etc/sysconfig/sshd_ansible", dest: "sshd_ansible" }
+        - { src: "etc/sudoers.d/ansible", dest: "ansible" }
+        - { src: "etc/systemd/system/sshd_ansible.service", dest: "sshd_ansible.service" }
+      loop_control:
+        label: "{{ item.dest }}"
   when: not kvm_common_case
-  with_items:
-    - { src: "../../ansible-sshd/templates/etc/sysconfig/sshd_ansible", dest: "sshd_ansible" }
-    - { src: "../../ansible-sshd/templates/etc/logrotate.d/ansible-sshd.conf", dest: "ansible-sshd.conf" }
-    - { src: "../../ansible-sshd/templates/etc/sudoers.d/ansible", dest: "ansible" }
-  loop_control:
-    label: "{{ item.dest }}"
 
 - name: Create temporary file (I)
   tempfile:

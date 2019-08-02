@@ -70,8 +70,9 @@
         {{ kvm_leave_hostname|ternary('','--hostname ' ~ item[0].sysprep_hostname|d(item[0].name) ~ '.' ~
         item[0].sysprep_domain|default(ansible_nodename.split(".")[1:]|join("."))) }}
         --copy-in {{ kvm_templates_path }}/{{ item[0].name }}:/var/local
-        --run-command 'mv /var/local/{{ item[0].name }}/* /etc/sysconfig/network-scripts'
-        --firstboot-command 'nmcli con modify eth0 ipv4.dhcp-hostname {{ item[0].sysprep_hostname|d(item[0].name) }}
+        {{ (item[0].sysprep_ifcfg is defined)
+        |ternary('--run-command "mv /var/local/' ~ item[0].name  ~ '/* /etc/sysconfig/network-scripts"', '') }}
+        --firstboot-command 'nmcli con modify "System eth0" ipv4.dhcp-hostname {{ item[0].sysprep_hostname|d(item[0].name) }}
         && systemctl is-enabled NetworkManager.service && systemctl restart NetworkManager.service'
         {{ (item[0].sysprep_root_pass is defined)
         |ternary('--root-password password:' ~ item[0].sysprep_root_pass|d(''),'') }}

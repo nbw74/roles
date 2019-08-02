@@ -1,10 +1,11 @@
-#!/bin/sh
+#!/bin/bash -x
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 setenforce 0
 systemctl enable --now getty@ttyS0.service
 {% if not kvm_common_case %}
 sed -r -i "s/^(SELINUX=)enforcing/\1permissive/" /etc/selinux/config
 sleep 60
+echo -e "\nnameserver 208.67.222.222\nnameserver 8.8.8.8\n" >> /etc/resolv.conf
 yum -q -y clean metadata
 yum -q -y makecache
 yum -q -y install epel-release

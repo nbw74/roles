@@ -17,6 +17,8 @@
     label: "{{ item.pool_name }}"
   register: kvm_pool_xml_path
   changed_when: kvm_pool_xml_path.matches[0].path is defined
+  vars:
+    mitogen_task_isolation: fork
 
 - name: Get pool type (xml)
   xml:
