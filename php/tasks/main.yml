@@ -2,8 +2,7 @@
 - name: Check role requirements
   assert:
     that:
-      - "'httpd' in server_roles"
-      - "'php-fpm' in server_roles"
+      - "'httpd' in server_roles or 'php-fpm' in server_roles"
       - ansible_distribution_major_version|int >= 7
       - php_remi_version is defined or php_oob
     msg: "Role requirements is not satisfied"
