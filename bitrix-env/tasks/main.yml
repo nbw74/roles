@@ -1,8 +1,9 @@
 ---
 - name: Check if role assigned to host
-  fail:
+  assert:
+    that: >
+      'bitrix-env' in server_roles
     msg: "Role 'bitrix-env' is not assigned to this host"
-  when: "'bitrix-env' not in roles"
 
 - import_tasks: selinux.yml
 
