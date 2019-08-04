@@ -3,11 +3,15 @@
   systemd:
     name: httpd.service
     state: reloaded
-  when: "'httpd' in roles"
+  listen: reload php
+  when: >
+    'httpd' in server_roles
 
 - name: reload php-fpm
   systemd:
     name: php-fpm.service
     state: reloaded
-  when: "'php-fpm' in roles"
+  listen: reload php
+  when: >
+    'php-fpm' in server_roles
 ...
