@@ -7,36 +7,39 @@
 
 - import_tasks: packages.yml
 
-- name: "Comment Listen directives"
-  lineinfile:
-    path: /etc/httpd/conf/httpd.conf
-    regexp: '^(Listen\s+[.:0-9])$'
-    line: "# \1"
-    backrefs: yes
-  tags: [ conf ]
-  notify: config validate httpd restart
+- name: Config section
+  block:
+    - name: Comment Listen directives
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^(Listen\s+[.:0-9]+)$'
+        line: "#A \\1"
+        backrefs: yes
+      notify: config validate httpd restart
 
-- name: Insert LISTEN block
-  blockinfile:
-    path: /etc/httpd/conf/httpd.conf
-    insertafter: "# Listen"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK: LISTEN"
-    block: |
-      Listen 127.0.0.1:{{ httpd_port|d('8888') }} # MARK
-      {% for item in httpd_listen_add %}
-      Listen {{ item.addr }}:{{ item.port }} #MARK
-      {% enfor %}
-  tags: [ conf ]
-  notify: config validate httpd restart
+    - name: Insert include line
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        insertafter: "#A Listen"
+        line: "Include conf/listen.conf"
+      notify: config validate httpd restart
 
-# MODULES
-- name: "Enable MPM-ITK"
-  lineinfile:
-    dest: "/etc/httpd/conf.modules.d/00-mpm-itk.conf"
-    backrefs: yes
-    regexp: '^.*LoadModule(\s+)mpm_(.*)$'
-    line: 'LoadModule\1mpm_\2'
-  when:  ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7
+    - name: Template listen.conf
+      template:
+        src: listen.conf.j2
+        dest: /etc/httpd/conf/listen.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: config validate httpd restart
+
+    # MODULES
+    - name: "Enable MPM-ITK"
+      lineinfile:
+        dest: "/etc/httpd/conf.modules.d/00-mpm-itk.conf"
+        backrefs: yes
+        regexp: '^.*LoadModule(\s+)mpm_(.*)$'
+        line: 'LoadModule\1mpm_\2'
   tags: [ conf ]
 
 # UMASK
