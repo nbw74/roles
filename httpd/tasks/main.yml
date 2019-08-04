@@ -1,8 +1,9 @@
 ---
 - name: Check if role assigned to host
-  fail:
+  assert:
+    that:
+      - "'httpd' in server_roles"
     msg: "Role 'httpd' is not assigned to this host"
-  when: "'httpd' not in roles"
 
 - import_tasks: packages.yml
 

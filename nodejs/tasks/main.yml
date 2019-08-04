@@ -1,15 +1,11 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'nodejs' IS NOT ASSIGNED TO THIS HOST"
-  when: "'nodejs' not in roles"
-
-- name: Fail if old or unknown OS
-  fail:
-    msg: "INCOMPATIBLE OPERATING SYSTEM"
-  when: >
-    ansible_os_family != "RedHat"
-    or ansible_distribution_major_version|int < 7
+  assert:
+    that:
+      - "'nodejs' in server_roles"
+      - ansible_os_family == "RedHat"
+      - ansible_distribution_major_version|int >= 7
+    msg: "Role 'nodejs' is not assigned to this host or other requirement is not satisfied"
 
 - name: Create nodejs repo with curl
   shell: >

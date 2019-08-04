@@ -1,8 +1,9 @@
 ---
 - name: Check if role assigned to host
-  fail:
+  assert:
+    that:
+      - "'memcached' in server_roles"
     msg: "Role 'memcached' is not assigned to this host"
-  when: "'memcached' not in roles"
 
 - name: Remi repo is installed
   yum:

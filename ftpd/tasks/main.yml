@@ -4,7 +4,7 @@
     that:
       - "'ftpd' in server_roles"
       - ansible_distribution_major_version|int >= 7
-    msg: "Role 'ftpd' is not assigned to this host or other requirement is  not satisfied"
+    msg: "Role 'ftpd' is not assigned to this host or other requirement is not satisfied"
 
 - import_tasks: "packages.yml"
   tags: [ packages ]

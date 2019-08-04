@@ -1,8 +1,9 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'php-fpm' IS NOT ASSIGNED TO THIS HOST"
-  when: "'php-fpm' not in roles"
+  assert:
+    that:
+      - "'php-fpm' in server_roles"
+    msg: "Role 'php-fpm' is not assigned to this host"
 
 - import_tasks: packages.yml
 

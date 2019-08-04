@@ -1,8 +1,9 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "Role icinga2 not assigned to host"
-  when: '"icinga2" not in roles'
+  assert:
+    that:
+      - "'icinga2' in server_roles"
+    msg: "Role 'icinga2' is not assigned to this host"
 
 - import_tasks: packages.yml
 
