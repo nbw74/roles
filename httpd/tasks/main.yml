@@ -7,13 +7,27 @@
 
 - import_tasks: packages.yml
 
-- name: "Set Listen directive"
+- name: "Comment Listen directives"
   lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    regexp: '^Listen .*'
-    line: "Listen 127.0.0.1:{{ httpd_port |d('8888') }}"
-  tags: [conf]
-  notify: config restart httpd
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^(Listen\s+[.:0-9])$'
+    line: "# \1"
+    backrefs: yes
+  tags: [ conf ]
+  notify: config validate httpd restart
+
+- name: Insert LISTEN block
+  blockinfile:
+    path: /etc/httpd/conf/httpd.conf
+    insertafter: "# Listen"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: LISTEN"
+    block: |
+      Listen 127.0.0.1:{{ httpd_port|d('8888') }} # MARK
+      {% for item in httpd_listen_add %}
+      Listen {{ item.addr }}:{{ item.port }} #MARK
+      {% enfor %}
+  tags: [ conf ]
+  notify: config validate httpd restart
 
 # MODULES
 - name: "Enable MPM-ITK"
@@ -23,26 +37,15 @@
     regexp: '^.*LoadModule(\s+)mpm_(.*)$'
     line: 'LoadModule\1mpm_\2'
   when:  ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7
-  tags: [conf]
+  tags: [ conf ]
 
 # UMASK
 - name: "Set umask for httpd service (sysconfig)"
   lineinfile:
     dest: "/etc/sysconfig/httpd"
     line: 'umask 002'
-  notify: config restart httpd
-  tags: [services]
-
-# - name: "Set umask for httpd service (systemd)"
-#   blockinfile:
-#     dest: /etc/systemd/system/httpd.service.d/httpd.conf
-#     create: yes
-#     marker: "# {mark} ANSIBLE MANAGED BLOCK: UMASK"
-#     block: |
-#       [Service]
-#       UMask=0002
-#   notify: config reload systemd
-#   tags: [services]
+  notify: config validate httpd restart
+  tags: [ services ]
 
 - import_tasks: logrotate.yml
 
