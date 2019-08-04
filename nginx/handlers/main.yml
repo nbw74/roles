@@ -12,6 +12,7 @@
   systemd:
     name: systemd-sysctl.service
     state: restarted
+  when: ansible_service_mgr == 'systemd'
 
 #####
 # Awstats
