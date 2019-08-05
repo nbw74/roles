@@ -1,0 +1,18 @@
+---
+- name: Create Gitlab project
+  delegate_to: localhost
+  gitlab_project:
+    login_token: "{{ vhost_gitlab.api_token }}"
+    server_url: "{{ vhost_gitlab.api_url }}"
+    description: "{{ item.gitlab.description }}"
+    group: "{{ item.gitlab.group }}"
+    name: "{{ item.gitlab.name|d(item.name) }}"
+  when:
+    - item.state|d(True)
+    - item.gitlab is defined
+  loop: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.name }}"
+  ignore_errors: yes
+  tags: [ gitlab ]
+...

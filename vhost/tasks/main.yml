@@ -1,66 +1,91 @@
 ---
-- import_tasks: init.yml
+- name: Import init
+  import_tasks: init.yml
 
-- include_tasks: bitrix-pre.yml
+- name: Include bitrix-pre
+  include_tasks: bitrix-pre.yml
   when: vhost_backend == 'bitrix'
 
-- include_tasks: user.yml
+- name: Include user
+  include_tasks: user.yml
   when: vhost_backend != 'reverse-proxy'
   tags: [ user, password, db, redmine ]
 
-- include_tasks: bitrix.yml
-  when: vhost_backend == 'bitrix'
-  tags: [ crypto ]
+- name: Bitrix section
+  block:
+    - name: Include bitrix
+      include_tasks: bitrix.yml
+      tags: [ crypto ]
 
-- include_tasks: hosts.yml
+    - name: Include hosts
+      include_tasks: hosts.yml
+      tags: [ hosts ]
   when: vhost_backend == 'bitrix'
-  tags: [ hosts ]
 
-- include_tasks: wiki.yml
+- name: Ordinary section
+  block:
+    - name: Include wiki
+      include_tasks: wiki.yml
+
+    - name: Include archive
+      include_tasks: archive.yml
   when: vhost_backend != 'reverse-proxy'
 
-- include_tasks: archive.yml
-  when: vhost_backend != 'reverse-proxy'
+- name: Import crypto
+  import_tasks: crypto.yml
 
-- import_tasks: crypto.yml
+- name: Bitrix section
+  block:
+    - name: Include nginx
+      include_tasks: nginx.yml
 
-- include_tasks: nginx.yml
-  when: vhost_backend != 'bitrix'
-  tags: [ crypto ]
-
-- include_tasks: nginx-bx.yml
+    - name: Include nginx-bx
+      include_tasks: nginx-bx.yml
   when: vhost_backend == 'bitrix'
   tags: [ crypto ]
 
-- include_tasks: apache.yml
-  when: vhost_backend == 'apache' or vhost_backend == 'bitrix'
+- name: Include apache
+  include_tasks: apache.yml
+  when: >
+    vhost_backend == 'apache'
+    or vhost_backend == 'bitrix'
 
-- include_tasks: laravel.yml
+- name: Include laravel
+  include_tasks: laravel.yml
   when: vhost_backend == 'php-fpm'
 
-- include_tasks: ddns.yml
+- name: Ordinary section
+  block:
+    - name: Include ddns
+      include_tasks: ddns.yml
+      tags: [ ddns ]
+
+    - name: Include mysql
+      include_tasks: mysql.yml
+
+    - name: Include postgresql
+      include_tasks: postgresql.yml
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Include gitlab
+      include_tasks: gitlab.yml
+      tags: [ gitlab ]
+
+    - name: Include redmine
+      include_tasks: redmine.yml
+      tags: [ user, redmine ]
+
+    - name: Include repo
+      include_tasks: repo.yml
+      tags: [ repo ]
   when: vhost_backend != 'reverse-proxy'
-  tags: [ ddns ]
 
-- include_tasks: mysql.yml
-  when: vhost_backend != 'reverse-proxy'
+- name: Import webcheck
+  import_tasks: webcheck.yml
 
-- include_tasks: postgresql.yml
-  when: vhost_backend != 'reverse-proxy'
-
-- name: Flush handlers
-  meta: flush_handlers
-
-- include_tasks: redmine.yml
-  when: vhost_backend != 'reverse-proxy'
-  tags: [ user, redmine ]
-
-- include_tasks: repo.yml
-  when: vhost_backend != 'reverse-proxy'
-  tags: [ repo ]
-
-- import_tasks: webcheck.yml
-
-- include_tasks: wiki2.yml
+- name: Include wiki2 (tail)
+  include_tasks: wiki2.yml
   when: vhost_backend != 'reverse-proxy'
 ...

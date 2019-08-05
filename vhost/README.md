@@ -34,6 +34,10 @@ vhost_default_ddns_zone: "string"               # mandatory if use ddns, git, re
 vhost_ddns_key_name: "string"                   # default is "ddns_key"
 vhost_ddns_key_algorithm: "string"              # default is "hmac-md5"
 vhost_ddns_key_secret: "string"                 # mandatory if use ddns
+
+vhost_gitlab:
+  api_url: uri
+  api_token: string
 ```
 ## Virtual host data structure
 ```yaml
@@ -92,6 +96,10 @@ vhost:
     process_idle_timeout: 10s # optional
     max_requests: 0 # optional
     template: "string" # fpm configuration; see below
+  gitlab:
+    name: string # optional; default is "vhost.name" without vhost_default_ddns_zone
+    group: string # mandatory
+    description: "string" # mandatory
   hosts: bool # add vhost resord in /etc/hosts; IP address set in listen[0] or vhost_default_ipaddr
   idna: bool # Encode server_name in IDNA (Internationalized Domain Names in Applications)
   index: "myindex.php" # optional; default is "index.php"
@@ -176,5 +184,5 @@ CentOS 7
 + python-psycopg2
 + MySQL-python
 ## Tags
-`archive` `conf` `crypto` `db` `ddns` `hosts` `redmine` `repo` `user` `version` `webcheck` `wiki`
+`archive` `conf` `crypto` `db` `ddns` `gitlab` `hosts` `redmine` `repo` `user` `version` `webcheck` `wiki`
 
