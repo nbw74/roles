@@ -53,5 +53,6 @@
       loop_control:
         label: "{{ item.item.name }}"
   delegate_to: localhost
+  become: no
   tags: [ gitlab ]
 ...
