@@ -35,14 +35,15 @@
 - name: Import crypto
   import_tasks: crypto.yml
 
-- name: Bitrix section
+- name: Nginx section
   block:
     - name: Include nginx
       include_tasks: nginx.yml
+      when: vhost_backend != 'bitrix'
 
     - name: Include nginx-bx
       include_tasks: nginx-bx.yml
-  when: vhost_backend == 'bitrix'
+      when: vhost_backend == 'bitrix'
   tags: [ crypto ]
 
 - name: Include apache
@@ -66,10 +67,13 @@
 
     - name: Include postgresql
       include_tasks: postgresql.yml
+  when: vhost_backend != 'reverse-proxy'
 
-    - name: Flush handlers
-      meta: flush_handlers
+- name: Flush handlers
+  meta: flush_handlers
 
+- name: Ordinary section
+  block:
     - name: Include gitlab
       include_tasks: gitlab.yml
       tags: [ gitlab ]
