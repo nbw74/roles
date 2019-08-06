@@ -26,6 +26,7 @@
   block:
     - name: Include wiki
       include_tasks: wiki.yml
+      tags: [ wiki ]
 
     - name: Include archive
       include_tasks: archive.yml
@@ -85,7 +86,8 @@
 - name: Import webcheck
   import_tasks: webcheck.yml
 
-- name: Include wiki2 (tail)
-  include_tasks: wiki2.yml
+- name: Include wiki_print (tail)
+  include_tasks: wiki_print.yml
   when: vhost_backend != 'reverse-proxy'
+  tags: [ wiki ]
 ...

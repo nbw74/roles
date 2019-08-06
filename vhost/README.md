@@ -97,9 +97,10 @@ vhost:
     max_requests: 0 # optional
     template: "string" # fpm configuration; see below
   gitlab:
-    name: string # optional; default is "vhost.name" without vhost_default_ddns_zone
-    group: string # mandatory
-    description: "string" # mandatory
+    name: string # default is "vhost.name" without vhost_default_ddns_zone
+    path: string # default is "vhost.name" without vhost_default_ddns_zone
+    namespace: string # mandatory
+    description: string # mandatory
   hosts: bool # add vhost resord in /etc/hosts; IP address set in listen[0] or vhost_default_ipaddr
   idna: bool # Encode server_name in IDNA (Internationalized Domain Names in Applications)
   index: "myindex.php" # optional; default is "index.php"

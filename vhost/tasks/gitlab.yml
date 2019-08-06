@@ -1,18 +1,57 @@
 ---
-- name: Create Gitlab project
+- name: Delegate section
+  block:
+    - name: Get gitlab projects
+      uri:
+        url: >
+          {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+      when: vhost_gitlab|length > 0
+      register: vhost_reg_gitlab_proj_get
+
+    - name: Get gitlab groups
+      uri:
+        url: >
+          {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+      when: vhost_gitlab|length > 0
+      register: vhost_reg_gitlab_grp_get
+
+    - name: Create gitlab projects
+      uri:
+        url: >
+          {{ vhost_gitlab.api_url }}/api/v4/projects?name={{ item.gitlab.name|d(item.name) }}&path={{ item.gitlab.name|d(item.name) }}&namespace_id={{ vhost_reg_gitlab_grp_get|json_query("json[?full_path=='" ~ item.gitlab.namespace ~ "'].id")|join() }}&description={{ item.gitlab.description|urlencode|regex_replace('/','%2F') }}&issues_access_level=private&merge_requests_access_level=private&wiki_access_level=private
+        method: POST
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+        status_code: 201
+      when: >
+        item.gitlab is defined and item.state|d(True) and
+        item.gitlab.namespace ~ '/' ~ item.gitlab.path|d(item.name)
+        not in vhost_reg_gitlab_proj_get|json_query('json[].path_with_namespace')
+      loop: "{{ vhost }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: vhost_reg_gitlab_create
+
+    - name: Create wiki page
+      uri:
+        url: >
+          {{ item.json._links.self }}/wikis
+        method: POST
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+        body:
+          title: "{{ item.item.name is search(vhost_default_ddns_zone)|ternary('Development', 'Production') }}"
+          content: "{{ lookup('file', '/tmp/vhost_' ~ item.item.name ~ '.txt') }}"
+        body_format: json
+        status_code: 201
+      when: not item.skipped|d()
+      loop: "{{ vhost_reg_gitlab_create.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
   delegate_to: localhost
-  gitlab_project:
-    login_token: "{{ vhost_gitlab.api_token }}"
-    server_url: "{{ vhost_gitlab.api_url }}"
-    description: "{{ item.gitlab.description }}"
-    group: "{{ item.gitlab.group }}"
-    name: "{{ item.gitlab.name|d(item.name) }}"
-  when:
-    - item.state|d(True)
-    - item.gitlab is defined
-  loop: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-  ignore_errors: yes
   tags: [ gitlab ]
 ...
