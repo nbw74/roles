@@ -26,7 +26,6 @@
   block:
     - name: Include wiki
       include_tasks: wiki.yml
-      tags: [ wiki ]
 
     - name: Include archive
       include_tasks: archive.yml
@@ -67,6 +66,7 @@
 
     - name: Include postgresql
       include_tasks: postgresql.yml
+      when: vhost_backend != 'bitrix'
   when: vhost_backend != 'reverse-proxy'
 
 - name: Flush handlers
@@ -93,5 +93,4 @@
 - name: Include wiki_print (tail)
   include_tasks: wiki_print.yml
   when: vhost_backend != 'reverse-proxy'
-  tags: [ wiki ]
 ...
