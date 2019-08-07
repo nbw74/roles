@@ -1,8 +1,15 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 #
 server {
+{% if nginx_listen_separate %}
+{% for item in ansible_all_ipv4_addresses %}
+    listen          {{ item }}:80 default_server;
+    listen          {{ item }}:443 default_server ssl;
+{% endfor %}
+{% else %}
     listen          80 default_server;
     listen          443 default_server ssl;
+{% endif %}
 
     root            /var/www/html;
 
