@@ -42,6 +42,7 @@
           - "{{ item.stat.path }}/*.gz"
           - "{{ item.stat.path }}/*.zip"
           - "{{ item.stat.path }}/*.bz2"
+          - "{{ item.stat.path }}/www/bitrix/backup/*"
           - "*.log"
       when:
         - item.stat is defined
