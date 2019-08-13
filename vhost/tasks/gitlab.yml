@@ -29,7 +29,7 @@
         status_code: 201
       when: >
         item.gitlab is defined and item.state|d(True) and
-        item.gitlab.namespace ~ '/' ~ item.gitlab.path|d(item.name)
+        item.gitlab.namespace ~ '/' ~ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
         not in vhost_reg_gitlab_proj_get|json_query('json[].path_with_namespace')
       changed_when: vhost_reg_gitlab_create.status == 201
       loop: "{{ vhost }}"
