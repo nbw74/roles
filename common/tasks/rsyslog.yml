@@ -19,7 +19,7 @@
           local d=$(/bin/pwd)
           local CMD
           local PREVCMD
-          local CMDFILE="$HOME/.slog-$UID" 
+          local CMDFILE="$HOME/.slog-$UID"
 
           CMD=$(history 1)
           [ -r "$CMDFILE" ] && PREVCMD=$(cat $CMDFILE)
@@ -42,7 +42,7 @@
           typeset -i stat=$?
           local d=$(/bin/pwd)
           local PREVCMD
-          local CMDFILE="$HOME/.slog-$UID" 
+          local CMDFILE="$HOME/.slog-$UID"
 
           local CMD
           CMD=$(fc -iln -1)

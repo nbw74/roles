@@ -25,7 +25,20 @@ icinga2_plugin_opt_dir: "/opt/nagios-plugins"
 icinga2_plugin_opt_repo: "nbw@git.webmechanic.ru:/var/lib/git/nagios-plugins"
 icinga2_logos: "/usr/share/icinga/images/logos"
 
-icinga2_logos_catalogs: [ "equipment", "hardware", "other", "vendors" ]
+icinga2_logos_catalogs:
+  - equipment
+  - hardware
+  - other
+  - vendors
 
-icinga2_wipe_confd: [ "commands.conf", "downtimes.conf", "groups.conf", "hosts.conf", "notifications.conf", "services.conf", "templates.conf", "timeperiods.conf", "users.conf" ]
+icinga2_wipe_confd:
+  - commands.conf
+  - downtimes.conf
+  - groups.conf
+  - hosts.conf
+  - notifications.conf
+  - services.conf
+  - templates.conf
+  - timeperiods.conf
+  - users.conf
 ...

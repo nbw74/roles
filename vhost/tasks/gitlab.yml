@@ -22,7 +22,11 @@
     - name: Create Gitlab projects
       uri:
         url: >
-          {{ vhost_gitlab.api_url }}/api/v4/projects?name={{ item.gitlab.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}&path={{ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}&namespace_id={{ vhost_reg_gitlab_grp_get|json_query("json[?full_path=='" ~ item.gitlab.namespace ~ "'].id")|join() }}&description={{ item.gitlab.description|urlencode|regex_replace('/','%2F') }}&issues_access_level=private&merge_requests_access_level=private&wiki_access_level=private
+          {{ vhost_gitlab.api_url }}/api/v4/projects?name={{ item.gitlab.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
+          }}&path={{ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
+          }}&namespace_id={{ vhost_reg_gitlab_grp_get|json_query("json[?full_path=='" ~ item.gitlab.namespace ~ "'].id")|join()
+          }}&description={{ item.gitlab.description|urlencode|regex_replace('/','%2F')
+          }}&issues_access_level=private&merge_requests_access_level=private&wiki_access_level=private
         method: POST
         headers:
           Private-Token: "{{ vhost_gitlab.api_token }}"

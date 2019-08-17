@@ -2,7 +2,7 @@
 - name: create redmine project
   become: yes
   become_user: apache
-  shell: > 
+  shell: >
       script/rails runner -e production
       "Project.create :name => '{{ item[0].redmine.title | d(item[0].name
       | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}',

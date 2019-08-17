@@ -31,7 +31,7 @@
   ignore_errors: true
   when:
     - awstats_enable|d()
-    - awstatsconf.stat.exists == False
+    - not awstatsconf.stat.exists
   tags: [ awstats ]
 
 - name: "Copy awstats.TEMPLATE"

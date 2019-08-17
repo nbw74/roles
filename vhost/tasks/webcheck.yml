@@ -2,7 +2,9 @@
 - name: set webcheck
   template:
     src: "webcheck.j2"
-    dest: "/etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone) }}/http/{{ item.name }}.conf"
+    dest: >
+      /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
+      }}/http/{{ item.name }}.conf
     force: "{{ (item.webcheck|default(dict(ignore=false)))['ignore']|d()|ternary('no', 'yes') }}"
   when:
     - item.state|d(true)
@@ -17,7 +19,9 @@
 
 - name: unset webcheck
   file:
-    path: "/etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone) }}/http/{{ item.name }}.conf"
+    path: >
+      /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
+      }}/http/{{ item.name }}.conf
     state: absent
   when:
     - ( item.webcheck is not defined and not vhost_circuit_prod|d() ) or

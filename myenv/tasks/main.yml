@@ -27,7 +27,7 @@
     clone: no
     update: yes
     accept_hostkey: yes
-  when: check_path.stat.exists == true
+  when: check_path.stat.exists
 
 - name: Git clone
   git:
@@ -35,7 +35,7 @@
     dest: '/home/{{ username }}/.dotfiles'
     clone: yes
     accept_hostkey: yes
-  when: check_path.stat.exists == false
+  when: not check_path.stat.exists
 
 - name: Check symlinks
   file:

@@ -10,14 +10,16 @@
   async: 0
   poll: 0
   ignore_errors: true
-  register: reboot 
+  register: reboot
 
 - name: Restart waiting
   become: no
-  local_action: wait_for host={{ inventory_hostname }} \
-    port=22 \
-    delay=10 \
-    timeout=300 \
-    state=started
+  wait_for:
+    host: "{{ inventory_hostname }}"
+    port: 22
+    delay: 10
+    timeout: 300
+    state: started
   when: reboot.changed
+  delegate_to: localhost
 ...

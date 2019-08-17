@@ -1,6 +1,8 @@
 ---
 - name: Git repo
-  command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}'"
+  command: >
+    sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path
+    }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}'
   args:
     creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/HEAD"
   when:

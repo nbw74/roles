@@ -28,7 +28,10 @@
   notify: restart memcached
 
 - name: Create SASL user
-  shell: "echo ''{{ memcached_sasl_password|default('Clock4bake4aspect') }}'' | saslpasswd2 -a memcached -c {{ memcached_sasl_user|default('cacheuser') }} && echo ''{{ memcached_sasl_user|default('cacheuser') }}:{{ memcached_sasl_password|default('Clock4bake4aspect') }}'' > {{ memcached_sasl_flag }}"
+  shell: >
+    echo "{{ memcached_sasl_password|default('Clock4bake4aspect') }}"
+    | saslpasswd2 -a memcached -c {{ memcached_sasl_user|default('cacheuser') }}
+    && echo "{{ memcached_sasl_user|default('cacheuser') }}:{{ memcached_sasl_password|default('Clock4bake4aspect') }}" > {{ memcached_sasl_flag }}
   args:
     creates: "{{ memcached_sasl_flag }}"
   when: memcached_sasl_enable

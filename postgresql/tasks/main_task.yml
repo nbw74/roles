@@ -92,7 +92,7 @@
       supervisor      root                    postgres
       {% if postgresql_ident_local is defined %}
       {% for item in postgresql_ident_local %}
-      {{ item.map }} {{ item.sysuser}} {{ item.pguser }}
+      {{ item.map }} {{ item.sysuser }} {{ item.pguser }}
       {% endfor %}
       {% endif %}
   notify: reload postgresql direct

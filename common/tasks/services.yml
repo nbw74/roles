@@ -8,7 +8,7 @@
   with_items:
     - NetworkManager
     - chronyd
-  when: 
+  when:
     - ansible_distribution_major_version|int >= 7
     - not common_leave_networkmanager|d()
   ignore_errors: yes
@@ -22,7 +22,7 @@
     masked: yes
   with_items:
     - firewalld
-  when: 
+  when:
     - ansible_distribution_major_version|int == 7
     - '"bitrix-env" not in roles'
   ignore_errors: yes

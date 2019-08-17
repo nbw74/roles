@@ -106,7 +106,7 @@
     state: present
   with_items:
     - '{{ common_required_base_packages }}'
-    - '{{ common_required_epel_packages }}' 
+    - '{{ common_required_epel_packages }}'
   when: ansible_distribution_major_version|int > 7
   tags: [ packages ]
 
