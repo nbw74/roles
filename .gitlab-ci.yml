@@ -8,6 +8,9 @@ variables:
   ANSIBLE_FORCE_COLOR: "true"
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/system/roles
 
+before_script:
+  - source ~/ansible2710/bin/activate
+
 .lint:
   environment:
     name: lint
@@ -15,6 +18,7 @@ variables:
     - ansible.inside
 
 .notify:
+  before_script: []
   stage: notify
   tags:
     - ansible.luna
