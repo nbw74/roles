@@ -1,0 +1,47 @@
+---
+stages:
+  - check_yml
+  - check_sh
+  - notify
+
+variables:
+  ANSIBLE_FORCE_COLOR: "true"
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/system/roles
+
+.lint:
+  environment:
+    name: lint
+  tags:
+    - ansible.inside
+
+.notify:
+  stage: notify
+  tags:
+    - ansible.luna
+
+ansible-lint:
+  extends: .lint
+  script:
+    - ./.lint.sh -a
+  stage: check_yml
+
+shellcheck:
+  extends: .lint
+  script:
+    - ./.lint.sh -s
+  stage: check_sh
+
+notify fail:
+  extends: .notify
+  allow_failure: true
+  script:
+    - ./.ci-status.sh 1
+    - sh -c false
+  when: on_failure
+
+notify success:
+  extends: .notify
+  script:
+    - ./.ci-status.sh 0
+  when: on_success
+...
