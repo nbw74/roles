@@ -4,7 +4,7 @@
     dest: "{{ item }}"
     line: '[[ -f /etc/bash.colors ]] && . /etc/bash.colors'
   with_items:
-    - "{{ bashrc_root}}"
+    - "{{ bashrc_root }}"
     - "{{ bashrc_skel }}"
   tags: [colorize]
 
