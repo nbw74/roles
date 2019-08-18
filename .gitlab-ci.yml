@@ -5,11 +5,12 @@ stages:
   - notify
 
 variables:
+  ANSIBLE_VERSION: 2.7.12
   ANSIBLE_FORCE_COLOR: "true"
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/system/roles
 
 before_script:
-  - source ~/ansible2710/bin/activate
+  - source ~/ansible-${ANSIBLE_VERSION}/bin/activate
 
 .lint:
   environment:
