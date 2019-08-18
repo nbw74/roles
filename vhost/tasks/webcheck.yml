@@ -1,5 +1,5 @@
 ---
-- name: set webcheck
+- name: Set webcheck
   template:
     src: "webcheck.j2"
     dest: >-
@@ -17,7 +17,7 @@
   notify: config reload icinga2
   tags: [ webcheck, crypto ]
 
-- name: unset webcheck
+- name: Unset webcheck
   file:
     path: >-
       /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
