@@ -39,9 +39,9 @@ main() {
     local -a Interested=()
     local -i found=0
 
-    mapfile -t Filelist < <( git show --stat=980,960 --format='' HEAD | awk '/\| / { print $1 }' )
+    mapfile -t Filelist < <( git --no-pager show --format='' --name-only --no-color HEAD HEAD~1 HEAD~2 | sort -u )
 
-    printf '%s\n' "==== Modified files in current HEAD (as given by 'git show'):"
+    printf '%s\n' "==== Modified files in HEAD, HEAD~1, HEAD~2 (as given by 'git show'):"
 
     if [[ ${Filelist[*]:-nop} == "nop" ]]; then
 	echo "==== WARNING: no files for check" >&2
