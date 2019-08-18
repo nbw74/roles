@@ -5,11 +5,11 @@ set -o nounset
 arg1=$1
 
 if (( arg1 )); then
-    status=FAIL
-    symbol=❌
-else
     status=OK
     symbol=✅
+else
+    status=FAIL
+    symbol=❌
 fi
 
 URL="https://api.telegram.org/bot${TG_WM_BOT_TOKEN_ID}:${TG_WM_BOT_TOKEN_BODY}/sendMessage"

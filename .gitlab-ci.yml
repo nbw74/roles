@@ -47,13 +47,13 @@ notify fail:
   extends: .notify
   allow_failure: true
   script:
-    - ./.ci-status.sh 1
+    - ./.ci-status.sh 0
     - sh -c false
   when: on_failure
 
 notify success:
   extends: .notify
   script:
-    - ./.ci-status.sh 0
+    - ./.ci-status.sh 1
   when: on_success
 ...
