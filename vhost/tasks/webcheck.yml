@@ -1,8 +1,8 @@
 ---
-- name: set webcheck
+- name: Set webcheck
   template:
     src: "webcheck.j2"
-    dest: >
+    dest: >-
       /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
       }}/http/{{ item.name }}.conf
     force: "{{ (item.webcheck|default(dict(ignore=false)))['ignore']|d()|ternary('no', 'yes') }}"
@@ -17,9 +17,9 @@
   notify: config reload icinga2
   tags: [ webcheck, crypto ]
 
-- name: unset webcheck
+- name: Unset webcheck
   file:
-    path: >
+    path: >-
       /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
       }}/http/{{ item.name }}.conf
     state: absent
