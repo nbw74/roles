@@ -34,6 +34,7 @@ shellcheck:
   script:
     - ./.lint.sh -s
   stage: check_sh
+  when: always
 
 notify fail:
   extends: .notify
