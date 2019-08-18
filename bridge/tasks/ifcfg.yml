@@ -23,8 +23,8 @@
     src: "bridge_port.j2"
     dest: "{{ bridge_ifcfg_path }}/ifcfg-{{ item.1 }}"
   with_subelements:
-   - "{{ bridge_devices }}"
-   - ports
+    - "{{ bridge_devices }}"
+    - ports
   loop_control:
     label: "ifcfg-{{ item.1|d('null') }}"
 
@@ -33,8 +33,8 @@
     path: "{{ bridge_ifcfg_path }}/route-{{ item.1 }}"
     state: absent
   with_subelements:
-   - "{{ bridge_devices }}"
-   - ports
+    - "{{ bridge_devices }}"
+    - ports
   loop_control:
     label: "no route-{{ item.1|d('null') }}"
 

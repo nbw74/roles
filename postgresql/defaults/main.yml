@@ -23,7 +23,7 @@ postgresql_pcmk_pcsd_restart_hour: 37
 postgresql_pcmk_pcsd_restart_minute: 37
 
 postgresql_pgpass_entries: []
-postgresql_recovery_conf: {}
+postgresql_recovery_conf: { }
 postgresql_replication_enable: false
 
 postgresql_backup_enable: true
@@ -32,7 +32,7 @@ postgresql_wal_backup_server: ''
 postgresql_wal_backup_user: "walarchive"
 postgresql_wal_backup_dir: "{{ ansible_nodename.split('.')[0] }}"
 
-postgresql_conf: {}
+postgresql_conf: { }
 
 postgresql_extended_logging: false
 

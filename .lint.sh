@@ -66,6 +66,8 @@ main() {
 	    shellcheck --exclude="$EXCODES" --color=always "${Interested[@]}"
 	elif (( MODE == 1 )); then
 	    ansible-lint --force-color "${Interested[@]}"
+	elif (( MODE == 2 )); then
+	    yamllint -f colored "${Interested[@]}"
 	fi
     else
         printf '%s\n' "==== No files for check."
@@ -82,7 +84,7 @@ _find() {
         then
             return 0
         fi
-    elif (( MODE == 1 )); then
+    elif (( MODE == 1 )) || (( MODE == 2 )); then
         if [[ "$1" =~ \.y?ml$ ]]
         then
             return 0
@@ -116,13 +118,14 @@ usage() {
 
     -a, --ansible-lint		ansible-lint mode
     -s, --shellcheck		shellcheck mode (default)
+    -y, --yamllint		yamllint mode
     -h, --help			print help
 "
 }
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o ash --longoptions ansible-lint,shellcheck,help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o asyh --longoptions ansible-lint,shellcheck,yamllint,help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -135,6 +138,7 @@ while true; do
     case $1 in
 	-a|--ansible-lint)	MODE=1 ;	shift	;;
 	-s|--shellcheck)	MODE=0 ;	shift	;;
+	-y|--yamllint)		MODE=2 ;	shift	;;
 	-h|--help)		usage ;		exit 0	;;
 	--)			shift ;		break	;;
 	*)			usage ;		exit 1

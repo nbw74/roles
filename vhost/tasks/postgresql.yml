@@ -109,7 +109,7 @@
 
 # - debug:
 #     msg: "{{ vhost_delete_pgsql_result }}"
-# 
+#
 # - fail:
 #     msg: "EXIT"
 

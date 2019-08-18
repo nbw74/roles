@@ -30,6 +30,12 @@ ansible-lint:
     - ./.lint.sh -a
   stage: check_yml
 
+yamllint:
+  extends: .lint
+  script:
+    - ./.lint.sh -y
+  stage: check_yml
+
 shellcheck:
   extends: .lint
   script:

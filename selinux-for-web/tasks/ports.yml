@@ -10,7 +10,7 @@
 - name: Add SELinux ports
   seport:
     ports: "{{ item.port }}"
-    proto : tcp
+    proto: tcp
     setype: "{{ item.type }}"
     state: present
   with_items:

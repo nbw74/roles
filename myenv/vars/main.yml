@@ -3,11 +3,11 @@ repo: "https://github.com/nbw74/dotfiles.git"
 prompt_file: .prompt.attr
 
 env_packages:
-    - zsh
-    - vim
-    - tree
-    - git
-    - libselinux-python
+  - zsh
+  - vim
+  - tree
+  - git
+  - libselinux-python
 
 env_color:
   production: RED
