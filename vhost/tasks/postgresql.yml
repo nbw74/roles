@@ -160,7 +160,7 @@
   lineinfile:
     path: "{{ item[1].stdout }}/pg_hba.conf"
     regexp: 'host\s+{{ item[0].db.name }}\s+{{ item[0].db.name }}'
-    line: "host\t{{ item[0].db.name }}\t{{ item[0].db.name }}\t{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}\t\tmd5" # noqa 204
+    line: "host\t{{ item[0].db.name }}\t{{ item[0].db.name }}\t{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}\t\tmd5"  # noqa 204
     insertbefore: '#+\s*ANSIBLE MANAGED'
     state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item[0].db.host }}"
@@ -180,7 +180,7 @@
   lineinfile:
     path: "/etc/pgbouncer/pgbouncer.ini"
     regexp: '{{ item.db.name }}\s+=\s+host'
-    line: "{{ item.db.name }} = host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }} dbname={{ item.db.name }} user={{ item.db.name }} pool_size={{ item.db.pgbouncer.pool_size|d('40') }}" # noqa 204
+    line: "{{ item.db.name }} = host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }} dbname={{ item.db.name }} user={{ item.db.name }} pool_size={{ item.db.pgbouncer.pool_size|d('40') }}"  # noqa 204
     insertbefore: ';+\s*ANSIBLE MANAGED'
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item.db.pgbouncer.host }}"
