@@ -11,14 +11,8 @@
 - name: Import html
   import_tasks: html.yml
 
-- name: Import default.d
-  import_tasks: default.d.yml
-
-- name: Import include.d
-  import_tasks: include.d.yml
-
-- name: Import conf.d
-  import_tasks: conf.d.yml
+- name: Import dirs and files
+  import_tasks: conf.yml
 
 - name: Import TLS tasks
   import_tasks: tls.yml

@@ -1,0 +1,62 @@
+---
+- name: Clear LE cert existing fact
+  set_fact:
+    vhost_le_cert_exists: False
+
+- name: Check if LE certificate present
+  stat:
+    path: "/etc/letsencrypt/live/{{ op.name }}/cert.pem"
+  register: vhost_reg_le_check_1
+
+- name: Set LE cert existing fact (for template)
+  set_fact:
+    vhost_le_cert_exists: True
+  when: vhost_reg_le_check_1.stat.exists
+
+- name: Include Nginx template
+  include_tasks: nginx_vhost_template.yml
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: LE certbot section
+  block:
+    - name: Certbot cert for domain, www.domain and aliases (staging env)
+      command: >
+        certbot certonly -n --webroot -w /var/www/letsencrypt --dry-run
+        -d {{ [ op.name, 'www.' ~ op.name ]
+        | union(op.alias|d([]))
+        | union(op.mobile|d()|ternary([ 'm.' ~ op.name ], []))
+        | join(',') }}
+
+    - name: Certbot cert for domain, www.domain and aliases (real env)
+      command: >
+        certbot certonly -n --webroot -w /var/www/letsencrypt
+        -d {{ [ op.name, 'www.' ~ op.name ]
+        | union(op.alias|d([]))
+        | union(op.mobile|d()|ternary([ 'm.' ~ op.name ], []))
+        | join(',') }}
+
+    - name: Check again if LE certificate present
+      stat:
+        path: "/etc/letsencrypt/live/{{ op.name }}/cert.pem"
+      register: vhost_reg_le_check_2
+
+    - name: Validate cert presence
+      assert:
+        that: vhost_reg_le_check_2.stat.exists
+        msg: "Let's Encrypt certificate for domain {{ op.name }} not exists."
+
+    - name: Set LE cert existing fact (for template)
+      set_fact:
+        vhost_le_cert_exists: True
+      when: vhost_reg_le_check_2.stat.exists
+
+    - name: Include Nginx template again
+      include_tasks: nginx_vhost_template.yml
+  rescue:
+    - name: Print certbot fail message
+      debug:
+        msg: "CERTBOT FOR DOMAIN {{ op.name }} FAILED!"
+  when: not vhost_reg_le_check_1.stat.exists
+...

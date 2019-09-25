@@ -1,22 +1,22 @@
 
-{% if vhost_backend == 'reverse-proxy' or item.nginx_301_only is defined %}
-    access_log		/var/log/nginx/{{ item.name }}-access.log combined
+{% if vhost_backend == 'reverse-proxy' or op.nginx_301_only is defined %}
+    access_log		/var/log/nginx/{{ op.name }}-access.log combined
 {%- if vhost_logbuffer == 'none' %}
 ;
 {% else %}
  buffer={{ vhost_logbuffer }};
 {% endif %}
-    error_log		/var/log/nginx/{{ item.name }}-error.log;
+    error_log		/var/log/nginx/{{ op.name }}-error.log;
 {% else %}
-    access_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-access.log combined
+    access_log		{{ vhost_basedir }}/{{ op.user|d(op.name) }}/log/nginx-access.log combined
 {%- if vhost_logbuffer == 'none' %}
 ;
 {% else %}
  buffer={{ vhost_logbuffer }};
 {% endif %}
-    error_log		{{ vhost_basedir }}/{{ item.user|d(item.name) }}/log/nginx-error.log;
+    error_log		{{ vhost_basedir }}/{{ op.user|d(op.name) }}/log/nginx-error.log;
 {% endif %}
-{% if item.disabled|d() %}
+{% if op.disabled|d() %}
 
     return		503;
 {% endif %}

@@ -1,0 +1,40 @@
+---
+- name: Create dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "{{ confd }}"
+    - "{{ defaultd }}"
+    - "{{ included }}"
+    - /var/www/letsencrypt
+
+- name: Copy configs
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  loop:
+    - src: 10-ssl-cache.conf
+      dest: "{{ confd }}"
+    - src: 10-gzip.conf
+      dest: "{{ defaultd }}"
+    - src: 12-body.conf
+      dest: "{{ defaultd }}"
+    - src: letsencrypt.conf
+      dest: "{{ included }}"
+  notify: config reload nginx
+
+- name: Template configs
+  template:
+    src: "{{ item.src }}.j2"
+    dest: "{{ item.dest }}/{{ item.src }}"
+    mode: 0644
+  loop:
+    - src: 00-dummy
+      dest: "{{ confd }}"
+    - src: allow_status.conf
+      dest: "{{ included }}"
+  notify: config restart nginx
+...

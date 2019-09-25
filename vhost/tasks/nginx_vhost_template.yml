@@ -1,0 +1,11 @@
+---
+- name: Template Nginx vhost config
+  template:
+    src: "nginx{{ (item.nginx_301_only is defined)|ternary('-301', '') }}.j2"
+    dest: "/etc/nginx/conf.d/{{ op.user|d(op.name) }}.conf"
+    mode: 0644
+    backup: yes
+    force: "{{ op.legacy|d()|ternary('no', 'yes') }}"
+  notify: validate nginx
+  tags: [ conf, crypto ]
+...

@@ -2,28 +2,21 @@
 - name: Include htpasswd tasks
   include_tasks: htpasswd.yml
   when:
-    - current.nginx_auth_basic is defined
-    - current.nginx_auth_basic.enable|d(false)
-  with_items: "{{ vhost }}"
+    - op.nginx_auth_basic is defined
+    - op.state|d(True)
+  loop: "{{ vhost }}"
   loop_control:
-    loop_var: current
-    label: "{{ current.name }}"
-  notify: validate nginx
-  tags: [ conf ]
+    loop_var: op
+    label: "{{ op.name }}"
+  tags: [ conf, crypto ]
 
-- name: Template Nginx vhost config
-  template:
-    src: "nginx{{ (item.nginx_301_only is defined)|ternary('-301', '') }}.j2"
-    dest: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
-    mode: 0644
-    backup: yes
-    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  when:
-    - item.state|d(true)
-  with_items: "{{ vhost }}"
+- name: Include Nginx vhost config tasks
+  include_tasks: nginx_vhost.yml
+  when: op.state|d(True)
+  loop: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
-  notify: validate nginx
+    loop_var: op
+    label: "{{ op.name }}"
   tags: [ conf, crypto ]
 
 - name: Remove Nginx vhost config
@@ -32,43 +25,9 @@
     state: absent
     backup: yes
   when: not item.state|d(true)
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
-  tags: [ conf ]
-
-- name: Template php-fpm vhost config
-  template:
-    src: "php-fpm.j2"
-    dest: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
-    mode: 0644
-    backup: yes
-    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  when:
-    - vhost_backend == 'php-fpm'
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-    - item.fpm is defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-  notify: validate php-fpm
-  tags: [ conf ]
-
-- name: Remove php-fpm vhost config
-  file:
-    path: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
-    state: absent
-    backup: yes
-  when:
-    - vhost_backend == 'php-fpm'
-    - not item.state|d(true)
-    - item.nginx_301_only is not defined
-    - item.fpm is defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-  notify: validate php-fpm
-  tags: [ conf ]
+  tags: [ conf, crypto ]
 ...

@@ -61,7 +61,7 @@ vhost:
       job: "string" # mandatory; the command to execute
       disabled: bool # default: no; if the job should be disabled (commented out) in the crontab
       state: bool # default: yes; whether to ensure the job is present or absent
-  crypto: none|redirect|both # optional; default is "none"
+  crypto: none|redirect|both|le # optional; default is "none"
   crypto_mobile: none|redirect|both # optional; default is 'crypto' value
   crypto_wildcard: bool # Use wildcard certificate _<example.org>; default: false
   db:
@@ -115,7 +115,6 @@ vhost:
     port2: 11211
   mobile: bool # optional; default is 'no'; enable mobile version config with same site root
   nginx_auth_basic: # optional
-    enable: bool # default: no
     string: "string" # default: "Restricted"
     user_file: "path" # default: "/etc/nginx/.htpasswd"
     users:

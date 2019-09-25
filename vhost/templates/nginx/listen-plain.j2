@@ -1,5 +1,5 @@
-{% if item.listen is defined %}
-{% for home in item.listen %}
+{% if op.listen is defined %}
+{% for home in op.listen %}
 {% if home.ipaddr == 'all' %}
     listen		{{ home.port|d('80') }};
 {% else %}

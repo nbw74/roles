@@ -2,13 +2,14 @@
 - name: "Template Nginx vhost config (Bitrix: site_available)"
   template:
     src: "nginx-bx.j2"
-    dest: "/etc/nginx/bx/site_avaliable/{{ item.user|d(item.name) }}.conf"
+    dest: "/etc/nginx/bx/site_avaliable/{{ op.user|d(op.name) }}.conf"
     mode: 0644
     backup: yes
-    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  with_items: "{{ vhost }}"
+    force: "{{ op.legacy|d()|ternary('no', 'yes') }}"
+  loop: "{{ vhost }}"
   loop_control:
-    label: "{{ item.name }}"
+    loop_var: op
+    label: "{{ op.name }}"
   register: vhost_bx_nginx_conf
   notify: validate nginx
   tags: [ conf, crypto ]

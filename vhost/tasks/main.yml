@@ -51,8 +51,13 @@
     vhost_backend == 'apache'
     or vhost_backend == 'bitrix'
 
-- name: Include laravel
-  include_tasks: laravel.yml
+- name: fpm section
+  block:
+    - name: Include php-fpm
+      include_tasks: php-fpm.yml
+
+    - name: Include laravel
+      include_tasks: laravel.yml
   when: vhost_backend == 'php-fpm'
 
 - name: Ordinary section
