@@ -23,6 +23,9 @@
 - name: Import TLS tasks
   import_tasks: tls.yml
 
+- name: Import certbot
+  import_tasks: certbot.yml
+
 - name: Template nginx.conf
   template:
     src: nginx.conf.j2

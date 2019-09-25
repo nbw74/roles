@@ -1,0 +1,46 @@
+---
+- name: Certbot package
+  yum:
+    name: certbot
+    state: "{{ (nginx_certbot|length > 0)|ternary('present','absent') }}"
+
+- name: Certbot initialization block
+  block:
+    - name: Copy certbot sysconfig
+      copy:
+        src: "{{ item.path }}"
+        dest: "/{{ item.path }}"
+        owner: root
+        group: root
+        mode: "{{ item.mode|d('0644') }}"
+      loop:
+        - path: etc/sysconfig/certbot
+
+    - name: Certbot register
+      command: >
+        certbot register -n -m {{ nginx_certbot.email }} --agree-tos
+      args:
+        creates: "/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org/directory"
+
+    - name: Stat letsencrypt archive
+      stat:
+        path: /var/preserve/letsencrypt-ansible-init.tar.bz2
+      register: nginx_reg_arch_stat
+
+    - name: Create letsencrypt archive
+      archive:
+        path: /etc/letsencrypt
+        dest: /var/preserve/letsencrypt-ansible-init.tar.bz2
+        format: bz2
+        owner: root
+        group: root
+        mode: 0400
+      when: not nginx_reg_arch_stat.stat.exists
+
+    - name: Certbot timer
+      systemd:
+        name: certbot-renew.timer
+        enabled: yes
+        state: started
+  when: nginx_certbot|length > 0
+...

@@ -5,6 +5,9 @@
 nginx_allow_status_list: # Список IP-адресов, с которых позволено читать страницу статуса Nginx
   - "ipv4"               # default: "127.0.0.0/8"
 
+nginx_certbot:
+  email: <e@mail> # мыло для регистрации цертбота
+
 nginx_http_directives: # Конфигурационные параметры для nginx.conf (контекст http)
   key: value
 
