@@ -1,7 +1,7 @@
-    set $root_path	'{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}';
-    set $fpmport	{{ item.fpm.port }};
+    set $root_path	'{{ vhost_basedir }}/{{ op.user|d(op.name) }}/{{ op.webroot|d('www') }}';
+    set $fpmport	{{ op.fpm.port }};
     root		$root_path;
-    index		{{ item.index|d('index.php') }};
+    index		{{ op.index|d('index.php') }};
     charset		utf-8;
     rewrite 		/admin$ $scheme://$host$uri/ permanent;
 

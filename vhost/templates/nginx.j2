@@ -82,6 +82,11 @@ server {
 
     return		301 https://m.{{ op.name }}$request_uri;
 {% else %}
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+
+{% endif %}
 {% include "nginx/backend.j2" %}
 {% endif %}
 }
@@ -94,6 +99,11 @@ server {
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl-mobile.j2" %}
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+
+{% endif %}
 {% include "nginx/backend.j2" %}
 }
 

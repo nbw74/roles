@@ -32,7 +32,7 @@
     dest: "{{ item.dest }}/{{ item.src }}"
     mode: 0644
   loop:
-    - src: 00-dummy
+    - src: 00-dummy.conf
       dest: "{{ confd }}"
     - src: allow_status.conf
       dest: "{{ included }}"

@@ -3,7 +3,7 @@
   include_tasks: nginx_vhost_template.yml
   when: >
     op.crypto|d('none') == 'none'
-    or ( opt.crypto|d('none') != 'none' and not op.crypto_le|d() )
+    or ( op.crypto|d('none') != 'none' and not op.crypto_le|d() )
   tags: [ conf, crypto ]
 
 - name: Include LE algo
