@@ -79,6 +79,10 @@ main() {
 _find() {
     local fn=${FUNCNAME[0]}
 
+    if [[ ! -f "$1" ]]; then
+	return 1;
+    fi
+
     if (( ! MODE )); then
         if file "$1" | grep -Fq 'shell script'
         then
