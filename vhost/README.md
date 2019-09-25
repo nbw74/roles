@@ -61,7 +61,8 @@ vhost:
       job: "string" # mandatory; the command to execute
       disabled: bool # default: no; if the job should be disabled (commented out) in the crontab
       state: bool # default: yes; whether to ensure the job is present or absent
-  crypto: none|redirect|both|le # optional; default is "none"
+  crypto: none|redirect|both # optional; default is "none"
+  crypto_le: bool # Use Let's Encrypt; default: no
   crypto_mobile: none|redirect|both # optional; default is 'crypto' value
   crypto_wildcard: bool # Use wildcard certificate _<example.org>; default: false
   db:

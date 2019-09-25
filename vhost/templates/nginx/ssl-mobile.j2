@@ -2,7 +2,7 @@
 {% if op.crypto_wildcard|d() %}
     ssl_certificate		/etc/pki/tls/certs/{{ op.name|regex_replace('^(.*\.)?([-a-zA-Z0-9]+\.[a-zA-Z]+)$', '_\\2') }}.crt;
     ssl_certificate_key		/etc/pki/tls/private/{{ op.name|regex_replace('^(.*\.)?([-a-zA-Z0-9]+\.[a-zA-Z]+)$', '_\\2') }}.key;
-{% elif op.crypto|d('none') == 'le' %}
+{% elif op.crypto_le|d() %}
     ssl_certificate		/etc/letsencrypt/live/{{ op.name }}/fullchain.pem;
     ssl_certificate_key		/etc/letsencrypt/live/{{ op.name }}/privkey.pem;
 {% else %}
