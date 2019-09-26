@@ -24,10 +24,33 @@
     path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
-  when: not item.state|d(true)
+  when: not item.state|d(True)
   loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
+  tags: [ conf, crypto ]
+
+- name: Remove unused LE certs
+  block:
+    - name: Get LE certs list
+      stat:
+        path: "/etc/letsencrypt/live/{{ item.name }}/cert.pem"
+      loop: "{{ vhost }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: vhost_reg_le_certs
+
+    - name: Revoke and delete unused certs
+      command: >
+        certbot revoke --cert-path /etc/letsencrypt/live/{{ item[0].name }}/cert.pem
+        --reason cessationofoperation --delete-after-revoke
+      when: >
+        item[1].stat.exists and
+        (not item[0].state|d(True) or not item[0].crypto_le|d())
+      loop: "{{ vhost|zip(vhost_reg_le_certs.results)|list }}"
+      loop_control:
+        label: "{{ item[0].name }}"
+      notify: validate nginx
   tags: [ conf, crypto ]
 ...

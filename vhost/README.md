@@ -96,6 +96,7 @@ vhost:
     max_spare_servers: 32 # optional
     process_idle_timeout: 10s # optional
     max_requests: 0 # optional
+    status_path: string # optional
     template: "string" # fpm configuration; see below
   gitlab:
     name: string # default is "vhost.name" without vhost_default_ddns_zone

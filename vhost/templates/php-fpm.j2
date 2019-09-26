@@ -14,6 +14,9 @@ pm.max_spare_servers = {{ item.fpm.pm.max_spare_servers|d('35') }}
 {% elif item.fpm.pm|d('ondemand') == 'ondemand' %}
 pm.process_idle_timeout = {{ item.fpm.process_idle_timeout|d('10s') }}
 {% endif %}
+{% if item.fpm.status_path is defined %}
+pm.status_path = {{ item.fpm.status_path }}
+{% endif %}
 pm.max_requests = {{ item.fpm.max_requests|d('0') }}
 access.log = log/fpm-access.log
 access.format = "%R - %u %t \"%m %r\" %s"
