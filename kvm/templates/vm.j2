@@ -2,6 +2,9 @@
   <name>{{ item[0].name }}</name>
   <memory unit='MiB'>{{ item[0].memory_mb|d('1024') }}</memory>
   <currentMemory unit='MiB'>{{ item[0].memory_mb|d('1024') }}</currentMemory>
+  <memoryBacking>
+    <locked/>
+  </memoryBacking>
   <vcpu placement='static'>{{ item[0].cpu_count|d('1') }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
