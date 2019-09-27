@@ -26,11 +26,21 @@
     owner: root
     group: pgbouncer
     mode: "{{ item.mode|d('0640') }}"
+    force: "{{ item.force|d('yes') }}"
   notify: reload pgbouncer
   loop:
     - path: etc/pgbouncer/databases.ini
     - path: etc/pgbouncer/userlist.txt
+      force: "{{ pgbouncer_vhost_compat|ternary('no','yes') }}"
     - path: etc/pgbouncer/bouncer_hba.conf
+
+- name: Create vhosts config file
+  copy:
+    dest: /etc/pgbouncer/vhost.ini
+    content: >
+      [databases]
+    force: no
+  when: pgbouncer_vhost_compat
 
 - name: Set reasonable permissions on socket dir
   file:

@@ -176,12 +176,11 @@
   notify: config reload postgresql
   tags: [ db ]
 
-- name: line in pgbouncer.ini
+- name: line in pgbouncer config
   lineinfile:
-    path: "/etc/pgbouncer/pgbouncer.ini"
+    path: "/etc/pgbouncer/vhost.ini"
     regexp: '{{ item.db.name }}\s+=\s+host'
     line: "{{ item.db.name }} = host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }} dbname={{ item.db.name }} user={{ item.db.name }} pool_size={{ item.db.pgbouncer.pool_size|d('40') }}"  # noqa 204
-    insertbefore: ';+\s*ANSIBLE MANAGED'
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_ini_line

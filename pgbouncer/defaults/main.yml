@@ -8,4 +8,5 @@ pgbouncer_config: { }
 pgbouncer_db: []
 pgbouncer_user: []
 pgbouncer_hba_line: []
+pgbouncer_vhost_compat: False
 ...

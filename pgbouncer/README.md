@@ -38,4 +38,6 @@ pgbouncer_hba_line: # bouncer_hba.conf (see https://pgbouncer.github.io/config.h
     method: trust|reject|md5|password|peer|cert
 
 pgbouncer_enable: bool # default: true - Enable pgbouncer service
+
+pgbouncer_vhost_compat: bool # default: false; vhost role compatibility 
 ```

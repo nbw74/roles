@@ -107,7 +107,7 @@ unix_socket_mode = 0777
 ;;;
 
 ; any, trust, plain, crypt, md5, cert, hba, pam
-auth_type = hba
+auth_type = {{ pgbouncer_vhost_compat|ternary('md5', 'hba') }}
 ;auth_file = /8.0/main/global/pg_auth
 auth_file = {{ pgbouncer_userlist_file }}
 
@@ -279,7 +279,7 @@ default_pool_size = {{ pgbouncer_config.default_pool_size|d('40') }}
 
 ;; Close connections which are in "IDLE in transaction" state longer than
 ;; this many seconds.
-;idle_transaction_timeout = 0
+idle_transaction_timeout = {{ pgbouncer_config.idle_transaction_timeout|d('0') }}
 
 ;;;
 ;;; Low-level tuning options
@@ -351,3 +351,6 @@ default_pool_size = {{ pgbouncer_config.default_pool_size|d('40') }}
 
 ;; Read additional config from the /etc/pgbouncer/pgbouncer-other.ini file
 %include /etc/pgbouncer/databases.ini
+{% if pgbouncer_vhost_compat %}
+%include /etc/pgbouncer/vhost.ini
+{% endif %}
