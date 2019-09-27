@@ -1,0 +1,7 @@
+# THIS FILE IS ANSIBLE MANAGED.
+# HANDS OFF!
+
+{% for key, value in pg_stat_statements|dictsort %}
+pg_stat_statements.{{ key }} = {{ value }}
+{% endfor %}
+

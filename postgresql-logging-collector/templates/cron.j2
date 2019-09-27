@@ -1,6 +1,8 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 # Cleanup emply log dirs
-16 * * * * root /usr/bin/find {{ plc_logs }} -mindepth 1 -type d -empty -delete
+15 * * * * root /usr/bin/find {{ plc_logs }} -mindepth 1 -type d -empty -delete
+# Set read permissions
+16 * * * * root /usr/bin/find {{ plc_logs }} -mindepth 1 -type d -exec chmod go+rx '{}' \;
 # Generate hourly report
 17 * * * * pgbadger {{ plc_pgbadger.wrapper }} --today --company="{{ plc_reports.title|d('NOCOMPANY') }}" {{ plc_reports.options|d('') }}
 # Generate daily report

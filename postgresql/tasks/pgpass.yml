@@ -1,0 +1,10 @@
+---
+- name: Template .pgpass
+  template:
+    src: pgpass.j2
+    dest: "{{ postgresql_homedir }}/.pgpass"
+    owner: "{{ postgresql_user.name|d('postgres') }}"
+    group: "{{ postgresql_user.name|d('postgres') }}"
+    mode: 0400
+  when: postgresql_pgpass_entries|length > 0
+...

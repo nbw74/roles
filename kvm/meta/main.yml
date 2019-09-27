@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: init-variables
+  - role: bridge
+...

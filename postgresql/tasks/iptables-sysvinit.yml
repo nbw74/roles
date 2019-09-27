@@ -16,6 +16,6 @@
     name: "{{ postgresql_iptables_service }}"
     state: reloaded
   when:
-    - postgresql_iptables_enable
+    - postgresql_iptables_enable|bool
     - postgresql_whitelist.changed
 ...

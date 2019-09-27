@@ -7,7 +7,7 @@
 
 - name: "Remove old custom config (pcmk)"
   become: yes
-  become_user: "{{ postgresql_user }}"
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
   file:
     dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config_pcmk }}"
     state: absent
@@ -15,7 +15,7 @@
 
 - name: Archive and tmp dirs
   become: yes
-  become_user: "{{ postgresql_user }}"
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
   file:
     path: "{{ postgresql_basedir }}/{{ item }}"
     state: directory
@@ -77,15 +77,4 @@
     group: root
     mode: 0755
     force: yes
-
-- name: Periodic restart of pcsd
-  cron:
-    name: pcsd_restart
-    job: "/usr/bin/systemctl restart pcsd.service"
-    cron_file: "_sb_pcsd_restart"
-    user: root
-    hour: "*/{{ postgresql_pcmk_pcsd_restart_hour }}"
-    minute: "{{ postgresql_pcmk_pcsd_restart_minute }}"
-    state: "{{ postgresql_pcmk_pcsd_restart_enable|ternary('present','absent') }}"
-  notify: reload crond
 ...

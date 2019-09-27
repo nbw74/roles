@@ -13,6 +13,8 @@ PREFIX={{ item.address|ipv4('prefix') }}
 SCOPE="peer {{ item.peer }}"
 {% endif %}
 {% else %}
+{% if item.bootproto is defined %}
 BOOTPROTO="{{ item.bootproto }}"
+{% endif %}
 {% endif %}
 NM_CONTROLLED=no

@@ -18,25 +18,23 @@ postgresql_pcmk_force_ra_update: false
 postgresql_pcmk_force_pcs_update: false
 postgresql_pcmk_rmlock_enable: false
 
-postgresql_pcmk_pcsd_restart_enable: false
-postgresql_pcmk_pcsd_restart_hour: 37
-postgresql_pcmk_pcsd_restart_minute: 37
-
 postgresql_pgpass_entries: []
 postgresql_recovery_conf: { }
 postgresql_replication_enable: false
 
 postgresql_backup_enable: true
-postgresql_wal_backup_enable: false
-postgresql_wal_backup_server: ''
-postgresql_wal_backup_user: "walarchive"
-postgresql_wal_backup_dir: "{{ ansible_nodename.split('.')[0] }}"
 
 postgresql_conf: { }
+postgresql_user: { }
 
+postgresql_roles: []
+postgresql_db: []
+
+postgresql_additional_packages: []
 postgresql_extended_logging: false
-
-postgresql_reload_direct: false
-
 postgresql_hba_enable: true
+postgresql_reload_direct: false
+postgresql_walarchive: { }
+
+pg_stat_statements: { }
 ...

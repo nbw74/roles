@@ -8,10 +8,12 @@
 
 set -o nounset
 set -o pipefail
+set -o errtrace
 
 # DEFAULTS BEGIN
 typeset FULLNAME="" BASENAME="" PG_VERSION="" BACKUPSERVER="" BACKUPDIR=""
 typeset BACKUPUSER="walarchive"
+typeset -i FLUSH=0
 BACKUPDIR="$(hostname -s)"
 # DEFAULTS END
 
@@ -47,28 +49,44 @@ main() {
 	mkdir "$PGARCHIVE"
     fi
 
-    _log "archiving WAL segment '$BASENAME'"
-    # if WAL archive file already exists - create backup for it
-    backup "${PGARCHIVE}/${BASENAME}"
-    # Copy WAL file into pg_archive directory
-    cp "$FULLNAME" "${PGARCHIVE}/$BASENAME"
-    # if compressed file already exists - create backup for it
-    backup "${PGARCHIVE}/${BASENAME}.bz2"
-    # Compress WAL archive file with lbzip2
-    lbzip2 "${PGARCHIVE}/$BASENAME"
+    if (( FLUSH )); then
+	local -a Queue
+	mapfile -t Queue < <( find "$PGARCHIVE" -maxdepth 1 -type f )
+
+	for f in "${Queue[@]}"; do
+	    _log "flushing WAL segment '${f##*/}'"
+	    _rsync "$f"
+	done
+    else
+	_log "archiving WAL segment '$BASENAME'"
+	# if WAL archive file already exists - create backup for it
+	backup "${PGARCHIVE}/${BASENAME}"
+	# Copy WAL file into pg_archive directory
+	cp "$FULLNAME" "${PGARCHIVE}/$BASENAME"
+	# if compressed file already exists - create backup for it
+	backup "${PGARCHIVE}/${BASENAME}.bz2"
+	# Compress WAL archive file with lbzip2
+	lbzip2 "${PGARCHIVE}/$BASENAME"
+
+	_rsync "${PGARCHIVE}/${BASENAME}.bz2"
+    fi
+
+    exit 0
+}
+
+_rsync() {
+    local fn=${FUNCNAME[0]}
 
     # Copy compressed file to remote server
     warn=1
     # shellcheck disable=SC2086
-    rsync "${rsync_opts[@]}" "${PGARCHIVE}/${BASENAME}.bz2" ${BACKUPUSER}@${BACKUPSERVER}:${BACKUPDIR}/ >/dev/null
+    rsync "${rsync_opts[@]}" "$1" ${BACKUPUSER}@${BACKUPSERVER}:${BACKUPDIR}/ >/dev/null
     warn=0
     if (( error )); then
 	_log "rsync failed, don't removing compressed segment" warning
     else
-	rm "${PGARCHIVE}/${BASENAME}.bz2"
+	rm "$1"
     fi
-
-    exit 0
 }
 
 _log() {
@@ -98,9 +116,16 @@ checks() {
         fi
     done
 
-    if [[ -z "$FULLNAME" || -z "$BASENAME" || -z "$BACKUPSERVER" || -z "$PG_VERSION" ]]; then
-        echo "Required option is missing" >"$LOGERR"
-        false
+    if (( FLUSH )); then
+	if [[ -z "$BACKUPSERVER" || -z "$PG_VERSION" ]]; then
+	    echo "Required option is missing" >"$LOGERR"
+	    false
+	fi
+    else
+	if [[ -z "$FULLNAME" || -z "$BASENAME" || -z "$BACKUPSERVER" || -z "$PG_VERSION" ]]; then
+	    echo "Required option is missing" >"$LOGERR"
+	    false
+	fi
     fi
 }
 
@@ -136,6 +161,7 @@ usage() {
 
     -p, --fullname <path>	path name of the file to archive (REQUIRED)
     -f, --basename <file>	only the file name (REQUIRED)
+    --flush			send all files from pg_archive dir to archive server
     -H, --server <addr>		archive server address (REQUIRED)
     -U, --user <name>		user on the server (default is '$BACKUPUSER')
     -D, --dir <name>		dir for WALs on the server (default is '$(hostname -s)')
@@ -146,7 +172,7 @@ usage() {
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o p:f:H:U:D:V:h --longoptions fullname:,basename:,server:,user:,dir:,pg-version:,help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o p:f:H:U:D:V:h --longoptions fullname:,basename:,flush,server:,user:,dir:,pg-version:,help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -159,6 +185,7 @@ while true; do
     case $1 in
 	-p|--fullname)		FULLNAME=$2 ;		shift 2	;;
 	-f|--basename)		BASENAME=$2 ;		shift 2	;;
+	--flush)		FLUSH=1 ;		shift	;;
 	-H|--server)		BACKUPSERVER=$2 ;	shift 2	;;
 	-U|--user)		BACKUPUSER=$2 ;		shift 2	;;
 	-D|--dir)		BACKUPDIR=$2 ;		shift 2	;;

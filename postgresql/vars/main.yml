@@ -15,9 +15,7 @@ postgresql_iptables_script: "{{ postgresql_iptables_service }}.sh"
 postgresql_iptables_config: "{{ postgresql_iptables_service }}.conf"
 postgresql_iptables_chain: "SB.postgresql"
 
-postgresql_user: "postgres"
-
-postgresql_pcmk_packages: [ 'pacemaker', 'pcs', 'resource-agents' ]
+postgresql_other_packages: [ 'python-psycopg2' ]
 postgresql_pcmk_rmlock_packages: [ 'python2-html2text' ]
 postgresql_pcmk_ra_dir: "/usr/lib/ocf/resource.d/{{ postgresql_pcmk_ra_org }}"
 postgresql_pcmk_scripts_dir: "/usr/local/scripts"
@@ -26,7 +24,7 @@ postgresql_pcmk_rmlock_status: "/var/spool/crm_mon/status.html"
 postgresql_pcmk_alerts_dir: "/usr/local/share/pacemaker/alerts"
 postgresql_gcp_hostname: "/usr/bin/google_set_hostname"
 
-postgresql_wal_backup_script: "pgsql-archive-command.sh"
+postgresql_walarchive_script: "pgsql-archive-command.sh"
 postgresql_repack_script: "sb-pgsql-repackwrapper.sh"
 postgresql_repack_crontab: "_sb_pg_repack"
 postgresql_rsyslog: "pglog.conf"

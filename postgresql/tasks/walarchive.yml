@@ -1,0 +1,23 @@
+---
+- name: Copy WAL backup script
+  copy:
+    src: "{{ postgresql_walarchive_script }}"
+    dest: "{{ postgresql_libexec }}/"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Generate ssh key for postgres user
+  user:
+    name: "{{ postgresql_user.name|d('postgres') }}"
+    generate_ssh_key: yes
+    ssh_key_type: "{{ postgresql_user.ssh_key_type|d('ed25519') }}"
+
+- name: Set ssh config for walbackup server
+  template:
+    src: postgresql_ssh_config.j2
+    dest: "{{ postgresql_homedir }}/.ssh/config"
+    owner: "{{ postgresql_user.name|d('postgres') }}"
+    group: "{{ postgresql_user.name|d('postgres') }}"
+    mode: 0600
+...

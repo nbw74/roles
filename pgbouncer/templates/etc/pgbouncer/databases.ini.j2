@@ -1,0 +1,8 @@
+[databases]
+
+{% if pgbouncer_db|length > 0 %}
+{% for item in pgbouncer_db %}
+{{ item.name }} = host={{ item.host }} port={{ item.port|d('5432') }}{{ item.user is defined | ternary(' user=' ~ item.user|d(''), '') }}{{ item.pool_size is defined | ternary(' pool_size=' ~ item.pool_size|d(''), '') }}{{ item.custom is defined | ternary(' ' ~ item.custom|d(''), '') }}
+{% endfor %}
+{% endif %}
+

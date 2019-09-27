@@ -67,7 +67,7 @@ kvm_vm:
   cpu_custom: bool # (default: false) не использовать атрибут host-model для описания гостевого ЦПУ
   disk_bus: "string" # (default: virtio) шина виртуального хранилища (virtio|ide|scsi|sata|usb)
   disk_format: "string" # (default: raw) Формат образа ВМ (raw|qcow2)
-  disk_gb: int # (default: 16) Объём образа ВМ, ГБ
+  disk_gb: int # (default: 16) Объём образа ВМ, ГБ (10 ГБ или больше)
   memory_mb: int # (default: 1024) Объём RAM, МБ
   nic_model: "string" # (default: virtio) модель виртуальной сетевой карты (virtio|e1000|rtl8139)
   state: "string" # (default: running) Состояние ВМ (running|shutdown|destroyed|paused|undefined);

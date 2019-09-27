@@ -9,8 +9,7 @@
     enabled: yes
     gpgkey: "http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ postgresql_version_norm }}"
 
-- name: PgBouncer and postgresql packages
+- name: PgBouncer and PostgreSQL packages
   yum:
     name: "{{ pgbouncer_packages }}"
-    state: present
 ...

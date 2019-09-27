@@ -32,6 +32,7 @@ postgresql_conf: # Параметры конфигурации СУБД
     autovacuum_analyze_scale_factor: float # default: 0.1
     datestyle: "string" # default: 'iso, dmy'
     timezone: "string" # default: W-SU (MSK)
+    default_text_search_config: string # default: pg_catalog.russian
     archive_command: "string" # default: "cp %p /var/lib/pgsql/X.X/pg_archive/%f"
     wal_keep_segments: int # default: 32
     wal_log_hints: bool # default: false
@@ -43,6 +44,8 @@ postgresql_conf: # Параметры конфигурации СУБД
     log_disconnections: bool # default: if postgresql_pcmk_enable then off else on
     log_lock_waits: bool # default: on
     log_temp_files: int # default: 0
+
+pg_stat_statements: {} # параметры модуля pg_stat_statements (например, track: all)
 
 postgresql_datadir: "/path" # (default: /var/lib/pgsql/<version>/data) Каталог с базой
 postgresql_encoding: "string" # (default: utf8) Кодировка инстанса
@@ -83,10 +86,13 @@ postgresql_recovery_conf:
     keepalives_idle: int # default: 20
     keepalives_interval: int # default: 5
     keepalives_count: int # default: 5
+  trigger_file: string # default: not set
   recovery_min_apply_delay: time # default: not set; valid units for this parameter are "ms", "s", "min", "h", and "d"
   recovery_target_timeline: string # default: 'latest'
   restore_command: string # default: not set
   standby_mode: on|off # default: on
+
+postgresql_reload_direct: bool # (default: false) выполнить reload через pg_ctl после изменений кофингурации
 
 postgresql_repack_tables: # Включение периодического выполнения pg_repack на указанных таблицах
   - { db: 'string', tables: [ 'string', 'string', ... ], cron: 'string' } # где строку для cron указать в обычном формате cronjob '* * * * *'
@@ -94,16 +100,31 @@ postgresql_repack_tables: # Включение периодического вы
 postgresql_replication_enable: bool # (default: false) Включение секций конфига, нужных для репликации.
     # Файл recovery.conf автоматически не создаётся и репликация не настраивается!
 
-postgresql_reload_direct: bool # (default: false) выполнить reload через pg_ctl после изменений кофингурации
+postgresql_roles:
+  - name: string # PostgreSQL user (role) name
+    password: string # (default: empty) password (plaintext)
+    attrs: string # (default: LOGIN) (e.g. LOGIN,REPLICATION) See all possible values on
+                  # https://docs.ansible.com/ansible/latest/modules/postgresql_user_module.html?highlight=role_attr_flags
+    state: bool # (default: true) the user (role) state.
+
+postgresql_db:
+  - name: string # database name
+    owner: string # (default: postgres) database OWNER
+    ext: [] # optionally add postgresql extensions to database
+
 postgresql_rsyslog_address: "string|ipv4" # (default: none) Адрес сервера rsyslog. Обязателен если postgresql_extended_logging.
 postgresql_rsyslog_port: int # (default: 514)
 
-postgresql_wal_backup_enable: bool # (default: false) Включение архивирования WAL на архивный сервер
-postgresql_wal_backup_server: "ipv4" # (default: none) Адрес архивного сервера
-postgresql_wal_backup_user: "string" # (default: "walarchive") Пользователь для архивирования WAL
-postgresql_wal_backup_dir: "string" # (default: {{ ansible_nodename.split('.')[0] }}) Каталог для архивов на сервере
+postgresql_user: # default: empty
+  name: string # default: postgres
+  ssh_key_type: dsa|ecdsa|ed25519|rsa # default: ed25519
 
 postgresql_version: int.int # (default: 9.6) Версия PostgreSQL для развёртывания и поддержки
+
+postgresql_walarchive:
+  server: "ipv4" # (REQUIRED) Адрес архивного сервера
+  user: "string" # (default: "walarchive") Пользователь для архивирования WAL
+  dir: "string" # (default: {{ ansible_nodename.split('.')[0] }}) Каталог для архивов на сервере
 ```
 
 ## Кластер Pacemaker
@@ -119,56 +140,41 @@ postgresql_version: int.int # (default: 9.6) Версия PostgreSQL для ра
   http://clusterlabs.org/doc/en-US/Pacemaker/1.1-pcs/html-single/Clusters_from_Scratch/index.html
   https://wiki.clusterlabs.org/wiki/PgSQL_Replicated_Cluster
 
-  Затем требуется определиться с IP-адресами: на каждый кластер нужен один адрес для клиентских соединений и один адрес на репликацию. Вписываем эти адреса в соответствующие переменные.
-
+  Затем требуется определиться с IP-адресами: на каждый кластер нужен один адрес для клиентских соединений и (опционально) один адрес в отдельном VLAN для репликации. Вписываем эти адреса в соответствующие переменные.
 ### Переменные
-
 ```yaml
 postgresql_pcmk_enable: bool # (default: false) Включить кластеризацию. Выставить true;
 postgresql_pcmk_ip_main: ipv4 # MANDATORY if postgresql_pcmk_enable. Виртуальный IPv4-адрес для запросов к БД;
+postgresql_pcmk_if_main: ipv4 # Сетевой интерфейс для postgresql_pcmk_ip_main; default is ansible_default_ipv4['interface']
 postgresql_pcmk_ip_repl: ipv4 # (default: none) Виртуальный IPv4-адрес для репликации;
 		# если не указан -- используется postgresql_pcmk_ip_main
+postgresql_pcmk_if_repl: ipv4 # Сетевой интерфейс для postgresql_pcmk_ip_repl; default is ansible_default_ipv4['interface']
+
 postgresql_pcmk_vpc_network: string # MANDATORY if GCP
 postgresql_pcmk_force_ra_update: bool # (default: false) Форсировать обновление ресурс-агента
+postgresql_pcmk_ra_org: string # Подкаталог в /usr/lib/ocf/resource.d/ длф размещения агентов (например, название организации)
 postgresql_pcmk_force_pcs_update: bool # (default: false) Форсировать обновление скрипта инициализации кластера
-
-postgresql_pcmk_pcsd_restart_enable: bool # (default: false) Включить периодически перезапуск pcsd (если жрёт память)
-postgresql_pcmk_pcsd_restart_hour: int # (default: 37) Перезапуск pcsd каждые int часов
-postgresql_pcmk_pcsd_restart_minute: int # (default: 37) Минута часа, в которую происходит перезапуск pcsd
 
 postgresql_pcmk_rmlock_enable: bool # (default: false) Автоматически удалять PGSQL.lock при PGSQL-status: STOP
 ```
-
-### pg_hba
-
-В массив postgresql_hba_tcp нужно добавить пользователя для репликации с доступом из сети, которой принадлежат адреса нод:
+### Настройка доступов для репликации
 ```yaml
+postgresql_roles:
+  - name: replicator
+    password: <PASSWORD>
+    attrs: "LOGIN,REPLICATION"
+
+postgresql_pgpass_entries:
+  - username: replicator
+    password: <PASSWORD>
+
 postgresql_hba_tcp:
-  - { db: 'replication', user: 'replicator', address: 'YOUR_SUBNET' }
+  - db: replication
+    user: replicator
+    address: <CIDR>
 ```
-
-### Подготовка мастера
-
-Выберем одну из нод как условного "мастера", создадим на ней пользователя для репликации и файлик `.pgpass`:
-```shell
-sudo -iu postgres
-/usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data start
-sleep 10
-psql -c "CREATE ROLE replicator WITH LOGIN REPLICATION CONNECTION LIMIT 10 PASSWORD 'PASSWORD';"
-echo '*:*:*:replicator:PASSWORD' >> .pgpass
-chmod 0600 .pgpass
-```
-
-### Подготовка слейвов
-
-На слейвах также нужно создать аналогичный `.pgpass`
-```shell
-sudo -iu postgres
-/usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data stop
-echo '*:*:*:replicator:PASSWORD' >> .pgpass
-chmod 0600 .pgpass
-```
-а затем стянуть базу; скрипту в качестве параметра передаём IP-адрес текущего мастера (запустить от postgres или root)
+### Копирование базы с мастера на реплики
+Скрипту в качестве параметра передаём IP-адрес текущего мастера (запустить от postgres или root)
 ```shell
 /srv/southbridge/bin/pgsql-pcmk-slave-copy.sh MASTER_IPADDR
 ```
@@ -176,9 +182,7 @@ chmod 0600 .pgpass
 ```shell
 sudo -iu postgres /usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data stop
 ```
-
 ### Развёртывание кластера Pacemaker
-
 `[all]` - выполнять на всех нодах кластера; `[one]` - выполнять только на одной ноде
 
 Сначала надо задать пароль пользователя hacluster (должен быть одинаков на всех нодах), запустить сервис *Pacemaker Configuration System* и инициализировать кластер (имена нод должны совпадать с выводом `uname -n`):
@@ -344,8 +348,9 @@ pcs property set cluster-recheck-interval=60
 pcs property set maintenance-mode=false
 ```
 ## Скрипты и утилиты
-+ `/usr/local/bin/pgmetrics` всякая разная полезная статистика
-+ `/usr/local/bin/pgsql-lock-view.sh` просмотр блокировок (обёртка над https://wiki.postgresql.org/wiki/Lock_Monitoring)
++ `pgmetrics` collects a lot of information and statistics from a running PostgreSQL server and display it in easy-to-read text format or export it as JSON and CSV for scripting (https://pgmetrics.io/);
++ `pgstat` is a vmstat-like tool for PostgreSQL (https://github.com/gleu/pgstats);
++ `/usr/local/bin/pgsql-lock-view.sh` просмотр блокировок (обёртка над https://wiki.postgresql.org/wiki/Lock_Monitoring);
 + `/srv/southbridge/bin/pgsql-pcmk-slave-copy.sh` копирование экземпляра с мастера на слейв (обёртка над `pg_basebackup`)
 ## Зависимости
 -

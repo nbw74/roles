@@ -28,7 +28,7 @@ effective_io_concurrency	= {{ postgresql_conf['effective_io_concurrency']|defaul
 
 # - WAL Settings -
 
-{% if postgresql_pcmk_enable or postgresql_replication_enable or postgresql_wal_backup_enable %}
+{% if postgresql_pcmk_enable or postgresql_replication_enable or postgresql_walarchive|length > 0 %}
 {% if postgresql_version_raw is version('10.0', '>=') %}
 wal_level			= replica
 {% else %}
@@ -47,9 +47,9 @@ max_wal_size			= {{ postgresql_conf['max_wal_size'] }}
 
 # - Archiving -
 
-{% if postgresql_wal_backup_enable %}
+{% if postgresql_walarchive|length > 0 %}
 archive_mode			= on
-archive_command			= '{{ postgresql_libexec }}/{{ postgresql_wal_backup_script }} -V {{ postgresql_version_raw }} -H {{ postgresql_wal_backup_server }} -U {{ postgresql_wal_backup_user }} -D {{ postgresql_wal_backup_dir }} -p %p -f %f'
+archive_command			= '{{ postgresql_libexec }}/{{ postgresql_walarchive_script }} -V {{ postgresql_version_raw }} -H {{ postgresql_walarchive.server }} -U {{ postgresql_walarchive.user|d('walarchive') }} -D {{ postgresql_walarchive.dir|d(ansible_nodename.split('.')[0]) }} -p %p -f %f'
 {% else %}
 archive_mode			= off
 {% endif %}
@@ -75,6 +75,14 @@ wal_receiver_timeout		= 5000
 # - Replication: Standby Servers -
 
 hot_standby			= on
+{% elif postgresql_walarchive|length > 0 %}
+# - Replication: Sending Server -
+
+max_wal_senders			= 10
+{% else %}
+# - Replication: Sending Server -
+
+max_wal_senders			= 0
 {% endif %}
 
 # - Planner Cost Constants -

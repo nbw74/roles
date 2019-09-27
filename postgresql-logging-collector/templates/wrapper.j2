@@ -10,7 +10,7 @@ set -o pipefail
 
 # DEFAULTS BEGIN
 typeset SOURCE=""
-typeset -i DAY=0 VERBOSE=0 NOSESSION=0
+typeset -i DAY=0 VERBOSE=0 NOSESSION=0 DEBUG=0
 typeset -i MAXLENGTH=4096
 typeset LOGDIR="{{ plc_logs }}"
 typeset REPORTS="{{ plc_reports.path|d(plc_reports_path_default) }}"
@@ -32,9 +32,13 @@ main() {
     trap 'except $LINENO' ERR
     trap _exit EXIT
 
-    touch "$LOGERR"
-    exec 4>&2		# Link file descriptor #4 with stderr. Preserve stderr
-    exec 2>>"$LOGERR"	# stderr replaced with file $LOGERR
+    if (( ! DEBUG )); then
+	touch "$LOGERR"
+	exec 4>&2		# Link file descriptor #4 with stderr. Preserve stderr
+	exec 2>>"$LOGERR"	# stderr replaced with file $LOGERR
+    else
+	set -x
+    fi
 
     checks
 
@@ -179,7 +183,9 @@ except() {
 _exit() {
     local ret=$?
 
-    exec 2>&4 4>&-	# Restore stderr and close file descriptor #4
+    if (( ! DEBUG )); then
+	exec 2>&4 4>&-	# Restore stderr and close file descriptor #4
+    fi
 
     [[ -f $LOGERR ]] && rm "$LOGERR"
     exit $ret
@@ -190,6 +196,7 @@ usage() {
     Options:
 
     -c, --company <string>		web-page title string (default: domain)
+    -d, --debug				debug mode
     -H, --source-host <nodename>	optional: set log nodename (default: all logs)
     -l, --logdir <path>			pg logs directory (default: /var/log/pglog)
     --maxlength int			queries will be truncated to the given size (default: 4096)
@@ -206,7 +213,7 @@ usage() {
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o c:H:l:r:tU:yvh --longoptions company:,source-host:,logdir:,\
+if ! TEMP=$(getopt -o c:dH:l:r:tU:yvh --longoptions company:,debug,source-host:,logdir:,\
 maxlength:,nosession,reports:,today,truncate:,nouser:,yesterday,verbose,\
 help -n "$bn" -- "$@")
 then
@@ -220,6 +227,7 @@ unset TEMP
 while true; do
     case $1 in
 	-c|--company)		TITLE=$2 ;	shift 2	;;
+	-d|--debug)		DEBUG=1 ;	shift	;;
 	-H|--source-host)	SOURCE=$2 ;	shift 2	;;
 	-l|--logdir)		LOGDIR=$2 ;	shift 2	;;
 	--maxlength)		MAXLENGTH=$2 ;	shift 2	;;

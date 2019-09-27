@@ -1,0 +1,58 @@
+---
+- name: Become section
+  block:
+    - name: Get recovery status
+      command: >
+        psql -AXtc "SELECT pg_is_in_recovery()"
+      register: pg_reg_inrec
+      changed_when: false
+      failed_when: false
+
+    - name: Actions if not is in recovery
+      block:
+        - name: Add roles (users)
+          postgresql_user:
+            name: "{{ item.name }}"
+            password: "{{ item.password|d('~') }}"
+            encrypted: yes
+            state: present
+            role_attr_flags: "{{ item.attrs|d('LOGIN') }}"
+          when: item.state|d(True)
+          loop: "{{ postgresql_roles }}"
+          loop_control:
+            label: "{{ item.name }}"
+
+        - name: Manage databases
+          postgresql_db:
+            name: "{{ item.name }}"
+            owner: "{{ item.owner|d(item.name) }}"
+            state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
+          loop: "{{ postgresql_db }}"
+          loop_control:
+            label: "{{ item.name }}"
+
+        - name: Manage extensions
+          postgresql_ext:
+            name: "{{ item[1] }}"
+            db: "{{ item[0].name }}"
+          when: item[0].state|d(True)
+          loop: "{{ postgresql_db|subelements('ext', 'skip_missing=True') }}"
+          loop_control:
+            label: "{{ item[0].name }}: {{ item[1]|d(null) }}"
+
+        - name: Remove roles (users)
+          postgresql_user:
+            name: "{{ item.name }}"
+            state: absent
+          when: not item.state|d(True)
+          loop: "{{ postgresql_roles }}"
+          loop_control:
+            label: "{{ item.name }}"
+          register: postgresql_reg_roles_remove
+          failed_when: >
+            postgresql_reg_roles_remove is failed
+            and 'nable to remove user' not in postgresql_reg_roles_remove.msg
+      when: pg_reg_inrec.stdout is search('f')
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+...
