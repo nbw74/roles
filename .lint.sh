@@ -86,7 +86,12 @@ _find() {
     if (( ! MODE )); then
         if file "$1" | grep -Fq 'shell script'
         then
-            return 0
+	    if grep -Fq '{{' "$1"
+	    then
+		return 1
+	    else
+		return 0
+	    fi
         fi
     elif (( MODE == 1 )) || (( MODE == 2 )); then
         if [[ "$1" =~ \.y?ml$ ]]

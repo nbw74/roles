@@ -6,7 +6,8 @@
       - ansible_distribution_major_version|int == 7
       - bridge_devices|length > 0
 
-- fail:
+- name: Sanity check (I)
+  fail:
     msg: "{{ item.address }} is not ipv4 address"
   when:
     - item.address is defined
@@ -15,7 +16,8 @@
   loop_control:
     label: "{{ item.address|d('null') }} ipv4 test"
 
-- fail:
+- name: Sanity check (II)
+  fail:
     msg: "{{ item.peer }} is not ipv4 address"
   when:
     - item.peer is defined

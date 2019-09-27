@@ -1,5 +1,5 @@
 ---
-- name: Bridge interfaces
+- name: Bridge interfaces  # noqa 305
   shell: >
     ip link add name {{ item.dev }} type bridge
   when:
@@ -9,7 +9,7 @@
     label: "brctl addbr {{ item.dev }}"
   register: bridge_brctl_result
 
-- name: IP address on bridge interfaces
+- name: IP address on bridge interfaces  # noqa 305
   shell: >
     ip address add {{ item.item.address }}
     dev {{ item.item.dev }}
@@ -24,7 +24,7 @@
 
 # This task should be executed separately. Optimizers, hands off!
 #
-- name: IP address on bridge interfaces (with peer)
+- name: IP address on bridge interfaces (with peer)  # noqa 305
   shell: >
     ip address add {{ item.item.address }} peer {{ item.item.peer }}
     dev {{ item.item.dev }}
@@ -37,7 +37,7 @@
   loop_control:
     label: "{{ item.item.dev }}:{{ item.item.address|d('null') }}:{{ item.item.peer|d('null') }}"
 
-- name: Link set up on bridge interfaces
+- name: Link set up on bridge interfaces  # noqa 305
   shell: >
     ip link set up dev {{ item.item.dev }}
   when:

@@ -134,7 +134,6 @@
 - name: Include service shell scripts tasks
   import_tasks: svcsh.yml
 
-
 - name: Include walarchive
   include_tasks: walarchive.yml
   when: postgresql_walarchive|length > 0

@@ -38,7 +38,7 @@
   loop_control:
     label: "no route-{{ item.1|d('null') }}"
 
-- name: "Check default route presence in route-*"
+- name: "Check default route presence in route-*"  # noqa 306
   shell: >
     awk -v p=default_route_present '/default|0\.0\.0\.0/ { print p }'
     /etc/sysconfig/network-scripts/route-* 2>/dev/null || :

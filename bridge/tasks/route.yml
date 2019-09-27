@@ -1,5 +1,5 @@
 ---
-- name: Routes on bridge interfaces
+- name: Routes on bridge interfaces  # noqa 305
   shell: >
     ip route add {{ item.1.dest }} via {{ item.1.gw }}
     dev {{ item.0.item.dev }} proto static
