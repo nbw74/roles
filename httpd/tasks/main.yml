@@ -2,8 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - "'httpd' in server_roles"
-    msg: "Role 'httpd' is not assigned to this host"
+      - inventory_hostname in groups['httpd']
 
 - import_tasks: packages.yml
 

@@ -31,8 +31,9 @@
 - name: Import services
   import_tasks: services.yml
 
-- name: Import journal
-  import_tasks: journal.yml
+- name: Include journal
+  include_tasks: journal.yml
+  when: "ansible_service_mgr == 'systemd'"
 
 - name: Import packages2
   import_tasks: packages2.yml
@@ -66,6 +67,8 @@
       include_tasks: rsyslog.yml
   when: not alien
 
+- meta: flush_handlers
+
 - name: Reboot system if packages updated
   block:
     - name: Check if reboot is required
@@ -76,8 +79,6 @@
 
     - name: Reboot block
       block:
-        - meta: flush_handlers
-
         - name: Rebooting system
           shell: shutdown -r +1
           async: 0
@@ -87,5 +88,8 @@
   when:
     - pkgupdate
     - ansible_distribution_major_version|int >= 7
+
+- name: Flush handlers
+  meta: flush_handlers
 
 ...

@@ -102,21 +102,13 @@
 # -------------------------------------------------------------
 - name: "Install required packages (DNF)"
   dnf:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - '{{ common_required_base_packages }}'
-    - '{{ common_required_epel_packages }}'
+    name: "{{ common_required_base_packages|union(common_required_epel_packages) }}"
   when: ansible_distribution_major_version|int > 7
   tags: [ packages ]
 
 - name: "Install required SELinux packages (DNF)"
   dnf:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - '{{ common_required_base_packages_selinux }}'
-    - '{{ common_fedora_specific_packages_selinux }}'
+    name: "{{ common_required_base_packages_selinux|union(common_fedora_specific_packages_selinux) }}"
   when:
     - ansible_distribution_major_version|int > 7
     - selinux_state != "disabled"
@@ -124,10 +116,7 @@
 
 - name: "Install required FreeIPA packages (DNF)"
   dnf:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - '{{ common_fedora_specific_packages_ipa }}'
+    name: "{{ common_fedora_specific_packages_ipa }}"
   when:
     - ansible_distribution_major_version|int > 7
     - not alien

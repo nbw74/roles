@@ -2,8 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - "'php-fpm' in server_roles"
-    msg: "Role 'php-fpm' is not assigned to this host"
+      - inventory_hostname in groups['php_fpm']
 
 - import_tasks: packages.yml
 

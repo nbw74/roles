@@ -2,8 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - "'selinux-for-web' in server_roles"
-    msg: "Role 'selinux-for-web' is not assigned to this host"
+      - inventory_hostname in groups['selinux_web']
 
 - import_tasks: booleans.yml
 

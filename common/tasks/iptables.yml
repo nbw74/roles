@@ -9,8 +9,6 @@
   notify: xt_recent stop iptables
   tags: [ iptables, xt_recent ]
 
-- meta: flush_handlers
-
 - name: "Check iptables config presence"
   stat:
     path: "/etc/sysconfig/iptables"

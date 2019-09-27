@@ -2,8 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - "'nginx' in server_roles"
-    msg: "Role 'nginx' is not assigned to this host"
+      - inventory_hostname in groups['nginx']
 
 - name: Import packages
   import_tasks: packages.yml

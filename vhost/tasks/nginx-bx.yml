@@ -16,14 +16,12 @@
 
 - name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
   file:
-    path: "/etc/nginx/bx/site_enabled/{{ item[0].dest|basename }}"
-    src: "../site_avaliable/{{ item[0].dest|basename }}"
-    state: "{{ item[1].state|d(true)|ternary('link', 'absent') }}"
-  with_together:
-    - "{{ vhost_bx_nginx_conf.results }}"
-    - "{{ vhost }}"
+    path: "/etc/nginx/bx/site_enabled/{{ item[1].dest|basename }}"
+    src: "{{ item[0].state|d(True)|ternary('../site_avaliable/' ~ item[1].dest|basename, omit) }}"
+    state: "{{ item[0].state|d(True)|ternary('link', 'absent') }}"
+  loop: "{{ vhost|zip(vhost_bx_nginx_conf.results)|list }}"
   loop_control:
-    label: "{{ item[0].dest|d('null')|basename }}"
+    label: "{{ item[1].dest|d('null')|basename }}"
   notify: validate nginx
   tags: [ conf, crypto ]
 

@@ -4,14 +4,12 @@
     name: httpd.service
     state: reloaded
   listen: reload php
-  when: >
-    'httpd' in server_roles
+  when: inventory_hostname in groups['httpd']
 
 - name: reload php-fpm
   systemd:
     name: php-fpm.service
     state: reloaded
   listen: reload php
-  when: >
-    'php-fpm' in server_roles
+  when: inventory_hostname in groups['php_fpm']
 ...

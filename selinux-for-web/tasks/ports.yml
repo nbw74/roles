@@ -1,11 +1,11 @@
 ---
 - set_fact:
     selinux_http_ports: "9001-9999"
-  when: "'php-fpm' in server_roles"
+  when: inventory_hostname in groups['php_fpm']
 
 - set_fact:
     selinux_http_ports: "{{ httpd_port|d('8888') }}"
-  when: "'httpd' in server_roles"
+  when: inventory_hostname in groups['httpd']
 
 - name: Add SELinux ports
   seport:

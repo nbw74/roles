@@ -2,7 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - "'pgbouncer' in server_roles"
+      - inventory_hostname in groups['pgbouncer']
       - ansible_distribution_major_version|int >= 7
     msg: "Role 'pgbouncer' is not assigned to this host or other requirement is not satisfied"
 

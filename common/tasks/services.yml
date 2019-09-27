@@ -24,7 +24,7 @@
     - firewalld
   when:
     - ansible_distribution_major_version|int == 7
-    - '"bitrix-env" not in roles'
+    - inventory_hostname not in groups['bitrix']
   ignore_errors: yes
   tags: [ services ]
 
@@ -50,7 +50,10 @@
   when:
     - common_iptables_enable
     - ansible_distribution_major_version|int <= 7
-    - '"bitrix-env" not in roles'
+    - inventory_hostname not in groups['bitrix']
+
+- name: Flush handlers
+  meta: flush_handlers
 
 - name: "Enable and start network service"
   service:

@@ -2,8 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - "'icinga2' in server_roles"
-    msg: "Role 'icinga2' is not assigned to this host"
+      - inventory_hostname in groups['icinga2_nodes']
 
 - import_tasks: packages.yml
 
