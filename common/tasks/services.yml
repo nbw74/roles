@@ -5,13 +5,16 @@
     state: stopped
     enabled: no
     masked: yes
-  with_items:
+  loop:
     - NetworkManager
     - chronyd
   when:
     - ansible_distribution_major_version|int >= 7
     - not common_leave_networkmanager|d()
-  ignore_errors: yes
+  register: common_reg_svc
+  failed_when:
+    - common_reg_svc is failed
+    - common_reg_svc.msg is not search('Could not find the requested service')
   tags: [ services ]
 
 - name: "Stop and disable firewalld"

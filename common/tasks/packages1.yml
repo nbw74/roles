@@ -66,22 +66,11 @@
     - selinux_state != "disabled"
   tags: [ packages, selinux ]
 
-- name: "Remove SELinux packages (YUM 7)"
+- name: "Remove SELinux packages (YUM)"
   yum:
-    name: "{{ common_required_base_packages_selinux | union(common_centos_specific_packages_selinux) }}"
+    name: setroubleshoot-server
     state: absent
-  when:
-    - ansible_distribution_major_version|int == 7
-    - selinux_state == "disabled"
-  tags: [ packages, selinux ]
-
-- name: "Remove SELinux packages (YUM 6)"
-  yum:
-    name: "{{ common_required_base_packages_selinux | union(common_centos_specific_packages_selinux) | difference(['checkpolicy']) }}"
-    state: absent
-  when:
-    - ansible_distribution_major_version|int == 6
-    - selinux_state == "disabled"
+  when: selinux_state == "disabled"
   tags: [ packages, selinux ]
 
 - name: "Install required FreeIPA packages (YUM)"
