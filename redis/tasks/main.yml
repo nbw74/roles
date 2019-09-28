@@ -30,6 +30,22 @@
     - { name: 'vm.overcommit_memory', value: '1' }
   ignore_errors: yes
 
+- name: Gather the rpm package version
+  yum:
+    list: redis
+  register: redis_package_version
+
+- name: Set redis_version fact
+  set_fact:
+    redis_version: >
+      {{ redis_package_version.results|
+      selectattr('yumstate','equalto','installed')|
+      map(attribute='version')|list|first }}
+
+- name: Print
+  debug:
+    msg: "{{ redis_version }}"
+
 - name: Template redis.conf
   template:
     src: "{{ item }}.j2"

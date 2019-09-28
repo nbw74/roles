@@ -1,4 +1,16 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% if redis_version is version('4', '<') %}
+{% set redis_major_version = 3 %}
+{% elif redis_version is version('5', '<') %}
+{% set redis_major_version = 4 %}
+{% else %}
+{% set redis_major_version = 5 %}
+{% endif %}
+{% if redis_major_version < 5 %}
+{% set slave = 'slave' %}
+{% else %}
+{% set slave = 'replica' %}
+{% endif %}
 
 bind {{ redis_conf['bind']|d('127.0.0.1') }}
 protected-mode {{ redis_conf['protected_mode']|d(true)|ternary('yes', 'no') }}
@@ -16,7 +28,9 @@ pidfile {{ redis_conf['pidfile']|d('/var/run/redis/redis-server.pid') }}
 loglevel {{ redis_conf['loglevel']|d('warning') }}
 logfile {{ redis_conf['logfile']|d('/var/log/redis/redis.log') }}
 databases {{ redis_conf['databases']|d('16') }}
+{% if redis_major_version >= 4 %}
 always-show-logo yes
+{% endif %}
 {% for save in redis_save %}
 save {{ save }}
 {% endfor %}
@@ -25,21 +39,25 @@ rdbcompression {{ redis_conf['rdbcompression']|d(true)|ternary('yes', 'no') }}
 rdbchecksum yes
 dbfilename {{ redis_conf['dbfilename']|d('dump.rdb') }}
 dir {{ redis_conf['dir']|d('/var/lib/redis') }}
-replica-serve-stale-data yes
-replica-read-only yes
+{{ slave }}-serve-stale-data yes
+{{ slave }}-read-only yes
 repl-diskless-sync no
 repl-diskless-sync-delay 5
 repl-disable-tcp-nodelay no
-replica-priority 100
+{{ slave }}-priority 100
 {% if redis_conf['maxmemory'] is defined %}
 maxmemory {{ redis_conf['maxmemory'] }}
+{% if redis_major_version >= 5 %}
 maxmemory-policy {{ redis_conf['maxmemory_policy']|d('noeviction') }}
 maxmemory-samples {{ redis_conf['maxmemory_samples']|d('5') }}
 {% endif %}
+{% endif %}
+{% if redis_major_version >= 4 %}
 lazyfree-lazy-eviction no
 lazyfree-lazy-expire no
 lazyfree-lazy-server-del no
-replica-lazy-flush no
+{{ slave }}-lazy-flush no
+{% endif %}
 appendonly {{ redis_conf['appendonly']|d()|ternary('yes', 'no') }}
 appendfilename "{{ redis_conf['appendfilename']|d('appendonly.aof') }}"
 appendfsync {{ redis_conf['appendfsync']|d('everysec') }}
@@ -47,7 +65,11 @@ no-appendfsync-on-rewrite {{ redis_conf['no_appendfsync_on_rewrite']|d()|ternary
 auto-aof-rewrite-percentage 100
 auto-aof-rewrite-min-size 64mb
 aof-load-truncated yes
+{% if redis_major_version == 4 %}
+aof-use-rdb-preamble no
+{% elif redis_major_version >= 5 %}
 aof-use-rdb-preamble yes
+{% endif %}
 lua-time-limit 5000
 slowlog-log-slower-than {{ redis_conf['slowlog_log_slower_than']|d('10000') }}
 slowlog-max-len {{ redis_conf['slowlog_max_len']|d('128') }}
@@ -61,16 +83,22 @@ set-max-intset-entries 512
 zset-max-ziplist-entries 128
 zset-max-ziplist-value 64
 hll-sparse-max-bytes 3000
+{% elif redis_major_version >= 5 %}
 stream-node-max-bytes 4096
 stream-node-max-entries 100
+{% endif %}
 activerehashing yes
 client-output-buffer-limit normal 0 0 0
-client-output-buffer-limit replica 256mb 64mb 60
+client-output-buffer-limit {{ slave }} 256mb 64mb 60
 client-output-buffer-limit pubsub 32mb 8mb 60
 hz 10
+{% if redis_major_version >= 5 %}
 dynamic-hz yes
+{% endif %}
 aof-rewrite-incremental-fsync yes
+{% if redis_major_version >= 5 %}
 rdb-save-incremental-fsync yes
+{% endif %}
 {% for include in redis_includes %}
 
 include {{ include }}
