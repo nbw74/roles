@@ -83,7 +83,7 @@ set-max-intset-entries 512
 zset-max-ziplist-entries 128
 zset-max-ziplist-value 64
 hll-sparse-max-bytes 3000
-{% elif redis_major_version >= 5 %}
+{% if redis_major_version >= 5 %}
 stream-node-max-bytes 4096
 stream-node-max-entries 100
 {% endif %}

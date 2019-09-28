@@ -38,13 +38,9 @@
 - name: Set redis_version fact
   set_fact:
     redis_version: >
-      {{ redis_package_version.results|
-      selectattr('yumstate','equalto','installed')|
-      map(attribute='version')|list|first }}
-
-- name: Print
-  debug:
-    msg: "{{ redis_version }}"
+      {{ redis_package_version.results
+      |selectattr('yumstate','equalto','installed')
+      |map(attribute='version')|list|first }}
 
 - name: Template redis.conf
   template:
