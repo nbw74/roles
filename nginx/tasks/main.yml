@@ -18,6 +18,7 @@
 
 - name: Import certbot
   import_tasks: certbot.yml
+  when: ansible_distribution_major_version|int >= 7
 
 - name: Template nginx.conf
   template:
