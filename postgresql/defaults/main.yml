@@ -10,7 +10,6 @@ postgresql_encoding: "utf8"
 postgresql_locale: "ru_RU.UTF-8"
 postgresql_lc_messages: "en_US.UTF-8"
 
-postgresql_iptables_enable: true
 postgresql_pcmk_enable: false
 postgresql_pcmk_ra_org: "custom"
 postgresql_pcmk_force_ra_update: false

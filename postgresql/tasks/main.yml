@@ -139,8 +139,6 @@
   include_tasks: walarchive.yml
   when: postgresql_walarchive|length > 0
 
-- include_tasks: "iptables.yml"
-
 - include_tasks: roles.yml
   when: postgresql_roles|length > 0
 

@@ -68,7 +68,6 @@ postgresql_ident_local: # peer/ident map для локальных соедин�
 # для локальных подключений использовать map 'supervisor',
 # для удалённых - 'remote'
 
-postgresql_iptables_enable: bool # (default: true) Включать ли кастомную цепочку iptables
 postgresql_locale: "string" # (default: ru_RU.UTF-8) Локаль для БД по-умолчанию
 postgresql_lc_messages: "string" # (default: en_US.UTF-8) Локаль для сообщений
 

@@ -10,11 +10,6 @@ postgresql_include_dir: "sb.conf.d"
 postgresql_custom_config: "10-main.conf"
 postgresql_custom_config_pcmk: "20-repl-pcmk.conf"
 
-postgresql_iptables_service: "sb-iptables-postgresql"
-postgresql_iptables_script: "{{ postgresql_iptables_service }}.sh"
-postgresql_iptables_config: "{{ postgresql_iptables_service }}.conf"
-postgresql_iptables_chain: "SB.postgresql"
-
 postgresql_other_packages: [ 'python-psycopg2' ]
 postgresql_pcmk_rmlock_packages: [ 'python2-html2text' ]
 postgresql_pcmk_ra_dir: "/usr/lib/ocf/resource.d/{{ postgresql_pcmk_ra_org }}"
