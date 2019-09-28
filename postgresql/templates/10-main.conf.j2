@@ -10,12 +10,12 @@ max_connections			= {{ postgresql_conf['max_connections']|default('100') }}
 # - Memory -
 
 {% set auto_shared_buffers = ansible_memtotal_mb / 100 * 20 %}
-shared_buffers			= {{ postgresql_conf['shared_buffers']|default(auto_shared_buffers|int ~ 'MB') }}
+shared_buffers			= {{ postgresql_conf['shared_buffers']|default(auto_shared_buffers|round(-1)|int ~ 'MB') }}
 temp_buffers			= {{ postgresql_conf['temp_buffers']|default('8MB') }}
 {% set auto_work_mem = ansible_memtotal_mb / 100 * 1 %}
-work_mem			= {{ postgresql_conf['work_mem']|default(auto_work_mem|int ~ 'MB') }}
+work_mem			= {{ postgresql_conf['work_mem']|default(auto_work_mem|round(0)|int ~ 'MB') }}
 {% set auto_maintenance_work_mem = ansible_memtotal_mb / 100 * 4 %}
-maintenance_work_mem		= {{ postgresql_conf['maintenance_work_mem']|default(auto_maintenance_work_mem|int ~ 'MB') }}
+maintenance_work_mem		= {{ postgresql_conf['maintenance_work_mem']|default(auto_maintenance_work_mem|round(0)|int ~ 'MB') }}
 {% if postgresql_conf['max_stack_depth'] is defined %}
 max_stack_depth			= {{ postgresql_conf['max_stack_depth'] }}
 {% endif %}
@@ -91,7 +91,7 @@ max_wal_senders			= 0
 random_page_cost		= {{ postgresql_conf['random_page_cost'] }}
 {% endif %}
 {% set auto_effective_cache_size = ansible_memtotal_mb / 100 * 50 %}
-effective_cache_size		= {{ postgresql_conf['effective_cache_size']|default(auto_effective_cache_size|int ~ 'MB') }}
+effective_cache_size		= {{ postgresql_conf['effective_cache_size']|default(auto_effective_cache_size|round(-1)|int ~ 'MB') }}
 
 {% if postgresql_extended_logging %}
 # - Where to Log -
