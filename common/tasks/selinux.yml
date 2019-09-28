@@ -39,16 +39,6 @@
       loop_control:
         label: "{{ item.name }}:{{ item.state|d('true') }}"
 
-    - name: "Template {{ ptr }}"
-      template:
-        src: "{{ ptr }}.j2"
-        dest: "/usr/local/bin/{{ ptr }}"
-        owner: root
-        mode: 0755
-        force: yes
-      notify: restorecon common_sh_mon
-      when: not alien
-
     - name: directory for SELinux modules
       file:
         path: "{{ common_se_dir }}"
