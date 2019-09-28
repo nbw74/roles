@@ -1,0 +1,3 @@
+---
+pcmk_pcsd_restart_daily: false
+...
