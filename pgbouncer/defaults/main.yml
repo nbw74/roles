@@ -1,5 +1,4 @@
 ---
-postgresql_version: 11
 postgresql_version_raw: "{{ postgresql_version|string }}"
 postgresql_version_norm: "{{ postgresql_version_raw|regex_replace('\\.', '') }}"
 

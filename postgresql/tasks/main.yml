@@ -5,6 +5,7 @@
       - ansible_distribution_file_variety == 'RedHat'
       - ansible_distribution_major_version|int >= 7
       - inventory_hostname in groups['postgresql']
+      - postgresql_version is defined
 
 - name: "Are we in the GCP yet?"
   stat:

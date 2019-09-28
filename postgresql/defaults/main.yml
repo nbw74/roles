@@ -1,5 +1,4 @@
 ---
-postgresql_version: 9.6  # Not yet(19-05-2017) EOL'd: 9.3, 9.4, 9.5, 9.6
 postgresql_version_raw: "{{ postgresql_version|string }}"
 postgresql_version_norm: "{{ postgresql_version_raw|regex_replace('\\.', '') }}"
 

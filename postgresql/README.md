@@ -6,6 +6,8 @@ postgresql
 ## Описание переменных для host_vars:
 
 ```yaml
+postgresql_version: int(.int) # REQUIRED
+
 postgresql_additional_packages: # Дополнительно установить указанные пакеты
   - "package1"
 
@@ -118,8 +120,6 @@ postgresql_rsyslog_port: int # (default: 514)
 postgresql_user: # default: empty
   name: string # default: postgres
   ssh_key_type: dsa|ecdsa|ed25519|rsa # default: ed25519
-
-postgresql_version: int.int # (default: 9.6) Версия PostgreSQL для развёртывания и поддержки
 
 postgresql_walarchive:
   server: "ipv4" # (REQUIRED) Адрес архивного сервера

@@ -4,6 +4,7 @@
     that:
       - inventory_hostname in groups['pgbouncer']
       - ansible_distribution_major_version|int >= 7
+      - postgresql_version is defined
 
 - name: Import packages
   import_tasks: packages.yml

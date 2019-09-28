@@ -7,12 +7,14 @@ PgBouncer setup
 * Setup pgbouncer configuration files
 ## Variables
 ```yaml
-postgresql_version: int[.int] # default: 11
+postgresql_version: int[.int] # REQUIRED
 
 pgbouncer_config: # pgbouncer.ini: [pgbouncer] section
   unix_socket_dir: path # Default: /var/run/pgbouncer; if set to 'none' disable socket.
   listen_addr: ipv4 # default: no listen on IPv4; recommended: 127.0.0.1; * means all IPs
   listen_port: int # default: 6432
+  server_lifetime: int # defailt: 3600
+  server_idle_timeout:  int # default: 600
   idle_transaction_timeout: int # Default: not set; close connections which are in "IDLE in transaction" state longer than int seconds
   max_client_conn: int # Default: 100
   default_pool_size: int # Default: 40
