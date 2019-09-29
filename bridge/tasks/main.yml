@@ -28,9 +28,8 @@
 
 - name: Presence of required packages
   yum:
-    name: "{{ item }}"
+    name: "{{ bridge_pkgs }}"
     state: present
-  with_items: "{{ bridge_pkgs }}"
 
 - include: nonm.yml
 
