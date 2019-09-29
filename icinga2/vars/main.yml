@@ -22,7 +22,6 @@ icinga2_icingaweb2_packages:
 
 icinga2_home: "/var/spool/icinga2"
 icinga2_plugin_opt_dir: "/opt/nagios-plugins"
-icinga2_plugin_opt_repo: "nbw@git.webmechanic.ru:/var/lib/git/nagios-plugins"
 icinga2_logos: "/usr/share/icinga/images/logos"
 
 icinga2_logos_catalogs:
