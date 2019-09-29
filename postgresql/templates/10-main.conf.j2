@@ -72,6 +72,9 @@ wal_receiver_timeout		= 5000
 {% elif postgresql_replication_enable %}
 # - Replication: Sending Server -
 
+max_wal_senders			= 10
+wal_keep_segments		= {{ postgresql_conf['wal_keep_segments']|default('32') }}
+
 # - Replication: Standby Servers -
 
 hot_standby			= on
