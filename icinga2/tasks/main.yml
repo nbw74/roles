@@ -29,6 +29,9 @@
     append: yes
   notify: service icinga2 restart
 
+- import_tasks: keys.yml
+  when: not icinga2_client_node
+
 - name: copy utils.pm
   copy:
     src: "/usr/lib64/nagios/plugins/utils.pm"
@@ -46,9 +49,6 @@
     dest: "{{ icinga2_plugin_opt_dir }}"
     accept_hostkey: yes
   ignore_errors: true
-
-- import_tasks: keys.yml
-  when: not icinga2_client_node
 
 - import_tasks: sendxmpp.yml
   when: not icinga2_client_node
