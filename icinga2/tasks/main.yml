@@ -19,7 +19,7 @@
   with_items: "{{ icinga2_wipe_confd }}"
   tags: [ wipe ]
 
-- import_tasks: icingaweb2.yml
+- include_tasks: icingaweb2.yml
   when: icinga2_icingaweb2_node
 
 - name: add user icinga to nagios group
@@ -29,8 +29,8 @@
     append: yes
   notify: service icinga2 restart
 
-- import_tasks: keys.yml
-  when: not icinga2_client_node
+- name: Root key import
+  import_tasks: keys_root.yml
 
 - name: copy utils.pm
   copy:
@@ -50,15 +50,12 @@
     accept_hostkey: yes
   ignore_errors: true
 
-- import_tasks: sendxmpp.yml
-  when: not icinga2_client_node
-
-- import_tasks: pgsql.yml
-  when: not icinga2_client_node
-
-- import_tasks: ipmi.yml
-  when: not icinga2_client_node
-
-- import_tasks: wmi.yml
+- name: Nodes section
+  block:
+    - include_tasks: keys.yml
+    - include_tasks: sendxmpp.yml
+    - include_tasks: pgsql.yml
+    - include_tasks: ipmi.yml
+    - include_tasks: wmi.yml
   when: not icinga2_client_node
 ...
