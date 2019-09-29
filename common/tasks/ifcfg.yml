@@ -8,7 +8,6 @@
         regexp: "{{ item }}"
       loop:
         - '^DEFROUTE='
-        - '^PEERDNS='
         - '^PEERROUTES='
         - '^IPV4_FAILURE_FATAL='
         - '^IPV6_'
