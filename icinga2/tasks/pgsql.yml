@@ -7,7 +7,9 @@
 
 - name: install postgresql
   yum:
-    name: "{{ icinga2_postgresql_package|union([ 'authd' ]) }}"
+    name:
+      - "{{ icinga2_postgresql_package }}"
+      - authd
     state: present
   tags: [ pgsql ]
 
