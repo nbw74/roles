@@ -2,7 +2,7 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - inventory_hostname in groups['icinga2_nodes']
+      - inventory_hostname in groups['icinga2']
 
 - import_tasks: packages.yml
 
