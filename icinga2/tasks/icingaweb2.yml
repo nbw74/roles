@@ -7,9 +7,8 @@
 
 - name: yum install icingaweb2 packages
   yum:
-    name: "{{ item }}"
+    name: "{{ icinga2_icingaweb2_packages }}"
     state: present
-  with_items: "{{ icinga2_icingaweb2_packages }}"
 
 - name: symlinks for icingaweb2 icons
   file:
