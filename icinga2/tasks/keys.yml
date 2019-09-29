@@ -16,6 +16,8 @@
     group: icinga
     mode: 0600
   loop: "{{ icinga2_ssh_keys|subelements('key_data') }}"
+  loop_control:
+    label: "{{ item.0.filename }}"
   tags: [ keys ]
 
 - name: create public keys
@@ -26,6 +28,8 @@
     group: icinga
     mode: 0644
   loop: "{{ icinga2_ssh_keys|subelements('key_data') }}"
+  loop_control:
+    label: "{{ item.0.filename }}"
   tags: [ keys ]
 
 - name: create root's private key
@@ -36,6 +40,8 @@
     group: root
     mode: 0600
   loop: "{{ icinga2_ssh_root_keys|subelements('key_data') }}"
+  loop_control:
+    label: "{{ item.0.filename }}"
   tags: [ keys ]
 
 - name: populate known_hosts
