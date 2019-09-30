@@ -133,8 +133,7 @@ vhost:
     - name: "string" # default: laravel-queue-worker
       enabled: bool # default: yes
   php_value: # optional
-    - key: 'string'
-      value: 'string'
+    key: value
   proxy_host_header: external|internal|<string> # default: external
   proxy_pass: "URI" # mandatory if use reverse-proxy vhost_backend
   redmine: # optional
