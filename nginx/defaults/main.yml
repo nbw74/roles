@@ -5,4 +5,8 @@ nginx_allow_status_list:
 nginx_certbot: { }
 nginx_http_directives: { }
 nginx_listen_separate: True
+
+nginx_self_signed_csr:
+  org: Local Organization
+  email: root@localhost
 ...

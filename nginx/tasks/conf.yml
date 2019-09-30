@@ -24,7 +24,7 @@
       dest: "{{ defaultd }}"
     - src: letsencrypt.conf
       dest: "{{ included }}"
-  notify: config reload nginx
+  notify: validate nginx
 
 - name: Template configs
   template:
@@ -36,5 +36,5 @@
       dest: "{{ confd }}"
     - src: allow_status.conf
       dest: "{{ included }}"
-  notify: config restart nginx
+  notify: validate nginx
 ...

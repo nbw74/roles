@@ -13,13 +13,9 @@ nginx_http_directives: # Конфигурационные параметры д�
 
 nginx_listen_separate: bool # default: True
 
-nginx_main_domain: "fqdn" # Актуальный домен второго уровня, для которого существуют сертификат
-                          # и ключ в files, указываемые в двух следующих переменных:
-nginx_main_cert: "string"
-nginx_main_key: "string"
-
-nginx_example_cert: "string" # Если доменное имя хоста не соотвествует домену nginx_main_domain,
-nginx_example_key: "string" # то применяются указанные здесь файлы
+nginx_self_signed_csr:
+  org: Locale Organization
+  email: root@localhost
 ```
 ## Tags
 `awstats` `iptables` `logrotate` `nginx` `allow_status` `packages` `scripts` `templates` `tls`
