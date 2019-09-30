@@ -3,7 +3,7 @@ PORT="{{ memcached_config['port']|default('11211') }}"
 USER="{{ memcached_config['user']|default('memcached') }}"
 MAXCONN="{{ memcached_config['maxconn']|default('1024') }}"
 {% set auto_cachesize = ansible_memtotal_mb / 100 * 5 %}
-CACHESIZE="{{ memcached_config['cachesize']|default(auto_cachesize)|round(-1) }}"
+CACHESIZE="{{ memcached_config['cachesize']|default(auto_cachesize)|round(-1)|int }}"
 {% if memcached_sasl_enable %}
 OPTIONS="-S"
 {% else %}
