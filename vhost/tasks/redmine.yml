@@ -21,6 +21,7 @@
   delegate_to: "{{ vhost_redmine_server }}"
   when:
     - item[0].redmine is defined
+    - item[0].redmine|length > 0
     - item[1].state == 'present'
   with_together:
     - "{{ vhost }}"

@@ -1,5 +1,5 @@
 {% if item[0].wikimarkup|d(true) %}
-{% if vhost_gitlab|length == 0 %}
+{% if item[0].redmine is defined %}
 h3. Web
 
 *URI:* http://{{ item[0].name }}
