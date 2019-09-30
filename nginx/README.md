@@ -11,6 +11,8 @@ nginx_certbot:
 nginx_http_directives: # Конфигурационные параметры для nginx.conf (контекст http)
   key: value
 
+nginx_listen_separate: bool # default: True
+
 nginx_main_domain: "fqdn" # Актуальный домен второго уровня, для которого существуют сертификат
                           # и ключ в files, указываемые в двух следующих переменных:
 nginx_main_cert: "string"
