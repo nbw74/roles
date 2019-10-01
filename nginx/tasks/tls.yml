@@ -16,7 +16,6 @@
         email_address: "{{ nginx_self_signed_csr.email }}"
       notify: validate nginx
 
-
     - name: Generate self-signed cert
       openssl_certificate:
         path: "{{ nginx_self_signed.cert }}"
