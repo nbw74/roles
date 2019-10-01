@@ -1,22 +1,33 @@
 ---
-- name: yum install nginx
-  yum:
-    name: "{{ nginx_packages }}"
-    state: present
-  when: ansible_distribution_major_version|int <= 7
-  tags: [ packages ]
+- name: Yum section
+  block:
+    - name: yum install nginx
+      yum:
+        name: "{{ nginx_packages }}"
 
-- name: yum package awstats
-  yum:
-    name: awstats
-    state: "{{ awstats_enable|d()|ternary('present','absent') }}"
-  when: ansible_distribution_major_version|int <= 7
-  tags: [ packages ]
+    - name: yum package awstats
+      yum:
+        name: awstats
+        state: "{{ awstats_enable|d()|ternary('present','absent') }}"
+
+    - name: Setup southbridge repo
+      yum_repository:
+        name: southbridge-stable
+        description: Southbridge stable packages repository
+        baseurl: http://rpms.southbridge.ru/rhel{{ ansible_distribution_major_version }}/stable/$basearch/
+        gpgcheck: yes
+        gpgkey: http://rpms.southbridge.ru/RPM-GPG-KEY-southbridge
+        enabled: no
+        priority: 10
+
+    - name: Yum install southbridge packages
+      yum:
+        enablerepo: southbridge-stable
+        name: "{{ nginx_sb_packages }}"
+  when: "ansible_pkg_mgr == 'yum'"
 
 - name: dnf install nginx
   dnf:
     name: "{{ nginx_packages }}"
-    state: present
-  when: ansible_distribution_major_version|int > 7
-  tags: [ packages ]
+  when: "ansible_pkg_mgr == 'dnf'"
 ...

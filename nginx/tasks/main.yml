@@ -10,11 +10,11 @@
 - name: Import html
   import_tasks: html.yml
 
-- name: Import dirs and files
-  import_tasks: conf.yml
-
 - name: Import TLS tasks
   import_tasks: tls.yml
+
+- name: Import dirs and files
+  import_tasks: conf.yml
 
 - name: Import certbot
   import_tasks: certbot.yml
