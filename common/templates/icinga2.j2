@@ -22,7 +22,7 @@ object Host "{{ ansible_fqdn }}" {
     vars.la_c = "{{ ansible_processor_vcpus * 6 }},{{ ansible_processor_vcpus * 3 }},{{ ansible_processor_vcpus * 1.5 }}"
 {% endif %}
 {% if common_icinga2_conf.vars is defined %}
-{% for key, value in common_icinga2_conf.vars.iteritems() %}
+{% for key, value in common_icinga2_conf.vars|dictsort %}
 {% if value|regex_search('^([Tt]rue|[Ff]alse|\[.*\])$') %}
     vars.{{ key }} = {{ value }}
 {% else %}
