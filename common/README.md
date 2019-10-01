@@ -30,7 +30,7 @@ common_icinga2_conf:
   ip_address: "ipv4" # default: autodetect
   display_name: "string" # default: ansible_hostname
   int_name: "string" # default: autodetect :Шаблон имени сетевых интерфейсов (eth, ens, eno, ...)
-  variables:
+  vars:
     key: value
   freeform: |
     any block
