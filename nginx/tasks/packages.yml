@@ -11,7 +11,7 @@
         state: "{{ awstats_enable|d()|ternary('present','absent') }}"
 
     - name: pyOpenSSL section
-      block: 
+      block:
         - name: Setup southbridge repo
           yum_repository:
             name: southbridge-stable
