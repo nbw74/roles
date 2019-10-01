@@ -13,8 +13,13 @@ server {
 
     root            /var/www/html;
 
+{% if ansible_distribution_major_version|int >= 7 %}
     ssl_certificate {{ nginx_self_signed.cert }};
     ssl_certificate_key {{ nginx_self_signed.key }};
+{% else %}
+    ssl_certificate /{{ nginx_example_cert }};
+    ssl_certificate_key /{{ nginx_example_key }};
+{% endif %}
 
     # Load configuration files for the default server block.
     include         /etc/nginx/default.d/*.conf;

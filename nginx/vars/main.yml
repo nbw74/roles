@@ -14,4 +14,7 @@ nginx_self_signed:
   cert: /etc/pki/tls/certs/nginx.pem
   key: /etc/pki/tls/private/nginx.pem
   csr: /etc/pki/tls/private/nginx.csr
+
+nginx_example_cert: etc/pki/tls/certs/example.crt
+nginx_example_key: etc/pki/tls/private/example.key
 ...
