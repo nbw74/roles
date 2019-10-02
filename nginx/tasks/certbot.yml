@@ -6,6 +6,25 @@
 
 - name: Certbot initialization block
   block:
+    - name: Create dirs
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - "{{ included }}"
+        - /var/www/letsencrypt
+
+    - name: Copy configs
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: 0644
+      loop:
+        - src: letsencrypt.conf
+          dest: "{{ included }}"
+      notify: validate nginx
+
     - name: Copy certbot sysconfig
       copy:
         src: "{{ item.path }}"

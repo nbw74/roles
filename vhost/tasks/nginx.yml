@@ -1,14 +1,17 @@
 ---
-- name: Include htpasswd tasks
-  include_tasks: htpasswd.yml
-  when:
-    - op.nginx_auth_basic is defined
-    - op.state|d(True)
-  loop: "{{ vhost }}"
-  loop_control:
-    loop_var: op
-    label: "{{ op.name }}"
-  tags: [ conf, crypto ]
+- name: Nobitrix block
+  block:
+    - name: Include htpasswd tasks
+      include_tasks: htpasswd.yml
+      when:
+        - op.nginx_auth_basic is defined
+        - op.state|d(True)
+      loop: "{{ vhost }}"
+      loop_control:
+        loop_var: op
+        label: "{{ op.name }}"
+      tags: [ conf, crypto ]
+  when: vhost_backend != 'bitrix'
 
 - name: Include Nginx vhost config tasks
   include_tasks: nginx_vhost.yml
@@ -19,17 +22,34 @@
     label: "{{ op.name }}"
   tags: [ conf, crypto ]
 
-- name: Remove Nginx vhost config
-  file:
-    path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
-    state: absent
-    backup: yes
-  when: not item.state|d(True)
-  loop: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-  notify: validate nginx
-  tags: [ conf, crypto ]
+- name: Nobitrix block
+  block:
+    - name: Remove Nginx vhost config
+      file:
+        path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
+        state: absent
+        backup: yes
+      when: not item.state|d(True)
+      loop: "{{ vhost }}"
+      loop_control:
+        label: "{{ item.name }}"
+      notify: validate nginx
+      tags: [ conf, crypto ]
+  when: vhost_backend != 'bitrix'
+
+- name: Bitrix block
+  block:
+    - name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
+      file:
+        path: "/etc/nginx/bx/site_enabled/{{ item[1].dest|basename }}"
+        src: "{{ item[0].state|d(True)|ternary('../site_avaliable/' ~ item[1].dest|basename, omit) }}"
+        state: "{{ item[0].state|d(True)|ternary('link', 'absent') }}"
+      loop: "{{ vhost|zip(vhost_bx_nginx_conf.results)|list }}"
+      loop_control:
+        label: "{{ item[1].dest|d('null')|basename }}"
+      notify: validate nginx
+      tags: [ conf, crypto ]
+  when: vhost_backend == 'bitrix'
 
 - name: Remove unused LE certs
   block:
