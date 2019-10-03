@@ -89,36 +89,8 @@
   loop_control:
     label: "{{ item.name }}"
 
-- name: Present .htsecure if redirect
-  copy:
-    dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/www/.htsecure"
-    content: >
-      # THIS FILE IS MANAGED BY ANSIBLE
-    owner: "{{ item.user|d(item.name) }}"
-    group: "{{ item.user|d(item.name) }}"
-    mode: 0644
-  when:
-    - item.state|d(true)
-    - item.crypto|d('none') == 'redirect'
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-- name: Absent .htsecure if no redirect
-  file:
-    path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/www/.htsecure"
-    state: absent
-  when:
-    - item.state|d(true)
-    - item.crypto|d('none') != 'redirect'
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-
 - name: Include multisite
-  include_tasks: bitrix-multisite.yml
+  include_tasks: bitrix_multisite.yml
   when:
     - multi[0].state|d(true)
     - multi[0].nginx_301_only is not defined

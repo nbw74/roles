@@ -34,8 +34,12 @@ server {
 
     # Include parameters common to all websites
     include bx/conf/bitrix.conf;
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+{% endif %}
 }
-{% if op.crypto|d('none') != 'none' %}
+{% if (op.crypto|d('none') != 'none' and not op.crypto_le|d()) or (op.crypto|d('none') != 'none' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 
 server {
 {% include "nginx/listen-crypto.j2" %}
@@ -65,6 +69,10 @@ server {
 
     # Include parameters common to all websites
     include bx/conf/bitrix.conf;
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+{% endif %}
 }
 {% endif %}
 {% if op.bitrix_multisite is defined %}
@@ -98,8 +106,12 @@ server {
 
     # Include parameters common to all websites
     include bx/conf/bitrix.conf;
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+{% endif %}
 }
-{% if multi.crypto|d('none') != 'none' %}
+{% if (multi.crypto|d('none') != 'none' and not op.crypto_le|d()) or (multi.crypto|d('none') != 'none' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 
 server {
 {% include "nginx/listen-crypto.j2" %}
@@ -129,6 +141,10 @@ server {
 
     # Include parameters common to all websites
     include bx/conf/bitrix.conf;
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+{% endif %}
 }
 {% endif %}
 {% endfor %}

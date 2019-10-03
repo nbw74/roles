@@ -8,7 +8,6 @@
     - "{{ confd }}"
     - "{{ defaultd }}"
     - "{{ included }}"
-    - /var/www/letsencrypt
 
 - name: Copy configs
   copy:
@@ -22,8 +21,6 @@
       dest: "{{ defaultd }}"
     - src: 12-body.conf
       dest: "{{ defaultd }}"
-    - src: letsencrypt.conf
-      dest: "{{ included }}"
   notify: validate nginx
 
 - name: Template configs

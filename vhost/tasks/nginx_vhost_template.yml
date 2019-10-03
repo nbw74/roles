@@ -1,11 +1,47 @@
 ---
-- name: Template Nginx vhost config
+- name: Template Nginx vhost config if no bitrix
   template:
     src: "nginx{{ (op.nginx_301_only is defined)|ternary('-301', '') }}.j2"
     dest: "/etc/nginx/conf.d/{{ op.user|d(op.name) }}.conf"
     mode: 0644
     backup: yes
     force: "{{ op.legacy|d()|ternary('no', 'yes') }}"
+  when: vhost_backend != 'bitrix'
   notify: validate nginx
+  tags: [ conf, crypto ]
+
+- name: Bitrix section
+  block:
+    - name: Present .htsecure if redirect
+      copy:
+        dest: "{{ vhost_basedir }}/{{ op.user|d(op.name) }}/www/.htsecure"
+        content: >
+          # THIS FILE IS MANAGED BY ANSIBLE
+        owner: "{{ op.user|d(op.name) }}"
+        group: "{{ op.user|d(op.name) }}"
+        mode: 0644
+      when: >
+        op.state|d(true) and op.nginx_301_only is not defined and
+        (( op.crypto|d('none') == 'redirect' and not op.crypto_le|d() )
+        or ( op.crypto|d('none') == 'redirect' and op.crypto_le|d() and vhost_le_cert_exists|d() ))
+
+    - name: Absent .htsecure if no redirect
+      file:
+        path: "{{ vhost_basedir }}/{{ op.user|d(op.name) }}/www/.htsecure"
+        state: absent
+      when: >
+        op.state|d(true) and op.nginx_301_only is not defined and
+        (( op.crypto|d('none') != 'redirect' )
+        or ( op.crypto|d('none') == 'redirect' and op.crypto_le|d() and not vhost_le_cert_exists|d() ))
+
+    - name: Template Nginx vhost config if bitrix
+      template:
+        src: "nginx-bx.j2"
+        dest: "/etc/nginx/bx/site_avaliable/{{ op.user|d(op.name) }}.conf"
+        mode: 0644
+        backup: yes
+        force: "{{ op.legacy|d()|ternary('no', 'yes') }}"
+      notify: validate nginx
+  when: vhost_backend == 'bitrix'
   tags: [ conf, crypto ]
 ...

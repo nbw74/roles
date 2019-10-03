@@ -34,16 +34,8 @@
 - name: Import crypto
   import_tasks: crypto.yml
 
-- name: Nginx section
-  block:
-    - name: Include nginx
-      include_tasks: nginx.yml
-      when: vhost_backend != 'bitrix'
-
-    - name: Include nginx-bx
-      include_tasks: nginx-bx.yml
-      when: vhost_backend == 'bitrix'
-  tags: [ crypto ]
+- name: Include nginx
+  include_tasks: nginx.yml
 
 - name: Include apache
   include_tasks: apache.yml
