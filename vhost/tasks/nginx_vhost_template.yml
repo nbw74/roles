@@ -24,6 +24,7 @@
         op.state|d(true) and op.nginx_301_only is not defined and
         (( op.crypto|d('none') == 'redirect' and not op.crypto_le|d() )
         or ( op.crypto|d('none') == 'redirect' and op.crypto_le|d() and vhost_le_cert_exists|d() ))
+      notify: validate nginx
 
     - name: Absent .htsecure if no redirect
       file:
@@ -33,6 +34,7 @@
         op.state|d(true) and op.nginx_301_only is not defined and
         (( op.crypto|d('none') != 'redirect' )
         or ( op.crypto|d('none') == 'redirect' and op.crypto_le|d() and not vhost_le_cert_exists|d() ))
+      notify: validate nginx
 
     - name: Template Nginx vhost config if bitrix
       template:
