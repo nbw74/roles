@@ -43,8 +43,15 @@
         group: root
         mode: 0400
       notify: validate nginx
-  when: multi[1].crypto|d('none') != 'none'
+  when:
+    - multi[1].crypto|d('none') != 'none'
+    - not multi[0].crypto_le|d()
   tags: [ crypto ]
+
+- name: Check if LE certificate present
+  stat:
+    path: "/etc/letsencrypt/live/{{ multi[0].name }}/cert.pem"
+  register: vhost_reg_le_check_multi
 
 - name: Present .htsecure if redirect
   copy:
@@ -54,15 +61,17 @@
     owner: "{{ multi_user }}"
     group: "{{ multi_user }}"
     mode: 0644
-  when:
-    - multi[1].crypto|d('none') == 'redirect'
+  when: >
+    ( multi[1].crypto|d('none') == 'redirect' and not multi[0].crypto_le|d() )
+    or ( multi[1].crypto|d('none') == 'redirect' and multi[0].crypto_le|d() and vhost_reg_le_check_multi.stat.exists )
   tags: [ crypto ]
 
 - name: Absent .htsecure if no redirect
   file:
     path: "{{ multi_dir }}/.htsecure"
     state: absent
-  when:
-    - multi[1].crypto|d('none') != 'redirect'
+  when: >
+    ( multi[1].crypto|d('none') != 'redirect' )
+    or ( multi[1].crypto|d('none') == 'redirect' and multi[0].crypto_le|d() and not vhost_reg_le_check_multi.stat.exists )
   tags: [ crypto ]
 ...

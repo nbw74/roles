@@ -1,4 +1,9 @@
 
+{% if op.crypto_le|d() %}
+    ssl_certificate		/etc/letsencrypt/live/{{ op.name }}/fullchain.pem;
+    ssl_certificate_key		/etc/letsencrypt/live/{{ op.name }}/privkey.pem;
+{% else %}
     ssl_certificate		/etc/pki/tls/certs/{{ multi.name }}.crt;
     ssl_certificate_key		/etc/pki/tls/private/{{ multi.name }}.key;
+{% endif %}
 

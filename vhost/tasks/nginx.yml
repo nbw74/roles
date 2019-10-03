@@ -41,12 +41,12 @@
   block:
     - name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
       file:
-        path: "/etc/nginx/bx/site_enabled/{{ item[1].dest|basename }}"
-        src: "{{ item[0].state|d(True)|ternary('../site_avaliable/' ~ item[1].dest|basename, omit) }}"
-        state: "{{ item[0].state|d(True)|ternary('link', 'absent') }}"
-      loop: "{{ vhost|zip(vhost_bx_nginx_conf.results)|list }}"
+        path: "/etc/nginx/bx/site_enabled/{{ item.user|d(item.name) }}.conf"
+        src: "{{ item.state|d(True)|ternary('../site_avaliable/' ~ item.user|d(item.name) ~ '.conf', omit) }}"
+        state: "{{ item.state|d(True)|ternary('link', 'absent') }}"
+      loop: "{{ vhost }}"
       loop_control:
-        label: "{{ item[1].dest|d('null')|basename }}"
+        label: "{{ item.user|d(item.name) }}"
       notify: validate nginx
       tags: [ conf, crypto ]
   when: vhost_backend == 'bitrix'
