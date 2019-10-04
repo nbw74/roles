@@ -1,27 +1,18 @@
 ---
-- name: "Check hostname in /etc/sysconfig/network"
+- name: Check hostname in /etc/sysconfig/network
   lineinfile:
     dest: "/etc/sysconfig/network"
     regexp: '^HOSTNAME='
     line: 'HOSTNAME={{ inventory_hostname }}'
-  when: ansible_distribution_major_version|int <= 6
-  notify: hostname 6
+  when:  "ansible_service_mgr == 'upstart'"
   tags: [ hostname ]
 
-- name: "Check hostname (7)"
-  shell: "hostnamectl --static status"
-  register: common_check_hostname
-  changed_when: false
-  when: ansible_distribution_major_version|int >= 7
-
-- name: "Run hostnamectl"
-  command: "hostnamectl set-hostname {{ inventory_hostname }}"
-  when:
-    - ansible_distribution_major_version|int >= 7
-    - inventory_hostname not in common_check_hostname.stdout
+- name: Check hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
   tags: [ hostname ]
 
-- name: Add record in /etc/hosts
+- name: Add record in /etc/hosts if alien
   lineinfile:
     path: /etc/hosts
     regexp: '^.*{{ inventory_hostname }}$'
@@ -29,5 +20,15 @@
   when: alien
   tags: [ hostname ]
 
-- meta: flush_handlers
+- name: Add block in /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    owner: root
+    mode: 0644
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR COMMON ROLE"
+    block: |
+      {% for hostname, address in common_etc_hosts|dictsort %}
+      {{ address }}\t\t{{ hostname }}
+      {% endfor %}
+  when: common_etc_hosts|length > 0
 ...

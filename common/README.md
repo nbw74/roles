@@ -21,6 +21,9 @@ common_cron_user_tasks:
     disabled: bool # default: no; if the job should be disabled (commented out) in the crontab
     state: bool # default: yes; whether to ensure the job is present or absent
 
+common_etc_hosts:
+  <hostname>: <ipaddr>
+
 common_fstrim_weekly: # Cron job for weekly fstrim launch
   - "string" # list of trimmed filesystems
 

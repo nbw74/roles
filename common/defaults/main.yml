@@ -2,6 +2,7 @@
 alien: False
 common_add_packages: []
 common_cron_user_tasks: []
+common_etc_hosts: { }
 common_facts: { }
 common_icinga2_conf: []
 common_icinga2_enable: False
