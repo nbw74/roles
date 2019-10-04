@@ -28,7 +28,7 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR COMMON ROLE"
     block: |
       {% for hostname, address in common_etc_hosts|dictsort %}
-      {{ address }}\t\t{{ hostname }}
+      {{ address }}\\t\\t{{ hostname }}
       {% endfor %}
   when: common_etc_hosts|length > 0
 ...
