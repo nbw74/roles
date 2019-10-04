@@ -25,7 +25,7 @@
   lineinfile:
     path: /etc/hosts
     regexp: '^.*{{ inventory_hostname }}$'
-    line: "127.0.0.1\t{{ inventory_hostname }}"
+    line: "{{ ansible_default_ipv4.address }}\t{{ inventory_hostname }}"
   when: alien
   tags: [ hostname ]
 
