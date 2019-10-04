@@ -1,23 +1,26 @@
 ---
-- name: get first private address
-  set_fact:
-    common_ipv4_private: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
-  tags: [ icinga2 ]
+- name: Internal section
+  block:
+    - name: get first private address
+      set_fact:
+        common_ipv4_private: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
+      tags: [ icinga2 ]
 
-- name: set icinga2 master zone
-  set_fact:
-    common_icinga2_zone: "{{ common_icinga2_master_zone }}"
-    common_circuit_prod: true
-  when: common_ipv4_private|ipaddr(item)
-  with_items: "{{ common_icinga2_master_zone_net_list }}"
-  tags: [ icinga2 ]
+    - name: set icinga2 master zone
+      set_fact:
+        common_icinga2_zone: "{{ common_icinga2_master_zone }}"
+        common_circuit_prod: true
+      when: common_ipv4_private|ipaddr(item)
+      with_items: "{{ common_icinga2_master_zone_net_list }}"
+      tags: [ icinga2 ]
 
-- name: set icinga2 satellite zone
-  set_fact:
-    common_icinga2_zone: "{{ common_icinga2_satellite_zone }}"
-  when: common_ipv4_private|ipaddr(item)
-  with_items: "{{ common_icinga2_satellite_zone_net_list }}"
-  tags: [ icinga2 ]
+    - name: set icinga2 satellite zone
+      set_fact:
+        common_icinga2_zone: "{{ common_icinga2_satellite_zone }}"
+      when: common_ipv4_private|ipaddr(item)
+      with_items: "{{ common_icinga2_satellite_zone_net_list }}"
+      tags: [ icinga2 ]
+  when: not alien
 
 - name: Template host config to icinga2 master
   template:

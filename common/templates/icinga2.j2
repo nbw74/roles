@@ -6,7 +6,7 @@ object Host "{{ ansible_fqdn }}" {
     import "{{ item }}"
 {% endfor %}
 {% endif %}
-    address = "{{ common_icinga2_conf['ip_address']|default(common_ipv4_private) }}"
+    address = "{{ common_icinga2_conf['ip_address']|default(common_ipv4_private|d(ansible_host)) }}"
     display_name = "{{ common_icinga2_conf['display_name']|default(ansible_hostname) }}"
 {% set common_icinga2_standard_int_name = 'eth' %}
 {% if ansible_virtualization_type == 'VMware' %}
