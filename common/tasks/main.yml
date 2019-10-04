@@ -59,13 +59,15 @@
     - name: Include domain
       include_tasks: domain.yml
 
-    - name: Include icinga2
-      include_tasks: icinga2.yml
-      tags: [ icinga2 ]
-
     - name: Include rsyslog
       include_tasks: rsyslog.yml
   when: not alien
+
+- name: Include icinga2
+  include_tasks: icinga2.yml
+  when: >
+    not alien or ( alien and common_icinga2_enable )
+  tags: [ icinga2 ]
 
 - meta: flush_handlers
 
