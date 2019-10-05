@@ -1,7 +1,13 @@
 ---
+- name: Stat atomic repo
+  stat:
+    path: /etc/yum.repos.d/atomic.repo
+  register: icinga2_reg_atomic
+
 - name: install atomic repo
   yum:
     name: "{{ icinga2_atomic_rpm }}"
+  when: not icinga2_reg_atomic.stat.exists
   tags: [ wmi ]
 
 - name: install openvas-smb package
