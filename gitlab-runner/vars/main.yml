@@ -1,0 +1,16 @@
+---
+runner_packages:
+  - gitlab-runner
+
+runner_ansible_packages:
+  - python-virtualenv
+  - python-pip
+  - "python2-mitogen-{{ runner_mitogen_version }}.el7.noarch"
+  - unzip
+
+runner_ansible_libs:
+  - "ansible=={{ runner_ansible_version }}"
+  - netaddr
+  - selinux
+  - jmespath
+...

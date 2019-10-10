@@ -1,0 +1,6 @@
+---
+- name: restart runner
+  systemd:
+    name: gitlab-runner.service
+    state: restarted
+...
