@@ -37,21 +37,30 @@
     accept_hostkey: yes
   when: not check_path.stat.exists
 
+- name: Stat dotfiles
+  stat:
+    path: "{{ item }}"
+  loop: "{{ env_dotfiles }}"
+  register: env_reg_df_stat
+
+- name: Remove files if not link
+  file:
+    path: "{{ item.stat.path }}"
+    state: absent
+  when:
+    - not item.stat.islnk|d()
+    - item.stat.exists
+  loop: "{{ env_reg_df_stat.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
 - name: Check symlinks
   file:
     src: '.dotfiles/{{ item }}'
     path: '{{ item }}'
     state: link
     force: yes
-  loop:
-    - .vim
-    - .zsh
-    - .gitconfig
-    - .tmux.conf
-    - .vimrc
-    - .zlogin
-    - .zlogout
-    - .zshrc
+  loop: "{{ env_dotfiles }}"
 
 - name: Check MC config dir
   file:

@@ -9,6 +9,16 @@ env_packages:
   - git
   - libselinux-python
 
+env_dotfiles:
+  - .vim
+  - .zsh
+  - .gitconfig
+  - .tmux.conf
+  - .vimrc
+  - .zlogin
+  - .zlogout
+  - .zshrc
+
 env_color:
   production: RED
   prod: RED
