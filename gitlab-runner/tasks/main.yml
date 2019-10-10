@@ -59,6 +59,16 @@
     line: "concurrent = {{ runner_config['concurrent']|d('1') }}"
   notify: restart runner
 
+- name: Sudoers include
+  template:
+    src: "{{ item.path }}.j2"
+    dest: "/{{ item.path }}"
+    owner: root
+    mode: 0600
+  loop:
+    - path: etc/sudoers.d/gitlab_runner
+  when: runner_sudo|length > 0
+
 - name: Ansible section
   block:
     - name: Yum install ansible packages

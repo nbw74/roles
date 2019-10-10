@@ -15,6 +15,9 @@ runner_config:
   run_untagged: bool # Register to run untagged builds (default: false) [$REGISTER_RUN_UNTAGGED]
   custom_build_dir: bool # Enable job specific build directories (default: false) [$CUSTOM_BUILD_DIR_ENABLED]
 
+runner_sudo:  # List of sudo commands that the runner is allowed to execute:
+  - <command> # gitlab-runner ALL=(ALL) NOPASSWD: <command>
+
 runner_ansible: bool # Create virtualenv with ansible in /home/gitlab-runner/ansible-{{ runner_ansible_version }}
 runner_ansible_version: version # default: (see in the defaults/main.yml)
 runner_mitogen_version: version # default: (see in the defaults/main.yml)
