@@ -1,0 +1,54 @@
+---
+- name: Directories for network config
+  file:
+    path: "{{ nspawn_lib }}/{{ item.name }}/etc/systemd/network"
+    state: directory
+  loop: "{{ nspawn }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Template network configuration files
+  template:
+    src: network.j2
+    dest: "{{ nspawn_lib }}/{{ item.0.name }}/etc/systemd/network/{{ item.1.Name|d(ansible_default_ipv4['interface']) }}.network"
+  when: item.1.State|d(true)
+  loop: "{{ nspawn|subelements('network', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }}:{{ item.1.Name|d(ansible_default_ipv4['interface']) }}"
+
+- name: Remove network configuration files
+  file:
+    path: "{{ nspawn_lib }}/{{ item.0.name }}/etc/systemd/network/{{ item.1.Name|d(ansible_default_ipv4['interface']) }}.network"
+    state: absent
+  when: not item.1.State|d(true)
+  loop: "{{ nspawn|subelements('network', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }}:{{ item.1.Name|d(ansible_default_ipv4['interface']) }}"
+
+- name: Symlink resolv.conf
+  file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: "{{ nspawn_lib }}/{{ new.item.name }}/etc/resolv.conf"
+    state: link
+    force: yes
+  when: new.changed
+  loop: "{{ nspawn_reg_dir.results }}"
+  loop_control:
+    loop_var: new
+    label: "{{ new.item.name }}"
+
+- name: Enable network services
+  shell: >
+    systemd-nspawn -D {{ new.item.name }} systemctl enable systemd-networkd.service &&
+    systemd-nspawn -D {{ new.item.name }} systemctl enable systemd-resolved.service &&
+    systemd-nspawn -D {{ new.item.name }} systemctl set-default multi-user.target
+  args:
+    chdir: "{{ nspawn_lib }}"
+  when:
+    - new.changed
+    - not nspawn_no_container_actions|d()
+  loop: "{{ nspawn_reg_dir.results }}"
+  loop_control:
+    loop_var: new
+    label: "{{ new.item.name }}"
+...

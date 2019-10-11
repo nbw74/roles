@@ -1,0 +1,30 @@
+---
+nspawn_etc: /etc/nspawn
+nspawn_lib: /var/lib/machines
+nspawn_override_dir: /etc/systemd/system/systemd-nspawn@.service.d
+nspawn_ct_prefix: /etc/systemd/system/systemd-nspawn@
+nspawn_getty_override_dir: etc/systemd/system/container-getty@.service.d
+
+nspawn_packages:
+  - bash
+  - bash-completion
+  - epel-release
+  - hostname
+  - iproute
+  - iputils
+  - less
+  - lsof
+  - man
+  - openssh-server
+  - passwd
+  - psmisc
+  - rootfiles
+  - rsyslog
+  - sudo
+  - systemd
+  - systemd-networkd
+  - systemd-resolved
+  - sysvinit-tools
+  - vim-enhanced
+  - yum
+...
