@@ -25,7 +25,7 @@
     src: "{{ item.1.block_device }}"
     fstype: "{{ item.1.fs_type|d('ext4') }}"
     state: "{{ item.1.mounted|d(true) | ternary('mounted', 'absent') }}"
-    opts: "{{ item.1.options|d('defaults')}}"
+    opts: "{{ item.1.options|d('defaults') }}"
   loop: "{{ nspawn|subelements('mounts', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }}:{{ item.1.mountpoint }}"
@@ -36,7 +36,7 @@
     state: directory
     mode: "{{ item.1.mode|d('0755') }}"
     owner: "{{ item.1.owner|d('root') }}"
-    group: "{{ item.1.group|d('root')}}"
+    group: "{{ item.1.group|d('root') }}"
   loop: "{{ nspawn|subelements('mounts', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }}:{{ item.1.mountpoint }}"
