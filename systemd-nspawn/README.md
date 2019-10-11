@@ -6,6 +6,7 @@ nspawn:
   - name: string # Container name (mandatory). Must be FQDN
     network:
       - Name: <host_if_name> # Default: ansible_default_ipv4.interface
+        DHCP: bool
         Address: CIDR # Mandatory (if 'Addresses' is not defined)
         Addresses: # Mandatory (if 'Address' is not defined)
           - Address: CIDR|IPv4
@@ -39,8 +40,6 @@ nspawn:
 
 nspawn_if_type:
   <interface_name>: ipvlan|macvlan|bridge # Default: bridge, если интерфейс br\d+, и ipvlan во всех остальных случаях. Этот словарь требуется определять только в сложных сетевых инсталляциях.
-
-nspawn_sshd_ansible: bool # Default: true
 ```
 ## Examples
 Простейший контейнер:

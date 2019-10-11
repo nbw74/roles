@@ -12,6 +12,9 @@ Name=iv-{{ Interface }}
 {% endif %}
 
 [Network]
+{% if item.1.DHCP|d() %}
+DHCP=ipv4
+{% endif %}
 {% if item.1.Address is defined %}
 Address={{ item.1.Address }}
 {% endif %}
