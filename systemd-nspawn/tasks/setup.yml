@@ -27,7 +27,7 @@
 - name: Copy scripts
   copy:
     src: mctl.sh
-    dest: "{{ nspawn_scripts_dir }}/{{ item }}"
+    dest: "{{ nspawn_scripts_dir }}/"
     owner: root
     group: root
     mode: 0744
