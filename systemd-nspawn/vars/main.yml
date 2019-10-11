@@ -1,6 +1,7 @@
 ---
 nspawn_etc: /etc/nspawn
 nspawn_lib: /var/lib/machines
+nspawn_scripts_dir: /usr/local/bin
 nspawn_override_dir: /etc/systemd/system/systemd-nspawn@.service.d
 nspawn_ct_prefix: /etc/systemd/system/systemd-nspawn@
 nspawn_getty_override_dir: etc/systemd/system/container-getty@.service.d
