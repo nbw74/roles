@@ -67,7 +67,6 @@
     mode: 0600
   loop:
     - path: etc/sudoers.d/gitlab_runner
-  when: runner_sudo|length > 0
 
 - name: Ansible section
   block:
