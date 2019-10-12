@@ -2,7 +2,6 @@
 - name: Check role requirements
   assert:
     that:
-      - inventory_hostname in groups['php_fpm'] or inventory_hostname in groups['httpd']
       - ansible_distribution_major_version|int >= 7
       - php_remi_version is defined or php_oob
 
