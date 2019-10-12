@@ -68,6 +68,14 @@
   loop:
     - path: etc/sudoers.d/gitlab_runner
 
+- name: Copy custom scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+    owner: root
+    mode: 0755
+  loop: "{{ runner_custom_script_files }}"
+
 - name: Ansible section
   block:
     - name: Yum install ansible packages

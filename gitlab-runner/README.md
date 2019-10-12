@@ -15,6 +15,9 @@ runner_config:
   run_untagged: bool # Register to run untagged builds (default: false) [$REGISTER_RUN_UNTAGGED]
   custom_build_dir: bool # Enable job specific build directories (default: false) [$CUSTOM_BUILD_DIR_ENABLED]
 
+runner_custom_script_files: # Copy custom scripts from inventory
+  - path/to/file # e.q. "files/usr/local/bin/deploy.sh"
+
 runner_sudo:  # List of sudo commands that the runner is allowed to execute:
   - <command> # gitlab-runner ALL=(ALL) NOPASSWD: <command>
 
