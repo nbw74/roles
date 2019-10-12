@@ -19,7 +19,7 @@ runner_custom_script_files: # Copy custom scripts from inventory
   - path: path/to/file # e.q. "files/usr/local/bin/deploy.sh"
     owner: string # default: root
     group: string # default: root
-    mode: 'oct' # default: '0750'
+    mode: 'oct' # default: '0755'
 
 runner_sudo:  # List of sudo commands that the runner is allowed to execute:
   - <command> # gitlab-runner ALL=(ALL) NOPASSWD: <command>

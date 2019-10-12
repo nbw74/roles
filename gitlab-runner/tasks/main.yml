@@ -74,7 +74,7 @@
     dest: "/{{ item.path }}"
     owner: "{{ item.owner|d('root') }}"
     group: "{{ item.group|d('root') }}"
-    mode: "{{ item.mode|d('0750') }}"
+    mode: "{{ item.mode|d('0755') }}"
   loop: "{{ runner_custom_script_files }}"
 
 - name: Ansible section
