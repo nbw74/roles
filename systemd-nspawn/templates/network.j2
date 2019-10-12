@@ -29,7 +29,7 @@ DNS={{ dns }}
 {% if item.1.DHCP|d() %}
 
 [DHCPv4]
-Hostname={{ inventory_hostname.split('.')[0] }}
+Hostname={{ item.0.name.split('.')[0] }}
 {% endif %}
 
 {% if item.1.Addresses is defined %}
