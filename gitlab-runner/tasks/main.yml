@@ -61,7 +61,7 @@
 
 - name: Sudoers include
   template:
-    src: "{{ inventory_dir }}/../files/{{ item.path }}.j2"
+    src: "{{ item.path }}.j2"
     dest: "/{{ item.path }}"
     owner: root
     mode: 0600
@@ -70,7 +70,7 @@
 
 - name: Copy custom scripts
   copy:
-    src: "{{ item }}"
+    src: "{{ inventory_dir }}/../files/{{ item }}"
     dest: "/{{ item }}"
     owner: root
     mode: 0755
