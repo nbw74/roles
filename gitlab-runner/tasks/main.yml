@@ -61,7 +61,7 @@
 
 - name: Sudoers include
   template:
-    src: "{{ item.path }}.j2"
+    src: "{{ inventory_dir }}/../files/{{ item.path }}.j2"
     dest: "/{{ item.path }}"
     owner: root
     mode: 0600
