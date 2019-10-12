@@ -70,10 +70,11 @@
 
 - name: Copy custom scripts
   copy:
-    src: "{{ inventory_dir }}/../files/{{ item }}"
-    dest: "/{{ item }}"
-    owner: root
-    mode: 0755
+    src: "{{ inventory_dir }}/../files/{{ item.path }}"
+    dest: "/{{ item.path }}"
+    owner: "{{ item.owner|d('root') }}"
+    group: "{{ item.group|d('root') }}"
+    mode: "{{ item.mode|d('0750') }}"
   loop: "{{ runner_custom_script_files }}"
 
 - name: Ansible section
