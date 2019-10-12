@@ -1,153 +1,143 @@
 ---
-- name: "Fix DNF config"
-  ini_file:
-    dest: /etc/dnf/dnf.conf
-    section: main
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-  with_items:
-    - { option: 'fastestmirror', value: 'True' }
-    - { option: 'timeout', value: '4' }
-  when:
-    - ansible_distribution_major_version|int > 7
-    - common_dnf_config_fix|d()
-  tags: [ packages ]
+- name: Yum section
+  block:
+    - name: "Update all packages (YUM)"
+      yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+      when: pkgupdate
+      tags: [ packages, update ]
 
-- name: "Update all packages (YUM)"
-  yum:
-    name: "*"
-    state: latest
-    update_cache: yes
-  when:
-    - ansible_distribution_major_version|int <= 7
-    - pkgupdate
-  tags: [ packages, update ]
+    - name: "Install required packages (YUM)"
+      yum:
+        name: "{{ common_required_base_packages | union(common_centos_specific_packages) }}"
+      tags: [ packages, etckeeper ]
 
-- name: "Update all packages (DNF)"
-  dnf:
-    name: "*"
-    state: latest
-  when:
-    - ansible_distribution_major_version|int > 7
-    - pkgupdate
-  tags: [ packages, update ]
-# -------------------------------------------------------------
-- name: "Install required packages (YUM)"
-  yum:
-    name: "{{ common_required_base_packages | union(common_centos_specific_packages) }}"
-    state: present
-  when: ansible_distribution_major_version|int <= 7
-  tags: [ packages, snmp, etckeeper ]
+    - name: "Install required packages if no ct (YUM)"
+      yum:
+        name: "{{ common_required_base_packages_no_ct }}"
+      when: server_type != 'ct'
+      tags: [ snmp, ntp ]
 
-- name: "Install required packages (full) (YUM)"
-  yum:
-    name: "{{ common_required_base_packages_full }}"
-    state: present
-  when:
-    - ansible_distribution_major_version|int <= 7
-    - ansible_virtualization_type != 'openvz'
-  tags: [ packages, snmp, etckeeper ]
+    - name: "Install required packages if no ovz (YUM)"
+      yum:
+        name: "{{ common_required_base_packages_full }}"
+      when: ansible_virtualization_type != 'openvz'
+      tags: [ packages, snmp, etckeeper ]
 
-- name: "Install required packages (YUM 7)"
-  yum:
-    name: "{{ common_required_base_packages_7 }}"
-    state: present
-  when:
-    - ansible_distribution_major_version|int == 7
-    - ansible_virtualization_type != 'openvz'
-  tags: [ packages, snmp ]
+    - name: "Install required packages (YUM 7)"
+      yum:
+        name: "{{ common_required_base_packages_7 }}"
+        state: present
+      when:
+        - ansible_distribution_major_version|int == 7
+        - ansible_virtualization_type != 'openvz'
+      tags: [ packages, snmp ]
 
-- name: "Install SELinux packages (YUM)"
-  yum:
-    name: "{{ common_required_base_packages_selinux | union(common_centos_specific_packages_selinux) }}"
-    state: present
-  when:
-    - ansible_distribution_major_version|int <= 7
-    - selinux_state != "disabled"
-  tags: [ packages, selinux ]
+    - name: "Install SELinux packages (YUM)"
+      yum:
+        name: "{{ common_required_base_packages_selinux | union(common_centos_specific_packages_selinux) }}"
+      when: selinux_state != "disabled"
+      tags: [ packages, selinux ]
 
-- name: "Remove SELinux packages (YUM)"
-  yum:
-    name: setroubleshoot-server
-    state: absent
-  when: selinux_state == "disabled"
-  tags: [ packages, selinux ]
+    - name: "Remove SELinux packages (YUM)"
+      yum:
+        name: setroubleshoot-server
+        state: absent
+      when: selinux_state == "disabled"
+      tags: [ packages, selinux ]
 
-- name: "Install required FreeIPA packages (YUM)"
-  yum:
-    name: "{{ common_centos_specific_packages_ipa }}"
-    state: present
-  when:
-    - ansible_distribution_major_version|int <= 7
-    - not alien
-  tags: [ packages ]
+    - name: "Install required FreeIPA packages (YUM)"
+      yum:
+        name: "{{ common_centos_specific_packages_ipa }}"
+        state: present
+      when: not alien
+      tags: [ packages ]
 
-- name: "Install EPEL packages (YUM)"
-  yum:
-    state: present
-    name: "{{ common_required_epel_packages }}"
-  when: ansible_distribution_major_version|int <= 7
-  tags: [ packages, etckeeper ]
-# -------------------------------------------------------------
-- name: "Install required packages (DNF)"
-  dnf:
-    name: "{{ common_required_base_packages|union(common_required_epel_packages) }}"
-  when: ansible_distribution_major_version|int > 7
-  tags: [ packages ]
+    - name: "Install EPEL packages (YUM)"
+      yum:
+        state: present
+        name: "{{ common_required_epel_packages }}"
+      tags: [ packages, etckeeper ]
 
-- name: "Install required SELinux packages (DNF)"
-  dnf:
-    name: "{{ common_required_base_packages_selinux|union(common_fedora_specific_packages_selinux) }}"
-  when:
-    - ansible_distribution_major_version|int > 7
-    - selinux_state != "disabled"
-  tags: [ packages ]
+    - name: VM tools section
+      block:
+        - name: Install open-vm-tools
+          yum:
+            name: open-vm-tools
+          when: ansible_virtualization_type == 'VMware'
+          tags: [ packages, vmware ]
 
-- name: "Install required FreeIPA packages (DNF)"
-  dnf:
-    name: "{{ common_fedora_specific_packages_ipa }}"
-  when:
-    - ansible_distribution_major_version|int > 7
-    - not alien
-  tags: [ packages ]
-# -------------------------------------------------------------
-- name: Install open-vm-tools
-  yum:
-    name: "open-vm-tools"
-    state: present
-  when:
-    - ansible_virtualization_type == 'VMware'
-    - ansible_distribution_major_version|int <= 7
-  tags: [ packages, vmware ]
+        - name: Install qemu-guest-agent
+          yum:
+            name: qemu-guest-agent
+          when: ansible_virtualization_type == 'kvm'
+          tags: [ packages, kvm ]
+      when:
+        - ansible_virtualization_role == 'guest'
+        - not alien
 
-- name: Install qemu-guest-agent
-  yum:
-    name: "qemu-guest-agent"
-    state: present
-  when:
-    - ansible_virtualization_type == 'kvm'
-    - ansible_virtualization_role == 'guest'
-    - ansible_distribution_major_version|int <= 7
-    - not alien
-  tags: [ packages, kvm ]
+    - name: Install iptables-services package (YUM)
+      yum:
+        name: iptables-services
+      when:
+        - ansible_distribution == 'CentOS'
+        - ansible_distribution_major_version|int == 7
+      tags: [ packages, iptables ]
 
-- name: Install iptables-services package (YUM)
-  yum:
-    name: "iptables-services"
-    state: present
-  when:
-    - ansible_distribution == 'CentOS'
-    - ansible_distribution_major_version|int == 7
-  tags: [ packages, iptables ]
+    - name: Remove unnecessary packages
+      yum:
+        name: "{{ common_virt_unnecessary_packages }}"
+        state: absent
+      when: ansible_virtualization_role == 'guest'
+      tags: [ packages ]
+  when: ansible_pkg_mgr == 'yum'
 
-- name: Remove unnecessary packages
-  yum:
-    name: "{{ common_virt_unnecessary_packages }}"
-    state: absent
-  when:
-    - ansible_virtualization_role == 'guest'
-    - ansible_distribution_major_version|int <= 7
-  tags: [ packages ]
+- name: DNF section
+  block:
+    - name: "Fix DNF config"
+      ini_file:
+        dest: /etc/dnf/dnf.conf
+        section: main
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: 'fastestmirror', value: 'True' }
+        - { option: 'timeout', value: '4' }
+      when: common_dnf_config_fix|d()
+      tags: [ packages ]
+
+    - name: "Update all packages (DNF)"
+      dnf:
+        name: "*"
+        state: latest
+      when: pkgupdate
+      tags: [ packages, update ]
+
+    - name: "Install required packages (DNF)"
+      dnf:
+        name: "{{ common_required_base_packages|union(common_required_epel_packages) }}"
+      tags: [ packages ]
+
+    - name: "Install required packages if no ct (DNF)"
+      dnf:
+        name: "{{ common_required_base_packages_no_ct }}"
+      when: server_type != 'ct'
+      tags: [ packages ]
+
+    - name: "Install required SELinux packages (DNF)"
+      dnf:
+        name: "{{ common_required_base_packages_selinux|union(common_fedora_specific_packages_selinux) }}"
+      when: selinux_state != "disabled"
+      tags: [ packages ]
+
+    - name: "Install required FreeIPA packages (DNF)"
+      dnf:
+        name: "{{ common_fedora_specific_packages_ipa }}"
+      when: not alien
+      tags: [ packages ]
+  when: ansible_pkg_mgr == 'dnf'
 
 - name: "Template {{ ptr }}"
   template:

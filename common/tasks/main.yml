@@ -8,32 +8,34 @@
 - name: Import hostname
   import_tasks: hostname.yml
 
-- name: Include selinux
-  include_tasks: selinux.yml
+- name: No-ct section
+  block:
+    - name: Include selinux
+      include_tasks: selinux.yml
+
+    - name: Include ifcfg
+      include_tasks: ifcfg.yml
+
+    - name: Include routes
+      include_tasks: routes.yml
+      when: common_static_route is defined
+
+    - name: Include snmpd
+      include_tasks: snmpd.yml
+
+    - name: Include sysctl
+      include_tasks: sysctl.yml
+      when: common_sysctl_vars|length > 0
   when: "server_type != 'ct'"
 
-- name: Import ifcfg
-  import_tasks: ifcfg.yml
-
-- name: Include routes
-  include_tasks: routes.yml
-  when: common_static_route is defined
-
-- name: Import ntp
-  import_tasks: ntp.yml
-
-- name: Import snmpd
-  import_tasks: snmpd.yml
+- name: Include ntp
+  include_tasks: ntp.yml
 
 - name: Import mail
   import_tasks: mail.yml
 
-- name: Include sysctl
-  include_tasks: sysctl.yml
-  when: common_sysctl_vars|length > 0
-
-- name: Import services
-  import_tasks: services.yml
+- name: Include services
+  include_tasks: services.yml
 
 - name: Include journal
   include_tasks: journal.yml
@@ -58,7 +60,9 @@
   block:
     - name: Include console
       include_tasks: console.yml
-      when: "ansible_virtualization_role == 'guest'"
+      when:
+        - ansible_virtualization_role == 'guest'
+        - server_type != 'ct'
 
     - name: Include domain
       include_tasks: domain.yml
@@ -70,7 +74,8 @@
 - name: Include icinga2
   include_tasks: icinga2.yml
   when: >
-    not alien or ( alien and common_icinga2_enable )
+    (not alien or ( alien and common_icinga2_enable ))
+    and server_type != 'ct'
   tags: [ icinga2 ]
 
 - meta: flush_handlers

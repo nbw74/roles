@@ -26,6 +26,11 @@ Gateway={{ item.1.Gateway }}
 DNS={{ dns }}
 {% endfor %}
 {% endif %}
+{% if item.1.DHCP|d() %}
+
+[DHCPv4]
+Hostname={{ inventory_hostname.split('.')[0] }}
+{% endif %}
 
 {% if item.1.Addresses is defined %}
 {% for address in item.1.Addresses %}
