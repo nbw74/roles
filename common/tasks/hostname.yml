@@ -10,6 +10,7 @@
 - name: Check hostname
   hostname:
     name: "{{ inventory_hostname }}"
+  when: "server_type != 'ct'"
   tags: [ hostname ]
 
 - name: Add record in /etc/hosts if alien

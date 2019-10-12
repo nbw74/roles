@@ -1,0 +1,49 @@
+---
+- name: Set VM types
+  set_fact:
+    init_types_vm: [ 'vmware', 'kvm', 'microsoft' ]
+
+- name: Set CT types
+  set_fact:
+    init_types_ct: [ 'openvz', 'systemd-nspawn' ]
+
+- name: Legacy section
+  block:
+    - name: Yum install virt-what on legacy systems
+      yum:
+        name: virt-what
+
+    - name: Command virt-what get result
+      command: >
+        virt-what
+      register: init_reg_virt
+      changed_when: false
+  when: "ansible_service_mgr == 'upstart'"
+  # Possible values: vmware (stdout), kvm, NULL (rc=0), openvz
+- name: Command systemd-detect-virt get result
+  command: >
+    systemd-detect-virt
+  register: init_reg_virt
+  when: "ansible_service_mgr == 'systemd'"
+  changed_when: false
+  failed_when: >
+    init_reg_virt is failed
+    and init_reg_virt.stdout != "none"
+  # Possible values: vmware (stdout), kvm, none (rc=1), openvz, systemd-nspawn
+- name: Set server_type variable (pn)
+  set_fact:
+    server_type: pn
+  when: >
+    init_reg_virt.stdout == "none"
+    or init_reg_virt.stdout == ""
+
+- name: Set server_type variable (vm)
+  set_fact:
+    server_type: vm
+  when: init_reg_virt.stdout in init_types_vm
+
+- name: Set server_type variable (ct)
+  set_fact:
+    server_type: ct
+  when: init_reg_virt.stdout in init_types_ct
+...

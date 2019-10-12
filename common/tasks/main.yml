@@ -1,12 +1,16 @@
 ---
+- name: init.yml
+  import_tasks: init.yml
+
 - name: Import packages1
   import_tasks: packages1.yml
 
 - name: Import hostname
   import_tasks: hostname.yml
 
-- name: Import selinux
-  import_tasks: selinux.yml
+- name: Include selinux
+  include_tasks: selinux.yml
+  when: "server_type != 'ct'"
 
 - name: Import ifcfg
   import_tasks: ifcfg.yml
