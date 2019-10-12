@@ -227,7 +227,6 @@
     path: "{{ item }}"
     state: directory
     mode: 0755
-  when: server_type != 'ct'
   with_items:
     - "{{ flags_dir }}"
   tags: [ dirs ]
