@@ -1,9 +1,12 @@
 ---
+runner_config: { }
+
+runner_sudo_commands: []
+runner_sudo_env_keep: []
+
 runner_ansible: false
 runner_ansible_version: 2.7.12
-runner_mitogen_version: v0.2.8-2
-runner_config: { }
-runner_sudo: []
 runner_ansible_add_packages: []
 runner_ansible_add_libs: []
+runner_mitogen_version: v0.2.8-2
 ...

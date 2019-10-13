@@ -21,8 +21,11 @@ runner_custom_script_files: # Copy custom scripts from inventory
     group: string # default: root
     mode: 'oct' # default: '0755'
 
-runner_sudo:  # List of sudo commands that the runner is allowed to execute:
-  - <command> # gitlab-runner ALL=(ALL) NOPASSWD: <command>
+runner_sudo_commands:  # List of sudo commands that the runner is allowed to execute:
+  - <command>  # gitlab-runner ALL=(ALL) NOPASSWD: <command>
+
+runner_sudo_env_keep:  # Variables list for adding in env_keep +=
+  - VAR  # Defaults:gitlab-runner  env_keep += "VAR"
 
 runner_ansible: bool # Create virtualenv with ansible in /home/gitlab-runner/ansible-{{ runner_ansible_version }}
 runner_ansible_version: version # default: (see in the defaults/main.yml)
