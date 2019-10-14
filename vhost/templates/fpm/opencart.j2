@@ -35,7 +35,7 @@
 {% include "nginx/proxy.j2" %}
     }
 
-    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf)$ {
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf|webp)$ {
 	try_files	$uri @opencart;
 	expires		30d;
 	log_not_found	off;
