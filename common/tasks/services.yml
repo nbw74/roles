@@ -47,6 +47,27 @@
     validate: 'visudo -cf %s'
   tags: [ sudo ]
 
+- name: Template custom sudoers
+  template:
+    src: sudoers_d.j2
+    dest: "/etc/sudoers.d/{{ item.name }}"
+    owner: root
+    group: root
+    mode: 0440
+  when: item.state|d(True)
+  loop: "{{ common_sudoers_d }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Remove custom sudoers
+  file:
+    path: "/etc/sudoers.d/{{ item.name }}"
+    state: absent
+  when: not item.state|d(True)
+  loop: "{{ common_sudoers_d }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: IPTables includes
   block:
     - include_tasks: ipset.yml

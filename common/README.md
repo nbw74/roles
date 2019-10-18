@@ -89,6 +89,15 @@ common_rsyslog_collector: "string" # Хостнейм коллектора ло�
 common_selinux_alert_recipients: "string" # Почтовый адрес для отсылки уведомлений SELinux
 common_sha_store_addr: "fqdn|ipv4" # Адрес сервера для скрипта проверки системных файлов
 common_sha_store_user: "string" # Имя пользователя для скрипта проверки системных файлов
+
+common_sudoers_d:
+  - name: filename
+    lines:
+      - user: username
+        special: string # default: 'ALL=(ALL) NOPASSWD:'
+        command: /full/path/command [params]
+    state: bool # default: true
+
 common_snmp_secname: "string" # Security name for snmpd.conf
 common_snmp_community: "string" # Community for snmpd.conf
 common_snmp_syslocation: "string" # default: "Earth" :System location for snmpd.conf

@@ -1,0 +1,4 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% for line in item.lines %}
+{{ line.user }} {{ line.special|d('ALL=(ALL) NOPASSWD:') }} {{ line.command }}
+{% endfor %}
