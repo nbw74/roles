@@ -34,8 +34,8 @@
   set_fact:
     server_type: pn
   when: >
+    init_reg_virt.stdout is not defined or
     init_reg_virt.stdout == "none"
-    or init_reg_virt.stdout|length == 0
 
 - name: Set server_type variable (vm)
   set_fact:
