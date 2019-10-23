@@ -12,11 +12,7 @@
     disabled: "{{ item[1].disabled|d('false') }}"
     state: absent
   when: not item[0].state|d(true)
-  with_subelements:
-    - "{{ vhost }}"
-    - cron
-    - flags:
-      skip_missing: true
+  loop: "{{ vhost|subelements('cron', skip_missing=True) }}"
   loop_control:
     label: "{{ item[0].user|d(item[0].name) }}:{{ item[1].name }}"
   tags: [ cron ]
@@ -33,7 +29,7 @@
     force: yes
   register: vhost_user
   when: item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   notify: restorecon command
@@ -44,10 +40,8 @@
     name: "{{ item.user|d(item.name) }}"
     password: "{{ item.password|password_hash('sha512', 'bzzz') }}"
     update_password: always
-  when:
-    - item.state|d(true)
-    - item.password is defined
-  with_items: "{{ vhost }}"
+  when: item.password is defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db, password ]
@@ -61,10 +55,8 @@
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
     mode: 0600
-  when:
-    - item.changed
-    - item.state == 'present'
-  with_items: "{{ vhost_user.results }}"
+  when: item.state == 'present'
+  loop: "{{ vhost_user.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   notify: restorecon command
@@ -75,36 +67,29 @@
     path: "{{ item.home }}"
     state: directory
     mode: 0750
-  when:
-    - item.state|d('nope') == 'present'
-    - not item.legacy|d()
-  with_items: "{{ vhost_user.results }}"
+  when: item.state|d('nope') == 'present'
+  loop: "{{ vhost_user.results|rejectattr('legacy', 'sameas', true)|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
 
 - name: add web-server users to the user group
   user:
-    name: "{{ item[0] }}"
+    name: "{{ item[1] }}"
     append: yes
-    groups: "{{ item[1].name }}"
-  when:
-    - item[1].state|d('absent') == 'present'
-  with_nested:
-    - [ '{{ vhost_frontuser }}', '{{ vhost_backuser }}' ]
-    - "{{ vhost_user.results }}"
+    groups: "{{ item[0].name }}"
+  when: item[0].state|d('absent') == 'present'
+  loop: "{{ vhost_user.results|product([ vhost_frontuser, vhost_backuser ])|list }}"
   loop_control:
-    label: "{{ item[0] }}, {{ item[1].name|d('null') }}"
+    label: "{{ item[1] }}, {{ item[0].name|d('null') }}"
   tags: [ user, db ]
 
 - name: remove unused groups
   group:
     name: "{{ item.name }}"
     state: absent
-  when:
-    - item.changed
-    - item.state == 'absent'
-  with_items: "{{ vhost_user.results }}"
+  when: item.state == 'absent'
+  loop: "{{ vhost_user.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
@@ -122,11 +107,7 @@
     disabled: "{{ item[1].disabled|d('false') }}"
     state: present
   when: item[0].state|d(True)
-  with_subelements:
-    - "{{ vhost }}"
-    - cron
-    - flags:
-      skip_missing: true
+  loop: "{{ vhost|subelements('cron', skip_missing=True) }}"
   loop_control:
     label: "{{ item[0].user|d(item[0].name) }}:{{ item[1].name }}"
   tags: [ cron ]
@@ -134,20 +115,18 @@
 - name: manage common directories
   file:
     state: directory
-    path: "{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[0] }}"
-    owner: "{{ item[1].user|d(item[1].name) }}"
-    group: "{{ item[1].user|d(item[1].name) }}"
+    path: "{{ vhost_basedir }}/{{ item[0].user|d(item[0].name) }}/{{ item[1] }}"
+    owner: "{{ item[0].user|d(item[0].name) }}"
+    group: "{{ item[0].user|d(item[0].name) }}"
     mode: 0775
   when:
     - vhost_backend != 'bitrix'
-    - item[1].state|d(true)
-    - not item[1].legacy|d()
-    - item[1].nginx_301_only is not defined
-  with_nested:
-    - [ 'tmp', 'log' ]
-    - "{{ vhost }}"
+    - item[0].state|d(true)
+    - not item[0].legacy|d()
+    - item[0].nginx_301_only is not defined
+  loop: "{{ vhost|product([ 'tmp', 'log' ])|list }}"
   loop_control:
-    label: "{{ item[0] }}, {{ item[1].user|d(item[1].name) }}"
+    label: "{{ item[1] }}, {{ item[0].user|d(item[0].name) }}"
   notify: restorecon command
   tags: [ user, db ]
 
@@ -158,10 +137,8 @@
     owner: "{{ item.user|d(item.name) }}"
     group: "{{ item.user|d(item.name) }}"
     mode: "{{ (vhost_backend == 'bitrix')|ternary('0770','0755') }}"
-  when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
@@ -175,11 +152,10 @@
     mode: 0644
     force: no
   when:
-    - item.state|d(true)
     - not item.legacy|d()
     - item.nginx_301_only is not defined
     - vhost_backend != 'bitrix'
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]

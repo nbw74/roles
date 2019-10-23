@@ -23,9 +23,7 @@
     - item[0].redmine is defined
     - item[0].redmine|length > 0
     - item[1].state == 'present'
-  with_together:
-    - "{{ vhost }}"
-    - "{{ vhost_user.results }}"
+  loop: "{{ vhost|zip(vhost_user.results)|list }}"
   loop_control:
     label: "{{ item[0].name }}"
   ignore_errors: yes

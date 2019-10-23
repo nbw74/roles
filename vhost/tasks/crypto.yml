@@ -9,10 +9,9 @@
   when:
     - item.crypto|d('none') != 'none'
     - not item.crypto_le|d()
-    - item.state|d(true)
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -28,10 +27,9 @@
   when:
     - item.crypto|d('none') != 'none'
     - not item.crypto_le|d()
-    - item.state|d(true)
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -47,11 +45,10 @@
   when:
     - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
     - not item.crypto_le|d()
-    - item.state|d(true)
     - item.mobile|d()
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -67,11 +64,10 @@
   when:
     - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
     - not item.crypto_le|d()
-    - item.state|d(true)
     - item.mobile|d()
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -87,10 +83,9 @@
   when:
     - item.crypto|d('none') != 'none'
     - not item.crypto_le|d()
-    - item.state|d(true)
     - not item.legacy|d()
     - item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -106,10 +101,9 @@
   when:
     - item.crypto|d('none') != 'none'
     - not item.crypto_le|d()
-    - item.state|d(true)
     - not item.legacy|d()
     - item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx

@@ -7,10 +7,9 @@
       }}/http/{{ item.name }}.conf
     force: "{{ (item.webcheck|default(dict(ignore=false)))['ignore']|d()|ternary('no', 'yes') }}"
   when:
-    - item.state|d(true)
     - ( item.webcheck is not defined and vhost_circuit_prod|d() ) or (item.webcheck|default(dict(enable=false)))['enable']|d(true)
     - not item.disabled|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   delegate_to: "{{ common_icinga2_master }}"
@@ -30,7 +29,7 @@
         item.disabled|d()
     - not (item.webcheck|default(dict(ignore=false)))['ignore']|d()
     - common_icinga2_master_zone_net_list is defined
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   delegate_to: "{{ common_icinga2_master }}"

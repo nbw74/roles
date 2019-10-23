@@ -7,10 +7,9 @@
     backup: yes
     force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
   when:
-    - item.state|d(True)
     - item.nginx_301_only is not defined
     - item.fpm is defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate php-fpm
@@ -22,10 +21,9 @@
     state: absent
     backup: yes
   when:
-    - not item.state|d(True)
     - item.nginx_301_only is not defined
     - item.fpm is defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate php-fpm

@@ -7,10 +7,9 @@
   args:
     creates: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"
   when:
-    - item.state|d(true)
     - not item.legacy|d()
     - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -23,9 +22,7 @@
   when:
     - item[0].state|d(true)
     - item[0].nginx_301_only is not defined
-  with_nested:
-    - "{{ vhost }}"
-    - [ 'FILE', 'DIR' ]
+  loop: "{{ vhost|product([ 'FILE', 'DIR' ])|list }}"
   loop_control:
     label: "{{ item[0].name }}:{{ item[1] }}"
   ignore_errors: yes
@@ -37,9 +34,7 @@
     owner: apache
     group: "{{ item[0].user|d(item[0].name) }}"
     mode: 0770
-  with_nested:
-    - "{{ vhost }}"
-    - [ 'php_sessions', 'php_upload' ]
+  loop: "{{ vhost|product([ 'php_sessions', 'php_upload' ])|list }}"
   loop_control:
     label: "{{ item[0].name }}:{{ item[1] }}"
 
@@ -54,10 +49,8 @@
       {{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/bitrix/modules/main/tools/cron_events.php;
       } >/dev/null 2>&1
     state: present
-  when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -68,10 +61,8 @@
     owner: "{{ item.user|d(item.name) }}"
     group: "{{ item.user|d(item.name) }}"
     mode: 0600
-  when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -82,10 +73,8 @@
     owner: apache
     group: apache
     mode: 0600
-  when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -94,11 +83,7 @@
   when:
     - multi[0].state|d(true)
     - multi[0].nginx_301_only is not defined
-  with_subelements:
-    - "{{ vhost }}"
-    - bitrix_multisite
-    - flags:
-      skip_missing: true
+  loop: "{{ vhost|subelements('bitrix_multisite', skip_missing=True) }}"
   loop_control:
     loop_var: multi
     label: "{{ multi[0].name }}:{{ multi[1].name }}"
@@ -118,10 +103,8 @@
 
     - name: Include acl
       include_tasks: bitrix-acl.yml
-      when:
-        - acl.state|d(true)
-        - acl.nginx_301_only is not defined
-      with_items: "{{ vhost }}"
+      when: acl.nginx_301_only is not defined
+      loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
       loop_control:
         loop_var: acl
         label: "{{ acl.name }}"

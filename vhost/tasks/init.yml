@@ -18,9 +18,7 @@
 - name: determine if prod circuit
   set_fact:
     vhost_circuit_prod: true
-  when:
-    - common_icinga2_master_zone_net_list is defined
-    - vhost_ipv4_private|ipaddr(item)
+  when: vhost_ipv4_private|ipaddr(item)
   with_items: "{{ common_icinga2_master_zone_net_list }}"
   tags: [ webcheck ]
 
@@ -85,7 +83,7 @@
   when:
     - item.db is defined
     - item.db.type == 'postgresql'
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   changed_when: no

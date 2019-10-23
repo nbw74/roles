@@ -6,10 +6,8 @@
     mode: 0644
     backup: yes
     force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  when:
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate apache
@@ -20,10 +18,8 @@
     path: "/etc/httpd/{{ (vhost_backend == 'bitrix')|ternary('bx/custom','conf.d') }}/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
-  when:
-    - not item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate apache

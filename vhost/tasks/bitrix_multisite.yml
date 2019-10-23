@@ -22,7 +22,7 @@
     group: "{{ multi_user }}"
     force: yes
     follow: no
-  with_items: [ 'bitrix', 'upload' ]
+  loop: [ 'bitrix', 'upload' ]
 
 - name: Multisite crypto
   block:

@@ -8,9 +8,7 @@
     - item[1].changed
     - item[1].state == 'present'
     - not item[0].legacy|d()
-  with_together:
-    - "{{ vhost }}"
-    - "{{ vhost_user.results }}"
+  loop: "{{ vhost|zip(vhost_user.results)|list }}"
   loop_control:
     label: "{{ item[0].name }}"
   tags: [ wiki ]
@@ -23,9 +21,7 @@
     - item[1].changed
     - item[1].state == 'present'
     - not item[0].legacy|d()
-  with_together:
-    - "{{ vhost }}"
-    - "{{ vhost_user.results }}"
+  loop: "{{ vhost|zip(vhost_user.results)|list }}"
   delegate_to: localhost
   become: no
   loop_control:
@@ -40,9 +36,7 @@
     - item[1].changed
     - item[1].state == 'present'
     - not item[0].legacy|d()
-  with_together:
-    - "{{ vhost }}"
-    - "{{ vhost_user.results }}"
+  loop: "{{ vhost|zip(vhost_user.results)|list }}"
   delegate_to: localhost
   loop_control:
     label: "{{ item[0].name }}"

@@ -4,10 +4,8 @@
     name: Standard bitrix cron task
     user: "{{ item.user|d(item.name) }}"
     state: absent
-  when:
-    - not item.state|d(true)
-    - item.nginx_301_only is not defined
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 ...
