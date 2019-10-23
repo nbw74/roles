@@ -14,7 +14,7 @@
 {% endif %}
 {% endif %}
     }
-{% if item.mobile|d() %}
+{% if item.mobile|d() and not item.idna|d() %}
 
 {% if item.crypto_mobile|d(item.crypto|d('none')) == 'none' %}
     vars.www["{{ (item.webcheck|default(dict(fqdn_mobile="m." ~ item.name)))['fqdn_mobile']|d('m.' ~ item.name) }}"] = {
