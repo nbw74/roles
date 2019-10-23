@@ -4,7 +4,7 @@
     - name: Get Gitlab projects
       uri:
         url: >
-          {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true
+          {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true&per_page=100
         headers:
           Private-Token: "{{ vhost_gitlab.api_token }}"
       when: vhost_gitlab|length > 0
@@ -13,7 +13,7 @@
     - name: Get Gitlab groups
       uri:
         url: >
-          {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true
+          {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true&per_page=100
         headers:
           Private-Token: "{{ vhost_gitlab.api_token }}"
       when: vhost_gitlab|length > 0
