@@ -1,4 +1,5 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% set server_name = op.idna|d()|ternary(op.name.encode('idna'), op.name) %}
 {% if vhost_backend == 'php-fpm' and op.fpm is defined %}
 
 upstream fpm{{ op.fpm.port }} {
@@ -8,8 +9,8 @@ upstream fpm{{ op.fpm.port }} {
 
 server {
 {% include "nginx/listen-plain.j2" %}
-    server_name		{{ op.name }}
-			www.{{ op.name }}
+    server_name		{{ server_name }}
+			www.{{ server_name }}
 {% if op.alias is defined %}
 {% for name in op.alias %}
 			{{ name }}
@@ -40,7 +41,7 @@ server {
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		{{ op.name }}
+    server_name		{{ server_name }}
 			;
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
@@ -55,12 +56,12 @@ server {
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		www.{{ op.name }}
+    server_name		www.{{ server_name }}
 			;
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl.j2" %}
 
-    return		301 https://{{ op.name }}$request_uri;
+    return		301 https://{{ server_name }}$request_uri;
 }
 {% endif %}
 
@@ -68,8 +69,8 @@ server {
 {% set is_mobile = true %}
 server {
 {% include "nginx/listen-plain.j2" %}
-    server_name		m.{{ op.name }}
-			www.m.{{ op.name }}
+    server_name		m.{{ server_name }}
+			www.m.{{ server_name }}
 			;
 {% if op.crypto_mobile|d(op.crypto|d('none')) == 'none' %}
 {% include "nginx/default-d.j2" %}
@@ -80,7 +81,7 @@ server {
 {% include "nginx/logs.j2" %}
 {% if (op.crypto_mobile|d(op.crypto|d('none')) == 'redirect' and not op.crypto_le|d()) or (op.crypto_mobile|d(op.crypto|d('none')) == 'redirect' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 
-    return		301 https://m.{{ op.name }}$request_uri;
+    return		301 https://m.{{ server_name }}$request_uri;
 {% else %}
 {% if op.crypto_le|d() %}
 
@@ -94,7 +95,7 @@ server {
 {% if (op.crypto_mobile|d(op.crypto|d('none')) != 'none' and not op.crypto_le|d()) or (op.crypto_mobile|d(op.crypto|d('none')) != 'none' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		m.{{ op.name }}
+    server_name		m.{{ server_name }}
 			;
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
@@ -109,12 +110,12 @@ server {
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		www.m.{{ op.name }}
+    server_name		www.m.{{ server_name }}
 			;
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl-mobile.j2" %}
 
-    return		301 https://m.{{ op.name }}$request_uri;
+    return		301 https://m.{{ server_name }}$request_uri;
 }
 {% endif %}
 {% endif %}
