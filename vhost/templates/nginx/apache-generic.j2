@@ -9,8 +9,10 @@
         deny		all;
     }
 
+{% if op.nginx_root_location|d(True) %}
     location / {
         proxy_pass			http://127.0.0.1:{{ vhost_apache_port }};
 {% include "nginx/proxy.j2" %}
     }
+{% endif %}
 
