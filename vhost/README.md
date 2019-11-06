@@ -126,8 +126,7 @@ vhost:
         state: bool # default: yes
   nginx_http_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'http' context
-  nginx_root_location: |
-    block # custom Nginx rool location
+  nginx_root_location: bool # default: true
   nginx_server_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'server' context (before "backend section")
   nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
