@@ -20,9 +20,7 @@
     path: "/etc/httpd/{{ (vhost_backend == 'bitrix')|ternary('bx/custom','conf.d') }}/{{ item.user|d(item.name) }}.conf"
     state: absent
     backup: yes
-  when: >
-    item.nginx_301_only is not defined or
-    not item.backend_enable|d(True)
+  when: item.nginx_301_only is not defined
   loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
