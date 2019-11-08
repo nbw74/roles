@@ -33,5 +33,6 @@
         path: /tmp/composer-setup.php
         state: absent
   when: >
+    not composer_reg_stat.stat.exists or
     composer_reg_stat.stat.mtime|int < min_composer_epoch|int
 ...
