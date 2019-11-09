@@ -1,6 +1,6 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 
-/var/www/{{ item.user|d(item.name) }}/log/*apache-*.log {
+/var/www/{{ item.user|d(item.name) }}/log/apache-*.log {
     create 644 root adm
     daily
     compress

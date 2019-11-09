@@ -69,11 +69,11 @@
 
 	AssignUserId {{ vhost_backuser }} {{ item.user|d(item.name) }}
 
-	ErrorLog logs/error_log
+	ErrorLog {{ homedir }}/log/apache-error.log
 	# Possible values include: debug, info, notice, warn, error, crit, alert, emerg.
 	LogLevel warn
 
-	CustomLog /dev/null combined
+	CustomLog {{ homedir }}/log/apache-access.log combined
 
 	php_admin_value sendmail_path "msmtp -C /var/www/{{ item.user|d(item.name) }}/.msmtprc_httpd -t -i"
 
