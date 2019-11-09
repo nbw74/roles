@@ -1,0 +1,11 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+/var/www/{{ item.user|d(item.name) }}/www/storage/logs/laravel.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    notifempty
+    nocreate
+    su root apache
+}

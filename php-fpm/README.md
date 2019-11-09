@@ -11,8 +11,6 @@ php_laravel_units: # Laravel queue worker using systemd
     args: "string" # optional arguments after `command` (e.q. '--queue=export --tries=1')
     state: bool # default: yes
 
-php_logrotate_laravel_enable: bool # default: false
-
 selinux_state: "enforcing|permissive|disabled" # default: "enforcing"
 ```
 ## Tags

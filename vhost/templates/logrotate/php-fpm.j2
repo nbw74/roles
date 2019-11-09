@@ -1,4 +1,6 @@
-/var/www/*/log/*fpm-*.log {
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+/var/www/{{ item.user|d(item.name) }}log/*fpm-*.log {
     create 0644 apache adm
     daily
     compress

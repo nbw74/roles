@@ -17,4 +17,27 @@
   loop: "{{ vhost|subelements('php_laravel_units', skip_missing=True) }}"
   loop_control:
     label: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
+
+- name: Logrotate section
+  block:
+    - name: Template Laravel logrotate config
+      template:
+        src: logrotate/laravel.j2
+        dest: "/etc/logrotate.d/laravel_{{ item.user|d(item.name) }}"
+        owner: root
+        group: root
+        mode: 0644
+      when: item.nginx_301_only is not defined
+      loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+      loop_control:
+        label: "laravel_{{ item.user|d(item.name) }}"
+
+    - name: Laravel logrotate config absent
+      file:
+        path: "/etc/logrotate.d/laravel_{{ item.user|d(item.name) }}"
+        state: no
+      loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+      loop_control:
+        label: "laravel_{{ item.user|d(item.name) }}"
+  when: vhost_logrotate_laravel_enable
 ...

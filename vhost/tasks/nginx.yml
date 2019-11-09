@@ -73,4 +73,24 @@
         label: "{{ item[0].name }}"
       notify: validate nginx
   tags: [ conf, crypto ]
+
+- name: Template Nginx logrotate config
+  template:
+    src: logrotate/nginx.j2
+    dest: "/etc/logrotate.d/nginx_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "nginx_{{ item.user|d(item.name) }}"
+
+- name: Nginx logrotate config absent
+  file:
+    path: "/etc/logrotate.d/nginx_{{ item.user|d(item.name) }}"
+    state: no
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "nginx_{{ item.user|d(item.name) }}"
 ...

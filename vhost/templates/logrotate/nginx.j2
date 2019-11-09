@@ -1,4 +1,6 @@
-/var/www/*/log/*nginx-*.log {
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+/var/www/{{ item.user|d(item.name) }}/log/*nginx-*.log {
     create 0644 nginx adm
     daily
     rotate 32

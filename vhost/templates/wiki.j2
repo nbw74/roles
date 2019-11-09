@@ -55,7 +55,6 @@ h3. Database
 {% endif %}
 {% else %}
 ### Web
-
 - **URI:** http://{{ item[0].name }}
 {% if item[0].mobile|d() %}
 - **URI (mob):** http://m.{{ item[0].name }}
@@ -71,9 +70,7 @@ h3. Database
 {% if vhost_backend == 'bitrix' %}
 - **DocumentRoot:** `{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[1].webroot|d('www') }}`
 {% endif %}
-
 ### SSH
-
 - **Host:** `{{ ansible_fqdn }}`
 - **User:** `{{ item[1].name }}`
 {%- raw %}
@@ -84,10 +81,8 @@ h3. Database
 {%- raw %}
 ```
 {% endraw %}
-
 {% if item[0].db is defined %}
 ### Database
-
 - **DBMS:** {{ item[0].db.type }}
 {% if item[0].db.pgbouncer is defined %}
 - **DB host:** `{{ item[0].db.pgbouncer.host }}`

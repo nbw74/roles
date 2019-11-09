@@ -26,4 +26,24 @@
     label: "{{ item.name }}"
   notify: validate apache
   tags: [ conf ]
+
+- name: Template HTTPd logrotate config
+  template:
+    src: logrotate/httpd.j2
+    dest: "/etc/logrotate.d/httpd_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "httpd_{{ item.user|d(item.name) }}"
+
+- name: HTTPd logrotate config absent
+  file:
+    path: "/etc/logrotate.d/httpd_{{ item.user|d(item.name) }}"
+    state: no
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "httpd_{{ item.user|d(item.name) }}"
 ...

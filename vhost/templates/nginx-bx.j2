@@ -29,6 +29,7 @@ server {
 
     index index.php;
     root {{ siteroot }};
+{% include "nginx/logs.j2" %}
 
     # Redirect to ssl if need
     if (-f {{ siteroot }}/.htsecure) { rewrite ^(.*)$ https://$host$1 permanent; }
@@ -67,6 +68,7 @@ server {
 
     index index.php;
     root {{ siteroot }};
+{% include "nginx/logs.j2" %}
 
     # Include parameters common to all websites
     include bx/conf/bitrix.conf;
@@ -101,6 +103,7 @@ server {
 
     index index.php;
     root {{ siteroot }};
+{% include "nginx/logs.j2" %}
 
     # Redirect to ssl if need
     if (-f {{ siteroot }}/.htsecure) { rewrite ^(.*)$ https://$host$1 permanent; }
@@ -139,6 +142,7 @@ server {
 
     index index.php;
     root {{ siteroot }};
+{% include "nginx/logs.j2" %}
 
     # Include parameters common to all websites
     include bx/conf/bitrix.conf;

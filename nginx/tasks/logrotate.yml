@@ -1,12 +1,8 @@
 ---
-- name: "logrotate nginx site logs"
-  copy:
-    src: "nginx_sites"
-    dest: "/etc/logrotate.d/"
-    force: no
-    owner: root
-    group: root
-    mode: 0644
+- name: Delete obsolete logrotate nginx_sites
+  file:
+    path: /etc/logrotate.d/nginx_sites
+    state: no
   tags: [ logrotate ]
 
 - name: Create nginx-prerotate dir

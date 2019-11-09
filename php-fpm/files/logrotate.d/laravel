@@ -1,9 +1,0 @@
-/var/www/*/www/storage/logs/laravel.log {
-    daily
-    missingok
-    rotate 7
-    compress
-    notifempty
-    nocreate
-    su root apache
-}

@@ -120,7 +120,6 @@
     group: "{{ item[0].user|d(item[0].name) }}"
     mode: 0775
   when:
-    - vhost_backend != 'bitrix'
     - item[0].state|d(true)
     - not item[0].legacy|d()
     - item[0].nginx_301_only is not defined

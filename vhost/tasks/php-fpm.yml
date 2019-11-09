@@ -28,4 +28,24 @@
     label: "{{ item.name }}"
   notify: validate php-fpm
   tags: [ conf ]
+
+- name: Template PHP-FPM logrotate config
+  template:
+    src: logrotate/php-fpm.j2
+    dest: "/etc/logrotate.d/php-fpm_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "php-fpm_{{ item.user|d(item.name) }}"
+
+- name: PHP-FPM logrotate config absent
+  file:
+    path: "/etc/logrotate.d/php-fpm_{{ item.user|d(item.name) }}"
+    state: no
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "php-fpm_{{ item.user|d(item.name) }}"
 ...
