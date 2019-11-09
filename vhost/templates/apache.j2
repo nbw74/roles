@@ -13,7 +13,7 @@
 {% endfor %}
 {% endif %}
     ErrorLog {{ homedir }}/log/apache-error.log
-    CustomLog {{ homedir }}/log/apache-access.log combined
+    CustomLog /dev/null combined
 
     <Directory {{ homedir }}/{{ item.webroot|d('www') }}>
         Options -ExecCGI -Indexes -Includes +FollowSymLinks
