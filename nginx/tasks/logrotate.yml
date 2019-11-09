@@ -2,7 +2,7 @@
 - name: Delete obsolete logrotate nginx_sites
   file:
     path: /etc/logrotate.d/nginx_sites
-    state: no
+    state: absent
   tags: [ logrotate ]
 
 - name: Create nginx-prerotate dir

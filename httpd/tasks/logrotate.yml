@@ -2,6 +2,6 @@
 - name: Delete obsolete logrotate httpd config
   file:
     path: /etc/logrotate.d/httpd_sites
-    state: no
+    state: absent
   tags: [logrotate]
 ...

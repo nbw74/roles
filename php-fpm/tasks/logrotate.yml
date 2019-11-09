@@ -2,7 +2,7 @@
 - name: Delete obdoletes logrotate php-fpm configs
   file:
     path: "/etc/logrotate.d/{{ item }}"
-    state: no
+    state: absent
   loop:
     - php-fpm_sites
     - laravel
