@@ -44,7 +44,7 @@
 - name: PHP-FPM logrotate config absent
   file:
     path: "/etc/logrotate.d/php-fpm_{{ item.user|d(item.name) }}"
-    state: no
+    state: absent
   loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "php-fpm_{{ item.user|d(item.name) }}"

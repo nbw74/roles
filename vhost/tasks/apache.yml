@@ -42,7 +42,7 @@
 - name: HTTPd logrotate config absent
   file:
     path: "/etc/logrotate.d/httpd_{{ item.user|d(item.name) }}"
-    state: no
+    state: absent
   loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "httpd_{{ item.user|d(item.name) }}"

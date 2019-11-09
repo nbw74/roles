@@ -35,7 +35,7 @@
     - name: Laravel logrotate config absent
       file:
         path: "/etc/logrotate.d/laravel_{{ item.user|d(item.name) }}"
-        state: no
+        state: absent
       loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
       loop_control:
         label: "laravel_{{ item.user|d(item.name) }}"
