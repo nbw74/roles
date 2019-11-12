@@ -37,7 +37,7 @@
 
 - name: copy mobile certificates
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.name }}.crt"
+    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}.crt"
     dest: "/etc/pki/tls/certs/"
     owner: root
     group: root
@@ -56,7 +56,7 @@
 
 - name: copy mobile keys
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.name }}.key"
+    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}.key"
     dest: "/etc/pki/tls/private/"
     owner: root
     group: root
