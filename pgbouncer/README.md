@@ -13,7 +13,9 @@ pgbouncer_config: # pgbouncer.ini: [pgbouncer] section
   unix_socket_dir: path # Default: /var/run/pgbouncer; if set to 'none' disable socket.
   listen_addr: ipv4 # default: no listen on IPv4; recommended: 127.0.0.1; * means all IPs
   listen_port: int # default: 6432
-  server_lifetime: int # defailt: 3600
+  log_connections: int # default: 0
+  log_disconnections: int # default: 0
+  server_lifetime: int # default: 3600
   server_idle_timeout:  int # default: 600
   idle_transaction_timeout: int # Default: not set; close connections which are in "IDLE in transaction" state longer than int seconds
   max_client_conn: int # Default: 100

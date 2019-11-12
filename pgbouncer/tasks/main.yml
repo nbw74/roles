@@ -17,7 +17,7 @@
     owner: root
     group: root
     mode: "{{ item.mode|d('0644') }}"
-  notify: restart pgbouncer
+  notify: reload pgbouncer
   loop:
     - path: etc/pgbouncer/pgbouncer.ini
 
