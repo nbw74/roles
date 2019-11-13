@@ -2,6 +2,7 @@
 - name: Check role requirements
   assert:
     that:
+      - ansible_version.full is version('2.8.0', '>=')
       - ansible_distribution_file_variety == 'RedHat'
       - ansible_distribution_major_version|int >= 7
       - inventory_hostname in groups['postgresql']

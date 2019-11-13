@@ -106,6 +106,10 @@ postgresql_roles:
     password: string # (default: empty) password (plaintext)
     attrs: string # (default: LOGIN) (e.g. LOGIN,REPLICATION) See all possible values on
                   # https://docs.ansible.com/ansible/latest/modules/postgresql_user_module.html?highlight=role_attr_flags
+    hba: # work only with ansible >= 2.8
+      source: string # mandatory
+      contype: string # local | host (default) | hostnossl | hostssl
+      databases: string # default: name
     state: bool # (default: true) the user (role) state.
 
 postgresql_db:

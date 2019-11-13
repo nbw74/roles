@@ -17,10 +17,20 @@
             encrypted: yes
             state: present
             role_attr_flags: "{{ item.attrs|d('LOGIN') }}"
-          when: item.state|d(True)
-          loop: "{{ postgresql_roles }}"
+          loop: "{{ postgresql_roles|rejectattr('state', 'sameas', false)|list }}"
           loop_control:
             label: "{{ item.name }}"
+
+        - name: Manage pg_hba
+          postgresql_pg_hba:
+            dest: "/var/lib/pgsql/{{ postgresql_version_raw }}/data/pg_hba.conf"
+            contype: "{{ item.hba.contype|d('host') }}"
+            users: "{{ item.name }}"
+            source: "{{ item.hba.source }}"
+            databases: "{{ item.hba.databases|d(item.name) }}"
+            state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
+          loop: "{{ postgresql_roles|selectattr('hba', 'defined')|list }}"
+          notify: reload postgresql direct
 
         - name: Manage databases
           postgresql_db:
@@ -44,8 +54,7 @@
           postgresql_user:
             name: "{{ item.name }}"
             state: absent
-          when: not item.state|d(True)
-          loop: "{{ postgresql_roles }}"
+          loop: "{{ postgresql_roles|selectattr('state', 'sameas', false)|list }}"
           loop_control:
             label: "{{ item.name }}"
           register: postgresql_reg_roles_remove
