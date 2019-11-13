@@ -36,12 +36,23 @@
       force: "{{ pgbouncer_vhost_compat|ternary('no','yes') }}"
     - path: etc/pgbouncer/bouncer_hba.conf
 
-- name: Create vhosts config file
-  copy:
-    dest: /etc/pgbouncer/vhost.ini
-    content: >
-      [databases]
-    force: no
+- name: Vhost compat section
+  block:
+    - name: line in userlist.txt (vhost compat)
+      lineinfile:
+        path: /etc/pgbouncer/userlist.txt
+        regexp: '^[ "]*{{ item.name }}'
+        line: "\"{{ item.name }}\"\t\"{{ item.password }}\""
+        insertafter: EOF
+      loop: "{{ pgbouncer_user }}"
+      notify: reload pgbouncer
+
+    - name: Create vhosts config file
+      copy:
+        dest: /etc/pgbouncer/vhost.ini
+        content: >
+          [databases]
+        force: no
   when: pgbouncer_vhost_compat
 
 - name: Set reasonable permissions on socket dir

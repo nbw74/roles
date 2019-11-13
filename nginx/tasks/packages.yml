@@ -20,7 +20,7 @@
             gpgcheck: yes
             gpgkey: http://rpms.southbridge.ru/RPM-GPG-KEY-southbridge
             enabled: no
-            priority: 10
+            priority: "10"
 
         - name: Yum install southbridge packages
           yum:

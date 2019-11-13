@@ -26,7 +26,6 @@
     ssh_key_type: "{{ item.key_type|d('ed25519') }}"
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
     remove: no
-    force: yes
   register: vhost_user
   when: item.nginx_301_only is not defined
   loop: "{{ vhost }}"
