@@ -17,6 +17,10 @@
 	proxy_set_header		Host $host;
 {% endif %}
 	proxy_set_header		Connection close;
+{% if op.proxy_set_scheme|d() %}
+	proxy_set_header		X-Forwarded-Proto $scheme;
+	proxy_set_header		X-Scheme $scheme;
+{% endif %}
 	proxy_pass_header		Content-Type;
 	proxy_pass_header		Content-Disposition;
 	proxy_pass_header		Content-Length;
