@@ -21,6 +21,10 @@
 	proxy_set_header		X-Forwarded-Proto $scheme;
 	proxy_set_header		X-Scheme $scheme;
 {% endif %}
+{% if op.proxy_pass_scheme|d() %}
+	proxy_pass_header		X-Forwarded-Proto;
+	proxy_pass_header		X-Scheme;
+{% endif %}
 	proxy_pass_header		Content-Type;
 	proxy_pass_header		Content-Disposition;
 	proxy_pass_header		Content-Length;
