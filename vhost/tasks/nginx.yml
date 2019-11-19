@@ -3,10 +3,8 @@
   block:
     - name: Include htpasswd tasks
       include_tasks: htpasswd.yml
-      when:
-        - op.nginx_auth_basic is defined
-        - op.state|d(True)
-      loop: "{{ vhost }}"
+      when: op.nginx_auth_basic is defined
+      loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
       loop_control:
         loop_var: op
         label: "{{ op.name }}"
@@ -15,8 +13,7 @@
 
 - name: Include Nginx vhost config tasks
   include_tasks: nginx_vhost.yml
-  when: op.state|d(True)
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     loop_var: op
     label: "{{ op.name }}"
@@ -29,8 +26,7 @@
         path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
         state: absent
         backup: yes
-      when: not item.state|d(True)
-      loop: "{{ vhost }}"
+      loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
       loop_control:
         label: "{{ item.name }}"
       notify: validate nginx
