@@ -88,6 +88,7 @@
   when:
     - selinux_state != 'disabled'
     - item.nginx_301_only is not defined
+    - item.state == 'present'
   with_items: "{{ vhost_user_add.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"

@@ -9,15 +9,6 @@
   loop_control:
     label: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
 
-- name: Disable Laravel instantiated units
-  systemd:
-    name: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
-    enabled: no
-  when: item[0].state|d()
-  loop: "{{ vhost|subelements('php_laravel_units', skip_missing=True) }}"
-  loop_control:
-    label: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
-
 - name: Logrotate section
   block:
     - name: Template Laravel logrotate config

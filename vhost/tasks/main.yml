@@ -2,9 +2,13 @@
 - name: Import init
   import_tasks: init.yml
 
-- name: Include bitrix-pre
-  include_tasks: bitrix-pre.yml
+- name: Include bitrix_pre
+  include_tasks: bitrix_pre.yml
   when: vhost_backend == 'bitrix'
+
+- name: Include laravel_pre
+  include_tasks: laravel_pre.yml
+  when: vhost_backend == 'php-fpm'
 
 - name: Include user
   include_tasks: user.yml

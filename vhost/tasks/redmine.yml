@@ -4,24 +4,28 @@
   become_user: apache
   shell: >
       script/rails runner -e production
-      "Project.create :name => '{{ item.redmine.title | d(item.name
+      "Project.create :name => '{{ item[0].redmine.title | d(item[0].name
       | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}',
-      :description => '{{ item.redmine.description }}{% if item.repo is defined %}Репозиторий:
-      %{color:ForestGreen}@{{ vhost_git_server }}:{{ vhost_git_path }}/{{ (item.repo
-      | default(dict(name=item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))))['name']
-      | d(item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}@%{% endif %}',
-      :identifier => '{{ item.redmine.id | d(item.name
+      :description => '{{ item[0].redmine.description }}{% if item[0].repo is defined %}Репозиторий:
+      %{color:ForestGreen}@{{ vhost_git_server }}:{{ vhost_git_path }}/{{ (item[0].repo
+      | default(dict(name=item[0].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))))['name']
+      | d(item[0].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}@%{% endif %}',
+      :identifier => '{{ item[0].redmine.id | d(item[0].name
       | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') | regex_replace('\.', '-')) }}',
-      :is_public=>'0', :homepage=>'http://{{ item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}',
+      :is_public=>'0', :homepage=>'http://{{ item[0].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}',
       :enabled_module_names=>['wiki', '{{ (vhost_backend == 'bitrix' ) | ternary('','repository') }}']" &&
-      touch "creates/{{ item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
+      touch "creates/{{ item[0].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
   args:
     chdir: "/var/www/redmine"
-    creates: "creates/{{ item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
+    creates: "creates/{{ item[0].name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}"
   delegate_to: "{{ vhost_redmine_server }}"
-  loop: "{{ vhost|selectattr('redmine', 'defined')|list }}"
+  when:
+    - item[0].redmine is defined
+    - item[0].redmine|length > 0
+    - item[1].state == 'present'
+  loop: "{{ vhost|zip(vhost_user_add.results)|list }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item[0].name }}"
   ignore_errors: yes
   tags: [ user, redmine ]
 ...

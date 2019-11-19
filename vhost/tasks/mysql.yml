@@ -15,6 +15,7 @@
         - item[0].db is defined
         - item[0].db.type == 'mysql'
         - item[1].changed
+        - item[1].state == 'absent'
       failed_when:
         - vhost_dump_mysql_result.failed
         - "'Cannot dump database ' ~ item[0].db.name ~ ' - not found' not in vhost_dump_mysql_result.msg"
@@ -31,6 +32,7 @@
       when:
         - item[0].db is defined
         - item[0].db.type == 'mysql'
+        - item[1].state == 'absent'
         - item[1].changed
       loop: "{{ vhost|zip(vhost_user_del.results)|list }}"
       loop_control:

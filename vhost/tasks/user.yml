@@ -1,33 +1,28 @@
 ---
-- name: Cron tasks absent
-  cron:
-    name: "{{ item[1].name }}"
-    user: "{{ item[0].user|d(item[0].name) }}"
-    job: "{{ item[1].job }}"
-    minute: "{{ item[1].minute|d('*') }}"
-    hour: "{{ item[1].hour|d('*') }}"
-    day: "{{ item[1].day|d('*') }}"
-    weekday: "{{ item[1].weekday|d('*') }}"
-    month: "{{ item[1].month|d('*') }}"
-    disabled: "{{ item[1].disabled|d('false') }}"
-    state: absent
-  when: not item[0].state|d(true)
-  loop: "{{ vhost|subelements('cron', skip_missing=True) }}"
-  loop_control:
-    label: "{{ item[0].user|d(item[0].name) }}:{{ item[1].name }}"
-  tags: [ cron ]
-
 - name: Delete user
   user:
     name: "{{ item.user|d(item.name) }}"
     state: absent
+    force: yes
     remove: no
   register: vhost_user_del
+  when:
+    - item.nginx_301_only is not defined
+    - not item.state|d(True)
+  loop: "{{ vhost }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}"
+  tags: [ user, db, redmine ]
+
+- name: Delete crontabs
+  file:
+    path: "/var/spool/cron/{{ item.user|d(item.name) }}"
+    state: absent
   when: item.nginx_301_only is not defined
   loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
-  tags: [ user, db, redmine ]
+  tags: [ user, cron ]
 
 - name: Create user
   user:
@@ -37,8 +32,10 @@
     generate_ssh_key: yes
     ssh_key_type: "{{ item.key_type|d('ed25519') }}"
   register: vhost_user_add
-  when: item.nginx_301_only is not defined
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  when:
+    - item.nginx_301_only is not defined
+    - item.state|d(True)
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   notify: restorecon command
@@ -64,6 +61,7 @@
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
     mode: 0600
+  when: item.state == 'present'
   loop: "{{ vhost_user_add.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
@@ -75,6 +73,7 @@
     path: "{{ item.home }}"
     state: directory
     mode: 0750
+  when: item.state|d('nope') == 'present'
   loop: "{{ vhost_user_add.results|rejectattr('legacy', 'sameas', true)|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
@@ -85,6 +84,7 @@
     name: "{{ item[1] }}"
     append: yes
     groups: "{{ item[0].name }}"
+  when: item[0].state|d('absent') == 'present'
   loop: "{{ vhost_user_add.results|product([ vhost_frontuser, vhost_backuser ])|list }}"
   loop_control:
     label: "{{ item[1] }}, {{ item[0].name|d('null') }}"
@@ -94,6 +94,7 @@
   group:
     name: "{{ item.name }}"
     state: absent
+  when: item.state == 'absent'
   loop: "{{ vhost_user_del.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
