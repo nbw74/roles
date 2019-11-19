@@ -17,18 +17,28 @@
     label: "{{ item[0].user|d(item[0].name) }}:{{ item[1].name }}"
   tags: [ cron ]
 
-- name: manage user
+- name: Delete user
+  user:
+    name: "{{ item.user|d(item.name) }}"
+    state: absent
+    remove: no
+  register: vhost_user_del
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}"
+  tags: [ user, db, redmine ]
+
+- name: Create user
   user:
     name: "{{ item.user|d(item.name) }}"
     shell: "/bin/bash"
     home: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}"
     generate_ssh_key: yes
     ssh_key_type: "{{ item.key_type|d('ed25519') }}"
-    state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
-    remove: no
-  register: vhost_user
+  register: vhost_user_add
   when: item.nginx_301_only is not defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   notify: restorecon command
@@ -54,8 +64,7 @@
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
     mode: 0600
-  when: item.state == 'present'
-  loop: "{{ vhost_user.results|selectattr('changed')|list }}"
+  loop: "{{ vhost_user_add.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   notify: restorecon command
@@ -66,8 +75,7 @@
     path: "{{ item.home }}"
     state: directory
     mode: 0750
-  when: item.state|d('nope') == 'present'
-  loop: "{{ vhost_user.results|rejectattr('legacy', 'sameas', true)|list }}"
+  loop: "{{ vhost_user_add.results|rejectattr('legacy', 'sameas', true)|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   tags: [ user, db ]
@@ -77,8 +85,7 @@
     name: "{{ item[1] }}"
     append: yes
     groups: "{{ item[0].name }}"
-  when: item[0].state|d('absent') == 'present'
-  loop: "{{ vhost_user.results|product([ vhost_frontuser, vhost_backuser ])|list }}"
+  loop: "{{ vhost_user_add.results|product([ vhost_frontuser, vhost_backuser ])|list }}"
   loop_control:
     label: "{{ item[1] }}, {{ item[0].name|d('null') }}"
   tags: [ user, db ]
@@ -87,8 +94,7 @@
   group:
     name: "{{ item.name }}"
     state: absent
-  when: item.state == 'absent'
-  loop: "{{ vhost_user.results|selectattr('changed')|list }}"
+  loop: "{{ vhost_user_del.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   tags: [ user, db ]

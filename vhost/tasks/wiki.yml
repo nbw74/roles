@@ -6,9 +6,8 @@
     flat: yes
   when:
     - item[1].changed
-    - item[1].state == 'present'
     - not item[0].legacy|d()
-  loop: "{{ vhost|zip(vhost_user.results)|list }}"
+  loop: "{{ vhost|zip(vhost_user_add.results)|list }}"
   loop_control:
     label: "{{ item[0].name }}"
   tags: [ wiki ]
@@ -19,9 +18,8 @@
     dest: "/tmp/vhost_{{ item[0].name }}.txt"
   when:
     - item[1].changed
-    - item[1].state == 'present'
     - not item[0].legacy|d()
-  loop: "{{ vhost|zip(vhost_user.results)|list }}"
+  loop: "{{ vhost|zip(vhost_user_add.results)|list }}"
   delegate_to: localhost
   become: no
   loop_control:
@@ -34,9 +32,8 @@
     path: "/tmp/vhost_{{ item[0].name }}_{{ item[1].ssh_key_file|basename }}"
   when:
     - item[1].changed
-    - item[1].state == 'present'
     - not item[0].legacy|d()
-  loop: "{{ vhost|zip(vhost_user.results)|list }}"
+  loop: "{{ vhost|zip(vhost_user_add.results)|list }}"
   delegate_to: localhost
   loop_control:
     label: "{{ item[0].name }}"
