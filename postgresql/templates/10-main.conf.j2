@@ -73,7 +73,9 @@ wal_receiver_timeout		= 5000
 # - Replication: Sending Server -
 
 max_wal_senders			= 10
-wal_keep_segments		= {{ postgresql_conf['wal_keep_segments']|default('32') }}
+wal_keep_segments		= {{ postgresql_conf['wal_keep_segments']|default('128') }}
+wal_sender_timeout		= 60s
+max_replication_slots		= 10
 
 # - Replication: Standby Servers -
 

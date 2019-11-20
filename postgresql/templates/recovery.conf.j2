@@ -1,5 +1,8 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 primary_conninfo = 'host={{ postgresql_recovery_conf.primary_conninfo.host }} port={{ postgresql_recovery_conf.primary_conninfo.port|d('5432') }} user={{ postgresql_recovery_conf.primary_conninfo.user|d('replicator') }} application_name={{ postgresql_recovery_conf.primary_conninfo.application_name|d(ansible_nodename.split('.')[0]) }} keepalives_idle={{ postgresql_recovery_conf.primary_conninfo.keepalives_idle|d('20') }} keepalives_interval={{ postgresql_recovery_conf.primary_conninfo.keepalives_interval|d('5') }} keepalives_count={{ postgresql_recovery_conf.primary_conninfo.keepalives_count|d('5') }}'
+{% if postgresql_recovery_conf.primary_slot_name is defined %}
+primary_slot_name = '{{ postgresql_recovery_conf.primary_slot_name }}'
+{% endif %}
 {% if postgresql_recovery_conf.trigger_file is defined %}
 trigger_file = '{{ postgresql_recovery_conf.trigger_file }}'
 {% endif %}
