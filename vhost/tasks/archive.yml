@@ -17,7 +17,7 @@
     - item.0.stat is defined
     - item.0.stat.path is defined
     - not item.0.skipped|d()
-  loop: "{{ vhost_reg_home.results|product([ 'log', 'logs', 'tmp' ])|list }}"
+  loop: "{{ vhost_reg_home.results|product([ 'log', 'logs', 'tmp', 'www/node_modules' ])|list }}"
   loop_control:
     label: "{{ item.0.item.name|d('null') }}: {{ item.1 }}"
   ignore_errors: yes
