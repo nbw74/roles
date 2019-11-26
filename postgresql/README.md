@@ -87,6 +87,7 @@ postgresql_recovery_conf:
     keepalives_idle: int # default: 20
     keepalives_interval: int # default: 5
     keepalives_count: int # default: 5
+  primary_slot_name: string # default: not set
   trigger_file: string # default: not set
   recovery_min_apply_delay: time # default: not set; valid units for this parameter are "ms", "s", "min", "h", and "d"
   recovery_target_timeline: string # default: 'latest'
