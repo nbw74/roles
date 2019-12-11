@@ -1,23 +1,27 @@
 ---
-- set_fact:
-    selinux_http_ports: "9001-9999"
-  when: inventory_hostname in groups['php_fpm']
+- name: Back section
+  block:
+    - set_fact:
+        selinux_http_ports: "9001-9999"
+      when: inventory_hostname in groups['php_fpm']
 
-- set_fact:
-    selinux_http_ports: "{{ httpd_port|d('8888') }}"
-  when: inventory_hostname in groups['httpd']
+    - set_fact:
+        selinux_http_ports: "{{ httpd_port|d('8888') }}"
+      when: inventory_hostname in groups['httpd']
 
-- name: Add SELinux ports
-  seport:
-    ports: "{{ item.port }}"
-    proto: tcp
-    setype: "{{ item.type }}"
-    state: present
-  with_items:
-    - { port: '{{ selinux_http_ports }}', type: 'http_port_t' }
-    - { port: '6432', type: 'postgresql_port_t' }
-  loop_control:
-    label: "{{ item.type }}:{{ item.port }}"
-  tags: [ selinux_ports ]
-
+    - name: Add SELinux ports
+      seport:
+        ports: "{{ item.port }}"
+        proto: tcp
+        setype: "{{ item.type }}"
+        state: present
+      with_items:
+        - { port: '{{ selinux_http_ports }}', type: 'http_port_t' }
+        - { port: '6432', type: 'postgresql_port_t' }
+      loop_control:
+        label: "{{ item.type }}:{{ item.port }}"
+      tags: [ selinux_ports ]
+  when: >
+    inventory_hostname in groups['php_fpm'] or
+    inventory_hostname in groups['httpd']
 ...
