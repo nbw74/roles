@@ -39,8 +39,8 @@
 
 - name: Check symlinks
   file:
-    src: '.dotfiles/{{ item }}'
-    path: '{{ item }}'
+    src: '{{ ansible_env.HOME }}/.dotfiles/{{ item }}'
+    path: '{{ ansible_env.HOME }}/{{ item }}'
     state: link
     force: yes
   loop:
@@ -63,6 +63,7 @@
     src: '../../.dotfiles/.config/mc/ini'
     path: '.config/mc/ini'
     state: link
+  failed_when: false
 
 - name: Attrib file (touch)
   file:
