@@ -6,6 +6,7 @@ html: "/var/www/html"
 
 nginx_packages:
   - nginx
+  - python-passlib
 
 nginx_sb_packages:
   - python2-pyOpenSSL-16.2.0
