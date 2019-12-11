@@ -151,7 +151,7 @@
 - name: Initial index file
   copy:
     src: "index.php"
-    dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/index.php"
+    dest: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}/{{ item.index|d('index.php') }}"
     owner: "{{ item.user|d(item.name) }}"
     group: "{{ item.user|d(item.name) }}"
     mode: 0644
