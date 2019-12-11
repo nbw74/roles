@@ -13,4 +13,5 @@
     name: systemd-sysctl.service
     enabled: true
     state: started
+  when: ansible_service_mgr == 'systemd'
 ...

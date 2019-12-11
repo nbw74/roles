@@ -1,14 +1,15 @@
 ---
 - name: Git repo
-  command: "sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}'"
+  command: >
+    sg {{ vhost_git_group }} -c 'git init --bare --shared {{ vhost_git_path
+    }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}'
   args:
     creates: "{{ vhost_git_path }}/{{ item.repo.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}/HEAD"
   when:
     - item.repo is defined
     - item.repo.type|d('none') == 'git'
-    - item.state|d(true)
     - not item.legacy|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   delegate_to: "{{ vhost_git_server }}"
@@ -29,7 +30,7 @@
     - item.repo.type|d('none') == 'git'
     - item.state|d(true)
     - not item.legacy|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   delegate_to: "{{ vhost_git_server }}"

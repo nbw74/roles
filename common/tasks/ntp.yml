@@ -3,7 +3,7 @@
   template:
     src: ntp.conf.j2
     dest: /etc/ntp.conf
-  when: not alien
+  when: server_type != 'ct'
   notify: config restart ntpd
   tags: [ ntp ]
 

@@ -5,7 +5,11 @@
 user nginx;
 worker_processes auto;
 error_log /var/log/nginx/error.log;
+{% if ansible_service_mgr == 'systemd' %}
 pid /run/nginx.pid;
+{% else %}
+pid /var/run/nginx.pid;
+{% endif %}
 
 worker_rlimit_nofile   16384;
 

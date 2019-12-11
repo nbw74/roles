@@ -1,21 +1,10 @@
 ---
-- name: Copy logrotate php-fpm sites logs
-  copy:
-    src: logrotate.d/php-fpm_sites
-    dest: /etc/logrotate.d/
-    force: no
-    owner: root
-    group: root
-    mode: 0644
-  tags: [ logrotate ]
-
-- name: Copy logrotate laravel logs
-  copy:
-    src: logrotate.d/laravel
-    dest: /etc/logrotate.d/
-    owner: root
-    group: root
-    mode: 0644
-  when: php_logrotate_laravel_enable
+- name: Delete obdoletes logrotate php-fpm configs
+  file:
+    path: "/etc/logrotate.d/{{ item }}"
+    state: absent
+  loop:
+    - php-fpm_sites
+    - laravel
   tags: [ logrotate ]
 ...

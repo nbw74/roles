@@ -1,0 +1,16 @@
+---
+- name: Template pg_stat_statements module config
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+  template:
+    src: "20-stat.conf.j2"
+    dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/20-stat.conf"
+    mode: 0600
+  when: pg_stat_statements|length > 0
+
+- name: Remove pg_stat_statements module config
+  file:
+    path: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/20-stat.conf"
+    state: absent
+  when: pg_stat_statements|length == 0
+...

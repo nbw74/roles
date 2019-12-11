@@ -1,0 +1,79 @@
+---
+- name: Clear LE cert existing fact
+  set_fact:
+    vhost_le_cert_exists: False
+
+- name: Check if LE certificate present
+  stat:
+    path: "/etc/letsencrypt/live/{{ op.name }}/cert.pem"
+  register: vhost_reg_le_check_1
+
+- name: Set LE cert existing fact (for template)
+  set_fact:
+    vhost_le_cert_exists: True
+  when: vhost_reg_le_check_1.stat.exists
+
+- name: Include Nginx template
+  include_tasks: nginx_vhost_template.yml
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: LE certbot section
+  block:
+    - name: Set initial domain list
+      set_fact:
+        vhost_cb_domains: "{{ [ op.name,  'www.' ~ op.name ] }}"
+
+    - name: Add aliases if present
+      set_fact:
+        vhost_cb_domains: "{{ vhost_cb_domains|union(op.alias) }}"
+      when: op.alias is defined
+
+    - name: Add mobile domain if present
+      set_fact:
+        vhost_cb_domains: "{{ vhost_cb_domains|union([ 'm.' ~ op.name ]) }}"
+      when: op.mobile|d()
+
+    - name: Add bitrix multisite domains if present
+      set_fact:
+        vhost_cb_domains: "{{ vhost_cb_domains|union(op.bitrix_multisite|json_query('[].name')) }}"
+      when: op.bitrix_multisite is defined
+
+    - name: Print domains list
+      debug:
+        msg: "{{ vhost_cb_domains }}"
+
+    - name: Certbot cert for domains list (staging env)
+      command: >
+        certbot certonly -n --webroot -w /var/www/letsencrypt --dry-run
+        -d {{ vhost_cb_domains|join(',') }}
+
+    - name: Certbot cert for domains list (real env)
+      command: >
+        certbot certonly -n --webroot -w /var/www/letsencrypt
+        -d {{ vhost_cb_domains|join(',') }}
+
+    - name: Check again if LE certificate present
+      stat:
+        path: "/etc/letsencrypt/live/{{ op.name }}/cert.pem"
+      register: vhost_reg_le_check_2
+
+    - name: Validate cert presence
+      assert:
+        that: vhost_reg_le_check_2.stat.exists
+        msg: "Let's Encrypt certificate for domain {{ op.name }} not exists."
+
+    - name: Set LE cert existing fact (for template)
+      set_fact:
+        vhost_le_cert_exists: True
+      when: vhost_reg_le_check_2.stat.exists
+
+    - name: Include Nginx template again
+      include_tasks: nginx_vhost_template.yml
+  rescue:
+    - name: Print certbot fail message
+      debug:
+        msg: "CERTBOT FOR DOMAIN {{ op.name }} FAILED!"
+  when: not vhost_reg_le_check_1.stat.exists
+...

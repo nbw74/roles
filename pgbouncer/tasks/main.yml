@@ -1,50 +1,69 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'pgbouncer' IS NOT ASSIGNED TO THIS HOST"
-  when: "'pgbouncer' not in roles"
+  assert:
+    that:
+      - inventory_hostname in groups['pgbouncer']
+      - ansible_distribution_file_variety == "RedHat"
+      - ansible_distribution_major_version|int >= 7
+      - postgresql_version is defined
 
-- name: Check OS version
-  fail:
-    msg: "This role is intended for RHEL (CentOS) version 7 or above"
-  when: ansible_distribution_major_version|int < 7
+- name: Import packages
+  import_tasks: packages.yml
 
-- import_tasks: "packages.yml"
-  tags: [ packages ]
-
-- name: Ensure file userlist.txt exists
-  copy:
-    dest: "/etc/pgbouncer/userlist.txt"
-    content: ""
-    force: no
+- name: Template main config file
+  template:
+    src: "{{ item.path }}.j2"
+    dest: "/{{ item.path }}"
     owner: root
     group: root
+    mode: "{{ item.mode|d('0644') }}"
+  notify: reload pgbouncer
+  loop:
+    - path: etc/pgbouncer/pgbouncer.ini
+
+- name: Template auth config files
+  template:
+    src: "{{ item.path }}.j2"
+    dest: "/{{ item.path }}"
+    owner: root
+    group: pgbouncer
+    mode: "{{ item.mode|d('0640') }}"
+    force: "{{ item.force|d('yes') }}"
+  notify: reload pgbouncer
+  loop:
+    - path: etc/pgbouncer/databases.ini
+    - path: etc/pgbouncer/userlist.txt
+      force: "{{ pgbouncer_vhost_compat|ternary('no','yes') }}"
+    - path: etc/pgbouncer/bouncer_hba.conf
+
+- name: Vhost compat section
+  block:
+    - name: line in userlist.txt (vhost compat)
+      lineinfile:
+        path: /etc/pgbouncer/userlist.txt
+        regexp: '^[ "]*{{ item.name }}'
+        line: "\"{{ item.name }}\"\t\"{{ item.password }}\""
+        insertafter: EOF
+      loop: "{{ pgbouncer_user }}"
+      notify: reload pgbouncer
+
+    - name: Create vhosts config file
+      copy:
+        dest: /etc/pgbouncer/vhost.ini
+        content: >
+          [databases]
+        force: no
+  when: pgbouncer_vhost_compat
+
+- name: Set reasonable permissions on socket dir
+  file:
+    path: "{{ pgbouncer_config.unix_socket_dir|d('/var/run/pgbouncer') }}"
+    state: directory
     mode: 0755
 
-- name: Set values in the INI config file ([pgbouncer])
-  ini_file:
-    path: "/etc/pgbouncer/pgbouncer.ini"
-    section: pgbouncer
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-  with_items:
-    - { option: 'auth_type', value: 'md5' }
-    - { option: 'ignore_startup_parameters', value: 'extra_float_digits' }
-    - { option: 'idle_transaction_timeout', value: "{{ pgbouncer_config['idle_transaction_timeout']|d('7200') }}" }
-    - { option: 'listen_addr', value: "{{ pgbouncer_config['listen_addr']|d('127.0.0.1') }}" }
-    - { option: 'listen_port', value: "{{ pgbouncer_config['listen_port']|d('6432') }}" }
-  notify: pgbouncer restart
-
-- name: Insert ANSIBLE MANAGED mark
-  lineinfile:
-    path: "/etc/pgbouncer/pgbouncer.ini"
-    line: ";; ANSIBLE MANAGED"
-    regexp: '^;+\s*ANSIBLE MANAGED'
-    insertafter: '^\[databases\]\s*$'
-
 - name: Manage pgbouncer service
-  systemd:
-    name: pgbouncer.service
+  service:
+    name: pgbouncer
     enabled: "{{ pgbouncer_enable|ternary('yes','no') }}"
     state: "{{ pgbouncer_enable|ternary('started','stopped') }}"
 ...

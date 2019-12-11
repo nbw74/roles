@@ -8,10 +8,10 @@
     mode: 0644
   when:
     - item.crypto|d('none') != 'none'
-    - item.state|d(true)
+    - not item.crypto_le|d()
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -26,10 +26,10 @@
     mode: 0400
   when:
     - item.crypto|d('none') != 'none'
-    - item.state|d(true)
+    - not item.crypto_le|d()
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -37,18 +37,18 @@
 
 - name: copy mobile certificates
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.name }}.crt"
+    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}.crt"
     dest: "/etc/pki/tls/certs/"
     owner: root
     group: root
     mode: 0644
   when:
     - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
-    - item.state|d(true)
+    - not item.crypto_le|d()
     - item.mobile|d()
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -56,18 +56,18 @@
 
 - name: copy mobile keys
   copy:
-    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.name }}.key"
+    src: "{{ inventory_dir }}/../files/crypto/m.{{ item.idna|d()|ternary(item.name.encode('idna'), item.name) }}.key"
     dest: "/etc/pki/tls/private/"
     owner: root
     group: root
     mode: 0400
   when:
     - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
-    - item.state|d(true)
+    - not item.crypto_le|d()
     - item.mobile|d()
     - not item.legacy|d()
     - not item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -82,10 +82,10 @@
     mode: 0644
   when:
     - item.crypto|d('none') != 'none'
-    - item.state|d(true)
+    - not item.crypto_le|d()
     - not item.legacy|d()
     - item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -100,10 +100,10 @@
     mode: 0400
   when:
     - item.crypto|d('none') != 'none'
-    - item.state|d(true)
+    - not item.crypto_le|d()
     - not item.legacy|d()
     - item.crypto_wildcard|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx

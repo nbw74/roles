@@ -8,11 +8,9 @@
         regexp: "{{ item }}"
       loop:
         - '^DEFROUTE='
-        - '^PEERDNS='
         - '^PEERROUTES='
         - '^IPV4_FAILURE_FATAL='
         - '^IPV6_'
-      tags: [ services, ifcfg ]
 
     - name: "Edit ifcfg"
       lineinfile:
@@ -21,9 +19,9 @@
         line: "{{ item.line }}"
       loop:
         - { regexp: '^IPV6INIT=', line: 'IPV6INIT="no"' }
-      tags: [ services, ifcfg ]
       ignore_errors: yes
   when: not common_leave_networkmanager
+  tags: [ services, ifcfg ]
 
 - name: Ifcfg template section
   block:
@@ -36,40 +34,38 @@
         mode: 0644
       when: item.state|d(true)
       register: common_ifcfg_result
-      loop: "{{ common_ifcfg|flatten(levels=1) }}"
+      loop: "{{ common_ifcfg }}"
       loop_control:
         label: "{{ item.dev }}"
-      tags: [ ifcfg ]
 
     - name: Remove ifcfg
       file:
         path: "{{ common_network_scripts }}/ifcfg-{{ item.dev }}"
         state: absent
       when: not item.state|d(true)
-      loop: "{{ common_ifcfg|flatten(levels=1) }}"
+      loop: "{{ common_ifcfg }}"
       loop_control:
         label: "{{ item.dev }}"
-      tags: [ ifcfg ]
   when: common_ifcfg|length > 0
+  tags: [ ifcfg ]
 
 - name: Ifcfg line section
   block:
     - name: Include ifcfg loop
       include_tasks: ifcfg_vars.yml
-      loop: "{{ common_ifcfg_vars|flatten(levels=1) }}"
+      loop: "{{ common_ifcfg_vars }}"
       loop_control:
         loop_var: ifcfg
         label: "{{ ifcfg.dev }}"
-      tags: [ ifcfg ]
   when: common_ifcfg_vars|length > 0
+  tags: [ ifcfg ]
+
+- name: Early initialize array
+  set_fact:
+    common_ifcfg_changed: []
 
 - name: Interfaces restart section
   block:
-    - name: Initialize array
-      set_fact:
-        common_ifcfg_changed: []
-      tags: [ ifcfg ]
-
     - name: Populate array with dev names of changed ifcfgs
       set_fact:
         common_ifcfg_changed: "{{ common_ifcfg_changed }} + [ '{{ item.item.dev }}' ]"
@@ -77,10 +73,9 @@
         - common_ifcfg_result.results is defined
         - item.changed
         - item.item.variables.ONBOOT|d('no') | regex_search('[Yy][Ee][Ss]')
-      loop: "{{ common_ifcfg_result.results|flatten(levels=1) }}"
+      loop: "{{ common_ifcfg_result.results }}"
       loop_control:
         label: "{{ item.item.dev }}"
-      tags: [ ifcfg ]
 
     - name: "Restart changed interfaces"
       shell: >
@@ -88,10 +83,10 @@
       async: 45
       poll: 5
       when: common_ifcfg_changed|length > 0
-      loop: "{{ common_ifcfg_changed|unique|flatten(levels=1) }}"
+      loop: "{{ common_ifcfg_changed|unique }}"
       loop_control:
         label: "{{ item }}"
       ignore_errors: yes
-      tags: [ ifcfg ]
   when: common_ifcfg_restart
+  tags: [ ifcfg ]
 ...

@@ -1,0 +1,8 @@
+---
+pcmk_master: "{{ groups[pcmk_pool]|first }}"
+
+pcmk_packages:
+  - pcs
+
+pcmk_cron_file: pcmk
+...

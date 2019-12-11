@@ -34,6 +34,10 @@ vhost_default_ddns_zone: "string"               # mandatory if use ddns, git, re
 vhost_ddns_key_name: "string"                   # default is "ddns_key"
 vhost_ddns_key_algorithm: "string"              # default is "hmac-md5"
 vhost_ddns_key_secret: "string"                 # mandatory if use ddns
+
+vhost_gitlab:
+  api_url: uri
+  api_token: string
 ```
 ## Virtual host data structure
 ```yaml
@@ -43,6 +47,7 @@ vhost:
     - nose.example.org
   apache:
     port: 8888 # optional (if use apache as vhost_backend)
+  backend_enable: bool # default: True
   bitrix_multisite:
     - name: ears.example.org
       crypto: bool
@@ -58,6 +63,7 @@ vhost:
       disabled: bool # default: no; if the job should be disabled (commented out) in the crontab
       state: bool # default: yes; whether to ensure the job is present or absent
   crypto: none|redirect|both # optional; default is "none"
+  crypto_le: bool # Use Let's Encrypt; default: no
   crypto_mobile: none|redirect|both # optional; default is 'crypto' value
   crypto_wildcard: bool # Use wildcard certificate _<example.org>; default: false
   db:
@@ -91,7 +97,13 @@ vhost:
     max_spare_servers: 32 # optional
     process_idle_timeout: 10s # optional
     max_requests: 0 # optional
+    status_path: string # optional
     template: "string" # fpm configuration; see below
+  gitlab:
+    name: string # default is "vhost.name" without vhost_default_ddns_zone
+    path: string # default is "vhost.name" without vhost_default_ddns_zone
+    namespace: string # mandatory
+    description: string # mandatory
   hosts: bool # add vhost resord in /etc/hosts; IP address set in listen[0] or vhost_default_ipaddr
   idna: bool # Encode server_name in IDNA (Internationalized Domain Names in Applications)
   index: "myindex.php" # optional; default is "index.php"
@@ -106,7 +118,6 @@ vhost:
     port2: 11211
   mobile: bool # optional; default is 'no'; enable mobile version config with same site root
   nginx_auth_basic: # optional
-    enable: bool # default: no
     string: "string" # default: "Restricted"
     user_file: "path" # default: "/etc/nginx/.htpasswd"
     users:
@@ -115,6 +126,7 @@ vhost:
         state: bool # default: yes
   nginx_http_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'http' context
+  nginx_root_location: bool # default: true
   nginx_server_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'server' context (before "backend section")
   nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
@@ -123,10 +135,11 @@ vhost:
     - name: "string" # default: laravel-queue-worker
       enabled: bool # default: yes
   php_value: # optional
-    - key: 'string'
-      value: 'string'
+    key: value
   proxy_host_header: external|internal|<string> # default: external
   proxy_pass: "URI" # mandatory if use reverse-proxy vhost_backend
+  proxy_pass_scheme: bool # Pass X-Forwarded-Proto and X-Scheme headers; default: false
+  proxy_set_scheme: bool # Set X-Forwarded-Proto and X-Scheme headers in $scheme value; default: false
   redmine: # optional
     title: "string" # optional; default is "vhost.name" without vhost_default_ddns_zone$
     description: "string" # mandatory if use redmine
@@ -176,5 +189,5 @@ CentOS 7
 + python-psycopg2
 + MySQL-python
 ## Tags
-`archive` `conf` `crypto` `db` `ddns` `hosts` `redmine` `repo` `user` `version` `webcheck` `wiki`
+`archive` `conf` `crypto` `db` `ddns` `gitlab` `hosts` `redmine` `repo` `user` `version` `webcheck` `wiki`
 

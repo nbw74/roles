@@ -1,22 +1,17 @@
 ---
-- name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'nodejs' IS NOT ASSIGNED TO THIS HOST"
-  when: "'nodejs' not in roles"
+- name: Check role requirements
+  assert:
+    that:
+      - inventory_hostname in groups['nodejs'] or inventory_hostname in groups['build_runners']
+      - ansible_distribution_file_variety == "RedHat"
+      - ansible_distribution_major_version|int >= 7
 
-- name: Fail if old or unknown OS
-  fail:
-    msg: "INCOMPATIBLE OPERATING SYSTEM"
-  when: >
-    ansible_os_family != "RedHat"
-    or ansible_distribution_major_version|int < 7
-
-- name: Create nodejs repo with curl
-  shell: >
-    curl -sL https://rpm.nodesource.com/setup_{{ nodejs_major_version }}.x | bash -
-  args:
-    warn: false
-    creates: "/etc/yum.repos.d/nodesource-el{{ ansible_distribution_major_version }}.repo"
+- name: Install nodejs repo
+  yum:
+    name: >
+      https://rpm.nodesource.com/pub_{{ nodejs_major_version
+      }}.x/el/{{ ansible_distribution_major_version }}/{{ ansible_architecture
+      }}/nodesource-release-el{{ ansible_distribution_major_version }}-1.noarch.rpm
 
 - name: Yum install nodejs
   yum:
@@ -24,13 +19,19 @@
 
 - name: Yarn section
   block:
-    - name: Create yarn repo with curl
-      shell: >
-        curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo > /etc/yum.repos.d/yarn.repo
-        && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg
-      args:
-        warn: false
-        creates: /etc/yum.repos.d/yarn.repo
+    - name: Ensure yarn repository key is present
+      rpm_key:
+        key: "https://dl.yarnpkg.com/rpm/pubkey.gpg"
+
+    - name: Create yarn repo
+      yum_repository:
+        name: yarn
+        description: Yarn Repository
+        file: yarn
+        baseurl: https://dl.yarnpkg.com/rpm/
+        enabled: yes
+        gpgcheck: yes
+        gpgkey: https://dl.yarnpkg.com/rpm/pubkey.gpg
 
     - name: Yum install yarn
       yum:

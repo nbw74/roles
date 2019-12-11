@@ -1,27 +1,34 @@
 ---
-- virt:
+- name: Get XML definitions
+  virt:
     guest: "{{ item.name }}"
     command: get_xml
-  register: kvm_get_xml
   when: item.state|d('running') != 'undefined'
-  with_items: "{{ kvm_vm }}"
+  loop: "{{ kvm_vm }}"
   loop_control:
     label: "{{ item.name }}"
+  register: kvm_get_xml
+  tags: [ mac ]
 
-- xml:
+- name: Select MAC
+  xml:
     xmlstring: "{{ item.get_xml }}"
     xpath: "/domain/devices/interface/mac"
     content: attribute
     attribute: address
   when: item.get_xml is defined
-  with_items: "{{ kvm_get_xml.results }}"
+  loop: "{{ kvm_get_xml.results }}"
   loop_control:
-    label: "{{ item.item.guest|d('null') }}"
+    label: "{{ item.item.name|d('null') }}"
   register: kvm_mac
+  tags: [ mac ]
 
-- name: MAC printout
+- name: MAC print
   debug:
-    msg: " {{ item.matches[0].mac.address }} : {{ item.item.item.name }} "
+    msg: " {{ item.matches[0].mac.address }} : {{ item.item.item.name|d('UNKNOWN') }} "
   when: item.matches is defined
-  with_items: "{{ kvm_mac.results }}"
+  loop: "{{ kvm_mac.results }}"
+  loop_control:
+    label: "{{ item.item.item.name|d('UNKNOWN') }}"
+  tags: [ mac ]
 ...

@@ -1,0 +1,57 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+[Match]
+{% set Interface = item.1.Name|d(ansible_default_ipv4['interface']) %}
+{% if nspawn_if_type[Interface]|d('ipvlan') == "macvlan" %}
+Name=mv-{{ Interface }}
+{% elif nspawn_if_type[Interface]|d('ipvlan') == "bridge" %}
+Name=host0
+{% elif Interface | regex_search('br\d+') %}
+Name=host0
+{% else %}
+Name=iv-{{ Interface }}
+{% endif %}
+
+[Network]
+{% if item.1.DHCP|d() %}
+DHCP=ipv4
+{% endif %}
+{% if item.1.Address is defined %}
+Address={{ item.1.Address }}
+{% endif %}
+{% if item.1.Gateway is defined %}
+Gateway={{ item.1.Gateway }}
+{% endif %}
+{% if item.1.DNS is defined %}
+{% for dns in item.1.DNS %}
+DNS={{ dns }}
+{% endfor %}
+{% endif %}
+
+{% if item.1.Addresses is defined %}
+{% for address in item.1.Addresses %}
+[Address]
+Address={{ address.Address }}
+{% if address.Peer is defined %}
+Peer={{ address.Peer }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if item.1.Routes is defined %}
+{% for route in item.1.Routes %}
+
+[Route]
+Gateway={{ route.Gateway }}
+{% if route.Destination is defined %}
+Destination={{ route.Destination }}
+{% endif %}
+{% if route.Source is defined %}
+Source={{ route.Source }}
+{% endif %}
+{% if route.Metric is defined %}
+Metric={{ route.Metric }}
+{% endif %}
+{% if route.Scope is defined %}
+Scope={{ route.Scope }}
+{% endif %}
+{% endfor %}
+{% endif %}

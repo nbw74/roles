@@ -1,0 +1,5 @@
+---
+redis_pcmk_ra_dir: usr/lib/ocf/resource.d
+redis_pcmk_scripts_dir: usr/local/libexec
+redis_pcmk_flag: /var/lib/flags/redis_pcmk_resource_created
+...

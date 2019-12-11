@@ -6,11 +6,19 @@
 # Southbridge LLC, 2017-2019 A.D.
 #
 
+set -o nounset
+set -o pipefail
+
 main() {
 
     trap 'except $LINENO' ERR
 
-    local nodelist="$(pcs status nodes | awk '/Online:/ { sub($1, ""); sub(/^\s+/, ""); print $0; exit }')"
+    local nodelist="$(pcs status nodes corosync | awk '/Online:/ { sub($1, ""); sub(/^\s+/, ""); print $0; exit }')"
+
+    if [[ -z $nodelist ]]; then
+	echo "nodelist is empty" >&2
+	false
+    fi
 
     pcs cluster cib PGSQL_CFG
 
@@ -29,7 +37,7 @@ main() {
        route_name="pcmk-$(pcs status | awk '/Cluster name:/ { print tolower($3) }')-main" \
        meta migration-threshold="0" \
        op start   timeout="180s" interval="0s"  on-fail="restart" \
-       op monitor timeout="40s"  interval="60s" on-fail="restart" \
+       op monitor timeout="55s"  interval="60s" on-fail="ignore" \
        op stop    timeout="180s" interval="0s"  on-fail="block"
 
 {% if postgresql_pcmk_ip_repl is defined %}
@@ -39,13 +47,13 @@ main() {
        route_name="pcmk-$(pcs status | awk '/Cluster name:/ { print tolower($3) }')-repl" \
        meta migration-threshold="0" \
        op start   timeout="180s" interval="0s"  on-fail="restart" \
-       op monitor timeout="40s"  interval="60s" on-fail="restart" \
+       op monitor timeout="55s"  interval="60s" on-fail="ignore" \
        op stop    timeout="180s" interval="0s"  on-fail="block"
 {% endif %}
 {% else %}
     pcs -f PGSQL_CFG resource create VADDR-MAIN ocf:heartbeat:IPaddr2 \
        ip="{{ postgresql_pcmk_ip_main }}" \
-       nic="eth0" \
+       nic="{{ postgresql_pcmk_if_main|d(ansible_default_ipv4['interface']) }}" \
        cidr_netmask="24" \
        meta migration-threshold="0" \
        op start   timeout="60s" interval="0s"  on-fail="restart" \
@@ -55,7 +63,7 @@ main() {
 {% if postgresql_pcmk_ip_repl is defined %}
     pcs -f PGSQL_CFG resource create VADDR-REPL ocf:heartbeat:IPaddr2 \
        ip="{{ postgresql_pcmk_ip_repl }}" \
-       nic="eth0" \
+       nic="{{ postgresql_pcmk_if_repl|d(ansible_default_ipv4['interface']) }}" \
        cidr_netmask="24" \
        meta migration-threshold="0" \
        op start   timeout="60s" interval="0s"  on-fail="stop" \
@@ -69,8 +77,8 @@ main() {
        psql="/usr/pgsql-{{ postgresql_version_raw }}/bin/psql" \
        pgdata="/var/lib/pgsql/{{ postgresql_version_raw }}/data/" \
        rep_mode="async" \
-{% if postgresql_wal_backup_enable %}
-       restore_command='ssh {{ postgresql_wal_backup_user }}@{{ postgresql_wal_backup_server }} "cat {{ postgresql_wal_backup_dir }}/%f.bz2" | lbzip2 -d - > %p' \
+{% if postgresql_walarchive|length > 0 %}
+       restore_command='ssh {{ postgresql_walarchive.user|d('walarchive') }}@{{ postgresql_walarchive.server }} "cat {{ postgresql_walarchive.dir|d(ansible_nodename.split('.')[0]) }}/%f.bz2" | lbzip2 -d - > %p' \
 {% else %}
        restore_command="cp /var/lib/pgsql/{{ postgresql_version_raw }}/pg_archive/%f %p" \
 {% endif %}
@@ -106,8 +114,6 @@ main() {
     pcs -f PGSQL_CFG constraint order demote  PG-MASTER then stop  MASTER-GROUP symmetrical=false score=0
 
     pcs cluster cib-push PGSQL_CFG
-
-    chmod a-x "$0"
 }
 
 except() {

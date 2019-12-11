@@ -1,17 +1,29 @@
 ---
 - name: config restart iptables
-  service: name=iptables state=restarted
+  service:
+    name: iptables
+    state: restarted
 
 - name: config restart nginx
-  service: name=nginx enabled=yes state=restarted
+  service:
+    name: nginx
+    state: restarted
+
+- name: validate nginx
+  command: >
+    nginx -t
+  notify: config reload nginx
 
 - name: config reload nginx
-  service: name=nginx enabled=yes state=reloaded
+  service:
+    name: nginx
+    state: reloaded
 
 - name: systemd-sysctl restart
   systemd:
     name: systemd-sysctl.service
     state: restarted
+  when: ansible_service_mgr == 'systemd'
 
 #####
 # Awstats

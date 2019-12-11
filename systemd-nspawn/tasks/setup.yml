@@ -1,0 +1,40 @@
+---
+- name: Directories for override, env
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - "{{ nspawn_etc }}"
+    - "{{ nspawn_override_dir }}"
+
+- name: Template override.conf
+  template:
+    src: "nspawn.override.conf.j2"
+    dest: "{{ nspawn_override_dir }}/override.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload systemd
+
+- name: Enable machines.target
+  systemd:
+    name: machines.target
+    enabled: yes
+
+- name: Copy scripts
+  copy:
+    src: mctl.sh
+    dest: "{{ nspawn_scripts_dir }}/"
+    owner: root
+    group: root
+    mode: 0744
+
+- name: Symink mctl
+  file:
+    src: "{{ nspawn_scripts_dir }}/mctl.sh"
+    dest: /usr/sbin/mctl
+    state: link
+...

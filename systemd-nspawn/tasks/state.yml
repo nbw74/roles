@@ -1,0 +1,18 @@
+---
+- name: Manage containers autostart
+  systemd:
+    name: "systemd-nspawn@{{ item.name }}.service"
+    enabled: "{{ item.enabled|d(true) | ternary('true', 'false') }}"
+  loop: "{{ nspawn }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.enabled|d(true) }}"
+
+- name: Set service state for containers
+  systemd:
+    name: "systemd-nspawn@{{ item.name }}.service"
+    state: "{{ item.enabled|d(true) | ternary('started', 'stopped') }}"
+  when: ansible_kernel is version('4.00', '>')
+  loop: "{{ nspawn }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.enabled|d(true) }}"
+...

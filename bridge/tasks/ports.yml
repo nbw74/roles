@@ -1,5 +1,5 @@
 ---
-- name: No IP addresses on L2 bridge ports
+- name: No IP addresses on L2 bridge ports  # noqa 301
   shell: >
     ip address flush dev {{ item.1 }};
     ip link set up dev {{ item.1 }};

@@ -1,0 +1,15 @@
+---
+- name: Include Nginx template if no crypto or conventional crypto
+  include_tasks: nginx_vhost_template.yml
+  when: >
+    op.crypto|d('none') == 'none'
+    or ( op.crypto|d('none') != 'none' and not op.crypto_le|d() )
+  tags: [ conf, crypto ]
+
+- name: Include LE algo
+  include_tasks: nginx_vhost_certbot.yml
+  when:
+    - op.crypto|d('none') != 'none'
+    - op.crypto_le|d()
+  tags: [ conf, crypto ]
+...

@@ -10,7 +10,6 @@
     - { option: 'Storage', value: 'persistent' }
     - { option: 'Compress', value: 'yes' }
   notify: config restart journald
-  when: ansible_distribution_major_version|int >= 7
   tags: [ services, journald ]
 
 - name: Manage journal-gateway package

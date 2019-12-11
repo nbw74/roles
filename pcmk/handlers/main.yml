@@ -1,0 +1,6 @@
+---
+- name: reload crond
+  service:
+    name: crond
+    state: reloaded
+...

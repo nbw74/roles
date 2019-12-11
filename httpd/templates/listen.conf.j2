@@ -1,0 +1,5 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+Listen 127.0.0.1:{{ httpd_port }}
+{% for item in httpd_listen_add %}
+Listen {{ item.addr }}:{{ item.port }}
+{% endfor %}

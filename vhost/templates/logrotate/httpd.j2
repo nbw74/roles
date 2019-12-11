@@ -1,0 +1,15 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+/var/www/{{ item.user|d(item.name) }}/log/apache-*.log {
+    create 644 root adm
+    daily
+    compress
+    missingok
+    notifempty
+    delaycompress
+    sharedscripts
+    postrotate
+        /bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true
+    endscript
+    su root apache
+}

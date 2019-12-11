@@ -1,0 +1,52 @@
+---
+- name: Check role requirements
+  assert:
+    that:
+      - ansible_distribution_file_variety == 'RedHat'
+      - ansible_distribution_major_version|int >= 7
+      - inventory_hostname in groups['nspawn']
+      - nspawn|length > 0
+
+- name: Include host setup tasks
+  import_tasks: setup.yml
+
+- name: main section
+  block:
+    - name: Include mount tasks
+      include_tasks: mounts.yml
+
+    - name: Dirs for containers
+      file:
+        path: "{{ nspawn_lib }}/{{ item.name }}/root"
+        state: directory
+      register: nspawn_reg_dir
+      loop: "{{ nspawn }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Deploy section with rollback
+      block:
+        - name: Include containers deploy tasks
+          include_tasks: deploy.yml
+
+        - name: Include network config tasks
+          include_tasks: networkd.yml
+      rescue:
+        - name: Remove new dirs
+          file:
+            path: "{{ nspawn_lib }}/{{ new.item.name }}"
+            state: absent
+          when: new.changed
+          loop: "{{ nspawn_reg_dir.results }}"
+          loop_control:
+            loop_var: new
+            label: "{{ new.item.name }}"
+
+        - name: Fail after rollback
+          fail:
+            msg: "FATAL ERROR"
+
+    - name: Include containers status tasks
+      include_tasks: state.yml
+  when: nspawn|length > 0
+...

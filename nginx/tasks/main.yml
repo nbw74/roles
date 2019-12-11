@@ -1,8 +1,8 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'nginx' IS NOT ASSIGNED TO THIS HOST"
-  when: "'nginx' not in roles"
+  assert:
+    that:
+      - inventory_hostname in groups['nginx']
 
 - name: Import packages
   import_tasks: packages.yml
@@ -10,17 +10,15 @@
 - name: Import html
   import_tasks: html.yml
 
-- name: Import default.d
-  import_tasks: default.d.yml
-
-- name: Import include.d
-  import_tasks: include.d.yml
-
-- name: Import conf.d
-  import_tasks: conf.d.yml
-
 - name: Import TLS tasks
   import_tasks: tls.yml
+
+- name: Import dirs and files
+  import_tasks: conf.yml
+
+- name: Import certbot
+  import_tasks: certbot.yml
+  when: ansible_distribution_major_version|int >= 7
 
 - name: Template nginx.conf
   template:
@@ -44,4 +42,10 @@
 
 - name: Import awstats
   import_tasks: awstats.yml
+
+- name: Nginx service enabled
+  service:
+    name: nginx
+    enabled: yes
+    state: started
 ...

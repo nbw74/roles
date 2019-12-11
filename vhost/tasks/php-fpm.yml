@@ -1,0 +1,51 @@
+---
+- name: Template php-fpm vhost config
+  template:
+    src: "php-fpm.j2"
+    dest: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
+    mode: 0644
+    backup: yes
+    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
+  when:
+    - item.nginx_301_only is not defined
+    - item.fpm is defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: validate php-fpm
+  tags: [ conf ]
+
+- name: Remove php-fpm vhost config
+  file:
+    path: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
+    state: absent
+    backup: yes
+  when:
+    - item.nginx_301_only is not defined
+    - item.fpm is defined
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: validate php-fpm
+  tags: [ conf ]
+
+- name: Template PHP-FPM logrotate config
+  template:
+    src: logrotate/php-fpm.j2
+    dest: "/etc/logrotate.d/php-fpm_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "php-fpm_{{ item.user|d(item.name) }}"
+
+- name: PHP-FPM logrotate config absent
+  file:
+    path: "/etc/logrotate.d/php-fpm_{{ item.user|d(item.name) }}"
+    state: absent
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "php-fpm_{{ item.user|d(item.name) }}"
+...

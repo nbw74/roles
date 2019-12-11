@@ -4,6 +4,10 @@
 ```yaml
 httpd_add_packages: []
 
+httpd_listen_add:
+  - addr: ipv4
+    port: int
+
 remi_php_version: int # Версия PHP для установки из репозитория remi. Например, 56, 71 и т.д.
 
 selinux_state: "enforcing|permissive|disabled" # default: "disabled"

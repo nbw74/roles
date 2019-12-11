@@ -16,7 +16,7 @@
   changed_when: false
 
 - name: Admins is a members of the libvirt group
-  user: 
+  user:
     name: "{{ item }}"
     groups: libvirt
     append: yes

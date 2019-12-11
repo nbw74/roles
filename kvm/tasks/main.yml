@@ -64,5 +64,6 @@
 
   - include_tasks: mac.yml
     when: kvm_mac_printout|d()
+    tags: [ mac ]
   when: kvm_vm|length > 0
 ...

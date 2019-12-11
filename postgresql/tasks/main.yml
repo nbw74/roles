@@ -1,4 +1,166 @@
 ---
-- include_tasks: main_task.yml
-  when: "'postgresql' in roles"
+- name: Check role requirements
+  assert:
+    that:
+      - ansible_version.full is version('2.8.0', '>=')
+      - ansible_distribution_file_variety == 'RedHat'
+      - ansible_distribution_major_version|int >= 7
+      - inventory_hostname in groups['postgresql']
+      - postgresql_version is defined
+
+- name: "Are we in the GCP yet?"
+  stat:
+    path: "{{ postgresql_gcp_hostname }}"
+  register: postgresql_gcp_detect
+
+- name: Check required dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ postgresql_sb_check }}"
+    - "{{ postgresql_sb_libexec }}"
+    - "{{ postgresql_sb_etc }}"
+    - "{{ postgresql_sb_bin }}"
+
+- include_tasks: "packages.yml"
+  tags: [ packages ]
+
+- name: postgres homedir owner and mode
+  file:
+    path: "{{ postgresql_homedir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0750
+  tags: [ initdb ]
+
+- name: DB cluster initialization
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+  command: "/usr/pgsql-{{ postgresql_version_raw }}/bin/initdb \
+          --pgdata={{ postgresql_datadir | quote }}
+          --encoding={{ postgresql_encoding }} \
+          --locale={{ postgresql_locale }}  \
+          --lc-collate={{ postgresql_lc_collate|default(postgresql_locale) }} \
+          --lc-messages={{ postgresql_lc_messages }}"
+  args:
+    creates: "{{ postgresql_datadir }}/PG_VERSION"
+  tags: [ initdb ]
+
+- name: Custom config and WAL backup dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ postgresql_user.name|d('postgres') }}"
+    group: "{{ postgresql_user.name|d('postgres') }}"
+    mode: 0700
+  with_items:
+    - "{{ postgresql_datadir }}/{{ postgresql_include_dir }}"
+    - "{{ postgresql_basedir }}/pg_archive"
+  tags: [ initdb ]
+
+- name: Include in postgresql.conf
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+  blockinfile:
+    path: "{{ postgresql_datadir }}/postgresql.conf"
+    insertafter: EOF
+    create: yes
+    block: |
+      include_dir {{ postgresql_include_dir }}
+  tags: [ initdb ]
+
+- name: Template custom config
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+  template:
+    src: "{{ postgresql_custom_config }}.j2"
+    dest: "{{ postgresql_datadir }}/{{ postgresql_include_dir }}/{{ postgresql_custom_config }}"
+    mode: 0600
+  notify: reload postgresql direct
+  tags: [ initdb ]
+
+- name: Include modules config
+  include: modules.yml
+
+- name: PG_IDENT configuration file
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+  blockinfile:
+    path: "{{ postgresql_datadir }}/pg_ident.conf"
+    insertafter: EOF
+    create: yes
+    block: |
+      supervisor      postgres                postgres
+      supervisor      zabbix                  postgres
+      supervisor      root                    postgres
+      {% if postgresql_ident_local is defined %}
+      {% for item in postgresql_ident_local %}
+      {{ item.map }} {{ item.sysuser }} {{ item.pguser }}
+      {% endfor %}
+      {% endif %}
+  notify: reload postgresql direct
+  tags: [ initdb ]
+
+- name: PG_HBA configuration file
+  become: yes
+  become_user: "{{ postgresql_user.name|d('postgres') }}"
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_datadir }}/pg_hba.conf"
+    mode: 0600
+  when: postgresql_hba_enable|bool
+  notify: reload postgresql direct
+  tags: [ initdb, hba ]
+
+- name: Template recovery.conf
+  template:
+    src: recovery.conf.j2
+    dest: "{{ postgresql_datadir }}/recovery.conf"
+    owner: "{{ postgresql_user.name|d('postgres') }}"
+    group: "{{ postgresql_user.name|d('postgres') }}"
+    mode: 0644
+  when: postgresql_recovery_conf|length > 0
+
+- name: PostgreSQL service enabled and started
+  service:
+    name: "postgresql-{{ postgresql_version_raw }}"
+    state: started
+    enabled: yes
+  when: not postgresql_pcmk_enable
+
+- name: Import repack tasks
+  import_tasks: repack.yml
+
+- name: Include service shell scripts tasks
+  import_tasks: svcsh.yml
+
+- name: Include walarchive
+  include_tasks: walarchive.yml
+  when: postgresql_walarchive|length > 0
+
+- include_tasks: roles.yml
+  when: postgresql_roles|length > 0
+
+- include_tasks: pgpass.yml
+  when: postgresql_pgpass_entries|length > 0
+
+- name: Pacemaker tasks section
+  block:
+    - name: Include Pacemaker tasks
+      include_tasks: "pcmk.yml"
+
+    - name: Include pgsql rmlock tasks
+      include_tasks: "pcmk_rmlock.yml"
+  when: postgresql_pcmk_enable|bool
+
+- name: Template rsyslog config
+  template:
+    src: "{{ postgresql_rsyslog }}.j2"
+    dest: "/etc/rsyslog.d/{{ postgresql_rsyslog }}"
+    mode: 0444
+  when: postgresql_extended_logging|bool
+  notify: restart rsyslog
+  tags: [ rsyslog ]
 ...

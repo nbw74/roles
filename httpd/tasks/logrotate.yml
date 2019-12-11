@@ -1,11 +1,7 @@
 ---
-- name: "logrotate httpd site logs"
-  copy:
-    src: httpd_sites
-    dest: /etc/logrotate.d/
-    force: no
-    owner: root
-    group: root
-    mode: 0644
+- name: Delete obsolete logrotate httpd config
+  file:
+    path: /etc/logrotate.d/httpd_sites
+    state: absent
   tags: [logrotate]
 ...

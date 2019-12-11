@@ -1,0 +1,20 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+/var/www/{{ item.user|d(item.name) }}/log/nginx-*.log {
+    create 0644 nginx adm
+    daily
+    rotate 32
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    prerotate
+	if [ -d /etc/logrotate.d/nginx-prerotate ]; then \
+	    run-parts /etc/logrotate.d/nginx-prerotate; \
+	fi; \
+    endscript
+    postrotate
+        /bin/kill -USR1 `cat /run/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+    su root nginx
+}

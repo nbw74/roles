@@ -3,10 +3,8 @@
   stat:
     path: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}"
   register: vhost_reg_home
-  when:
-    - item.changed
-    - item.state == 'absent'
-  with_items: "{{ vhost_user.results }}"
+  when: item.state == 'absent'
+  loop: "{{ vhost_user_del.results|selectattr('changed')|list }}"
   loop_control:
     label: "{{ item.name|d('null') }}"
   tags: [ archive ]
@@ -19,9 +17,7 @@
     - item.0.stat is defined
     - item.0.stat.path is defined
     - not item.0.skipped|d()
-  with_nested:
-    - "{{ vhost_reg_home.results }}"
-    - [ 'log', 'logs', 'tmp' ]
+  loop: "{{ vhost_reg_home.results|product([ 'log', 'logs', 'tmp', 'www/node_modules' ])|list }}"
   loop_control:
     label: "{{ item.0.item.name|d('null') }}: {{ item.1 }}"
   ignore_errors: yes
@@ -42,12 +38,13 @@
           - "{{ item.stat.path }}/*.gz"
           - "{{ item.stat.path }}/*.zip"
           - "{{ item.stat.path }}/*.bz2"
+          - "{{ item.stat.path }}/www/bitrix/backup/*"
           - "*.log"
       when:
         - item.stat is defined
         - item.stat.path is defined
         - not item.skipped|d()
-      with_items: "{{ vhost_reg_home.results }}"
+      loop: "{{ vhost_reg_home.results }}"
       loop_control:
         label: "{{ item.item.name|d('null') }}"
       tags: [ archive ]
@@ -60,9 +57,7 @@
       when:
         - item[1].state == 'absent'
         - item[1].changed
-      with_together:
-        - "{{ vhost }}"
-        - "{{ vhost_user.results }}"
+      loop: "{{ vhost|zip(vhost_user_del.results)|list }}"
       loop_control:
         label: "{{ item[0].user|d(item[0].name) }}"
       tags: [ archive ]
@@ -80,7 +75,7 @@
     - item.stat is defined
     - item.stat.path is defined
     - not item.skipped|d()
-  with_items: "{{ vhost_reg_home.results }}"
+  loop: "{{ vhost_reg_home.results }}"
   loop_control:
     label: "{{ item.item.name|d('null') }}"
   ignore_errors: yes

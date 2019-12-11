@@ -1,8 +1,8 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "Role icinga2 not assigned to host"
-  when: '"icinga2" not in roles'
+  assert:
+    that:
+      - inventory_hostname in groups['icinga2']
 
 - import_tasks: packages.yml
 
@@ -19,7 +19,7 @@
   with_items: "{{ icinga2_wipe_confd }}"
   tags: [ wipe ]
 
-- import_tasks: icingaweb2.yml
+- include_tasks: icingaweb2.yml
   when: icinga2_icingaweb2_node
 
 - name: add user icinga to nagios group
@@ -28,6 +28,9 @@
     groups: "nagios"
     append: yes
   notify: service icinga2 restart
+
+- name: Root key import
+  import_tasks: keys_root.yml
 
 - name: copy utils.pm
   copy:
@@ -47,18 +50,12 @@
     accept_hostkey: yes
   ignore_errors: true
 
-- import_tasks: keys.yml
-  when: not icinga2_client_node
-
-- import_tasks: sendxmpp.yml
-  when: not icinga2_client_node
-
-- import_tasks: pgsql.yml
-  when: not icinga2_client_node
-
-- import_tasks: ipmi.yml
-  when: not icinga2_client_node
-
-- import_tasks: wmi.yml
+- name: Nodes section
+  block:
+    - include_tasks: keys.yml
+    - include_tasks: sendxmpp.yml
+    - include_tasks: pgsql.yml
+    - include_tasks: ipmi.yml
+    - include_tasks: wmi.yml
   when: not icinga2_client_node
 ...

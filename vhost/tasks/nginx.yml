@@ -1,74 +1,92 @@
 ---
-- name: Include htpasswd tasks
-  include_tasks: htpasswd.yml
-  when:
-    - current.nginx_auth_basic is defined
-    - current.nginx_auth_basic.enable|d(false)
-  with_items: "{{ vhost }}"
-  loop_control:
-    loop_var: current
-    label: "{{ current.name }}"
-  notify: validate nginx
-  tags: [ conf ]
+- name: Nobitrix block
+  block:
+    - name: Include htpasswd tasks
+      include_tasks: htpasswd.yml
+      when: op.nginx_auth_basic is defined
+      loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+      loop_control:
+        loop_var: op
+        label: "{{ op.name }}"
+      tags: [ conf, crypto ]
+  when: vhost_backend != 'bitrix'
 
-- name: Template Nginx vhost config
+- name: Include Nginx vhost config tasks
+  include_tasks: nginx_vhost.yml
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    loop_var: op
+    label: "{{ op.name }}"
+  tags: [ conf, crypto ]
+
+- name: Nobitrix block
+  block:
+    - name: Remove Nginx vhost config
+      file:
+        path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
+        state: absent
+        backup: yes
+      loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      notify: validate nginx
+      tags: [ conf, crypto ]
+  when: vhost_backend != 'bitrix'
+
+- name: Bitrix block
+  block:
+    - name: "Manage symlink Nginx vhost config (Bitrix: site_enabled)"
+      file:
+        path: "/etc/nginx/bx/site_enabled/{{ item.user|d(item.name) }}.conf"
+        src: "{{ item.state|d(True)|ternary('../site_avaliable/' ~ item.user|d(item.name) ~ '.conf', omit) }}"
+        state: "{{ item.state|d(True)|ternary('link', 'absent') }}"
+      loop: "{{ vhost }}"
+      loop_control:
+        label: "{{ item.user|d(item.name) }}"
+      notify: validate nginx
+      tags: [ conf, crypto ]
+  when: vhost_backend == 'bitrix'
+
+- name: Remove unused LE certs
+  block:
+    - name: Get LE certs list
+      stat:
+        path: "/etc/letsencrypt/live/{{ item.name }}/cert.pem"
+      loop: "{{ vhost }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: vhost_reg_le_certs
+
+    - name: Revoke and delete unused certs
+      command: >
+        certbot revoke --cert-path /etc/letsencrypt/live/{{ item[0].name }}/cert.pem
+        --reason cessationofoperation --delete-after-revoke
+      when: >
+        item[1].stat.exists and
+        (not item[0].state|d(True) or not item[0].crypto_le|d())
+      loop: "{{ vhost|zip(vhost_reg_le_certs.results)|list }}"
+      loop_control:
+        label: "{{ item[0].name }}"
+      notify: validate nginx
+  tags: [ conf, crypto ]
+
+- name: Template Nginx logrotate config
   template:
-    src: "nginx{{ (item.nginx_301_only is defined)|ternary('-301', '') }}.j2"
-    dest: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
+    src: logrotate/nginx.j2
+    dest: "/etc/logrotate.d/nginx_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
     mode: 0644
-    backup: yes
-    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  when:
-    - item.state|d(true)
-  with_items: "{{ vhost }}"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
-    label: "{{ item.name }}"
-  notify: validate nginx
-  tags: [ conf ]
+    label: "nginx_{{ item.user|d(item.name) }}"
 
-- name: Remove Nginx vhost config
+- name: Nginx logrotate config absent
   file:
-    path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
+    path: "/etc/logrotate.d/nginx_{{ item.user|d(item.name) }}"
     state: absent
-    backup: yes
-  when: not item.state|d(true)
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
   loop_control:
-    label: "{{ item.name }}"
-  notify: validate nginx
-  tags: [ conf ]
-
-- name: Template php-fpm vhost config
-  template:
-    src: "php-fpm.j2"
-    dest: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
-    mode: 0644
-    backup: yes
-    force: "{{ item.legacy|d()|ternary('no', 'yes') }}"
-  when:
-    - vhost_backend == 'php-fpm'
-    - item.state|d(true)
-    - item.nginx_301_only is not defined
-    - item.fpm is defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-  notify: validate php-fpm
-  tags: [ conf ]
-
-- name: Remove php-fpm vhost config
-  file:
-    path: "/etc/php-fpm.d/{{ item.user|d(item.name) }}.conf"
-    state: absent
-    backup: yes
-  when:
-    - vhost_backend == 'php-fpm'
-    - not item.state|d(true)
-    - item.nginx_301_only is not defined
-    - item.fpm is defined
-  with_items: "{{ vhost }}"
-  loop_control:
-    label: "{{ item.name }}"
-  notify: validate php-fpm
-  tags: [ conf ]
+    label: "nginx_{{ item.user|d(item.name) }}"
 ...

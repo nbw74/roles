@@ -1,23 +1,26 @@
 ---
-- name: set webcheck
+- name: Set webcheck
   template:
     src: "webcheck.j2"
-    dest: "/etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone) }}/http/{{ item.name }}.conf"
+    dest: >-
+      /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
+      }}/http/{{ item.name }}.conf
     force: "{{ (item.webcheck|default(dict(ignore=false)))['ignore']|d()|ternary('no', 'yes') }}"
   when:
-    - item.state|d(true)
     - ( item.webcheck is not defined and vhost_circuit_prod|d() ) or (item.webcheck|default(dict(enable=false)))['enable']|d(true)
     - not item.disabled|d()
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   delegate_to: "{{ common_icinga2_master }}"
   notify: config reload icinga2
   tags: [ webcheck, crypto ]
 
-- name: unset webcheck
+- name: Unset webcheck
   file:
-    path: "/etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone) }}/http/{{ item.name }}.conf"
+    path: >-
+      /etc/icinga2/zones.d/{{ (item.webcheck|default(dict(zone=common_icinga2_satellite_zone)))['zone']|d(common_icinga2_satellite_zone)
+      }}/http/{{ item.name }}.conf
     state: absent
   when:
     - ( item.webcheck is not defined and not vhost_circuit_prod|d() ) or
@@ -26,7 +29,7 @@
         item.disabled|d()
     - not (item.webcheck|default(dict(ignore=false)))['ignore']|d()
     - common_icinga2_master_zone_net_list is defined
-  with_items: "{{ vhost }}"
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   delegate_to: "{{ common_icinga2_master }}"

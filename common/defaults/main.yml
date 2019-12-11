@@ -1,20 +1,21 @@
 ---
-alien: false
+alien: False
 common_add_packages: []
 common_cron_user_tasks: []
-common_facts: {}
+common_etc_hosts: { }
+common_facts: { }
 common_icinga2_conf: []
-common_icinga2_enable: true
+common_icinga2_enable: False
 common_ifcfg: []
 common_ifcfg_vars: []
-common_ifcfg_restart: true
-common_iptables_enable: true
-common_journal_gateway_enable: false
-common_leave_networkmanager: false
+common_ifcfg_restart: True
+common_iptables_enable: True
+common_journal_gateway_enable: False
+common_leave_networkmanager: False
 common_snmpd_conf_line: []
-common_sysctl_vars: {}
-pkgupdate: false
-roles: []
+common_sudoers_d: []
+common_sysctl_vars: { }
+pkgupdate: False
 selinux_custom_booleans: []
 selinux_state: "enforcing"
 timezone: "Europe/Moscow"

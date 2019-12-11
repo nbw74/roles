@@ -1,12 +1,14 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "Role 'bitrix-env' is not assigned to this host"
-  when: "'bitrix-env' not in roles"
+  assert:
+    that:
+      - inventory_hostname in groups['bitrix']
 
-- import_tasks: selinux.yml
+- name: Import selinux
+  import_tasks: selinux.yml
 
-- import_tasks: firewalld.yml
+- name: Import firewalld
+  import_tasks: firewalld.yml
 
 - name: "Check if bitrix-env already installed"
   command: getent passwd bitrix
@@ -15,7 +17,6 @@
   failed_when: false
   tags: [ bitrix-env ]
 
-# Install Bitrix-env
 - name: "Download {{ bitrix_sh }}"
   get_url:
     dest: /var/local
@@ -45,8 +46,11 @@
     pkgupdate: false
   when: bx_run_script.changed
 
-- import_tasks: packages.yml
-- import_tasks: bvat.yml
+- name: Import packages
+  import_tasks: packages.yml
+  
+- name: Import bvat
+  import_tasks: bvat.yml
 
 - name: Restore Nginx user
   lineinfile:
@@ -110,13 +114,22 @@
   when: ansible_distribution_major_version|int >= 7
   tags: [ firewalld ]
 
-- import_tasks: php.yml
+- name: Import php
+  import_tasks: php.yml
 
-- import_tasks: configs.yml
+- name: Import configs
+  import_tasks: configs.yml
 
-- import_tasks: mail.yml
+- name: Include certbot from nginx role
+  include_role:
+    name: nginx
+    tasks_from: certbot.yml
 
-- import_tasks: dummy.yml
+- name: Import mail
+  import_tasks: mail.yml
+
+- name: Import dummy
+  import_tasks: dummy.yml
 
 - name: Mask services
   systemd:

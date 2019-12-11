@@ -18,7 +18,7 @@
       -u {{ pwa_walarchive_cron.job.max_used|d('86') }}
       -U {{ pwa_walarchive_user }}
       -b {{ pwa_walarchive_home }}
-    minute: "{{ item.minute|d('*/19')}}"
+    minute: "{{ item.minute|d('*/19') }}"
     name: "walarchive schedule"
     user: "{{ pwa_walarchive_user }}"
   loop: "{{ pwa_walarchive_cron|dict2items }}"

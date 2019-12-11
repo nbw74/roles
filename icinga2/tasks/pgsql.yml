@@ -7,11 +7,10 @@
 
 - name: install postgresql
   yum:
-    name: "{{ item }}"
+    name:
+      - "{{ icinga2_postgresql_package }}"
+      - authd
     state: present
-  with_items:
-    - "{{ icinga2_postgresql_package }}"
-    - "authd"
   tags: [ pgsql ]
 
 - name: enable authd

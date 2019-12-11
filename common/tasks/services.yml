@@ -5,13 +5,17 @@
     state: stopped
     enabled: no
     masked: yes
-  with_items:
+  loop:
     - NetworkManager
     - chronyd
-  when: 
+  when:
     - ansible_distribution_major_version|int >= 7
     - not common_leave_networkmanager|d()
-  ignore_errors: yes
+    - server_type != 'ct'
+  register: common_reg_svc
+  failed_when:
+    - common_reg_svc is failed
+    - common_reg_svc.msg is not search('Could not find the requested service')
   tags: [ services ]
 
 - name: "Stop and disable firewalld"
@@ -22,9 +26,9 @@
     masked: yes
   with_items:
     - firewalld
-  when: 
+  when:
     - ansible_distribution_major_version|int == 7
-    - '"bitrix-env" not in roles'
+    - inventory_hostname not in groups['bitrix']
   ignore_errors: yes
   tags: [ services ]
 
@@ -43,6 +47,27 @@
     validate: 'visudo -cf %s'
   tags: [ sudo ]
 
+- name: Template custom sudoers
+  template:
+    src: sudoers_d.j2
+    dest: "/etc/sudoers.d/{{ item.name }}"
+    owner: root
+    group: root
+    mode: 0440
+  when: item.state|d(True)
+  loop: "{{ common_sudoers_d }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Remove custom sudoers
+  file:
+    path: "/etc/sudoers.d/{{ item.name }}"
+    state: absent
+  when: not item.state|d(True)
+  loop: "{{ common_sudoers_d }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: IPTables includes
   block:
     - include_tasks: ipset.yml
@@ -50,14 +75,19 @@
   when:
     - common_iptables_enable
     - ansible_distribution_major_version|int <= 7
-    - '"bitrix-env" not in roles'
+    - inventory_hostname not in groups['bitrix']
+
+- name: Flush handlers
+  meta: flush_handlers
 
 - name: "Enable and start network service"
   service:
     name: network
     enabled: yes
     state: started
-  when: ansible_distribution_major_version|int <= 7
+  when:
+    - ansible_distribution_major_version|int <= 7
+    - server_type != 'ct'
   ignore_errors: yes
   tags: [ services ]
 
@@ -105,6 +135,7 @@
     - snmpd
   when:
     - ansible_virtualization_type != 'openvz'
+    - server_type != 'ct'
   tags: [ services, snmp ]
 
 - name: Set mdraid presence
@@ -112,11 +143,14 @@
     mdraid_is_present: >-
       {{ ansible_device_links.ids | d('') | string | regex_search('md[0-9]') |
       string | regex_replace('[Nn]one','') | length > 0 }}
-  when: ansible_virtualization_type != 'openvz'
+  when:
+    - ansible_virtualization_type != 'openvz'
+    - server_type != 'ct'
 
 - name: Set LVM presence
   set_fact:
     lvm_is_present: "{{ ansible_lvm is defined and ansible_lvm.vgs|length > 0 }}"
+  when: server_type != 'ct'
   tags: [ fstrim ]
 
 - name: Get TRIM support
@@ -125,25 +159,28 @@
     | awk '/sd[a-z]|nvme/ { if($2 != "0B") flag=1 } END { if(flag) print "True"; else print "False" }'
   register: trim_support_check
   changed_when: no
+  when: server_type != 'ct'
   tags: [ fstrim ]
 
 - name: Set TRIM support
   set_fact:
     trim_is_supported: "{{ trim_support_check.stdout|bool }}"
+  when: server_type != 'ct'
   tags: [ fstrim ]
 
 - debug:
     msg:
+      - "server_type: {{ server_type }}"
       - "mdraid_is_present: {{ mdraid_is_present|d('NONONO') }}"
-      - "lvm_is_present: {{ lvm_is_present }}"
-      - "trim_is_supported: {{ trim_is_supported }}"
+      - "lvm_is_present: {{ lvm_is_present|d() }}"
+      - "trim_is_supported: {{ trim_is_supported|d() }}"
 
 - name: set discard option for lvm
   lineinfile:
     path: "/etc/lvm/lvm.conf"
     regexp: '^\s*#*\s*issue_discards'
     line: "\tissue_discards = {{ trim_is_supported|ternary('1','0') }}"
-  when: lvm_is_present
+  when: lvm_is_present|d()
   tags: [ fstrim ]
 
 - name: manage fstrim.timer
@@ -151,7 +188,9 @@
     name: fstrim.timer
     enabled: "{{ trim_is_supported|ternary('yes','no') }}"
     state: "{{ trim_is_supported|ternary('started','stopped') }}"
-  when: ansible_service_mgr == 'systemd'
+  when:
+    - ansible_service_mgr == 'systemd'
+    - server_type != 'ct'
   tags: [ fstrim ]
 
 - name: fstrim cron job present
@@ -164,6 +203,7 @@
   when:
     - ansible_service_mgr != 'systemd'
     - trim_is_supported
+    - server_type != 'ct'
   notify:
     - config reload crond
     - config reload cron
@@ -176,6 +216,7 @@
   when:
     - ansible_service_mgr != 'systemd'
     - not trim_is_supported
+    - server_type != 'ct'
   notify:
     - config reload crond
     - config reload cron

@@ -56,13 +56,25 @@
       when: not php_oob
       tags: [ packages ]
 
+    - name: Get installed git version
+      command: >
+        rpm -q --queryformat '%{VERSION}' git
+      args:
+        warn: no
+      register: php_reg_git
+      changed_when: no
+      failed_when: no
+      tags: [ packages, git ]
+
     - name: Git from Lux
       yum:
         name: git
         enablerepo: lux
         state: latest
-      when: ansible_distribution_major_version|int <= 7
       tags: [ packages, git ]
+      when: >
+        php_reg_git.stdout is version('2.17.0', '<')
+        or php_reg_git.stdout is search('not installed')
 
     - name: yum memcached client package
       yum:

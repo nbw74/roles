@@ -3,12 +3,6 @@
   command: "true"
 
 #####
-# HOSTNAME
-#
-- name: hostname 6
-  shell: "hostname {{ ansible_fqdn }}"
-
-#####
 # SELinux
 #
 - name: touch autorelabel

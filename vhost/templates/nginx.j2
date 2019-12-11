@@ -1,105 +1,126 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-{% if vhost_backend == 'php-fpm' and item.fpm is defined %}
+{% set server_name = op.idna|d()|ternary(op.name.encode('idna'), op.name) %}
+{% if vhost_backend == 'php-fpm' and op.fpm is defined %}
 
-upstream fpm{{ item.fpm.port }} {
-    server		127.0.0.1:{{ item.fpm.port }};
+upstream fpm{{ op.fpm.port }} {
+    server		127.0.0.1:{{ op.fpm.port }};
 }
 {% endif %}
 
 server {
 {% include "nginx/listen-plain.j2" %}
-    server_name		{{ item.name }}
-			www.{{ item.name }}
-{% if item.alias is defined %}
-{% for name in item.alias %}
+    server_name		{{ server_name }}
+			www.{{ server_name }}
+{% if op.alias is defined %}
+{% for name in op.alias %}
 			{{ name }}
 			www.{{ name }}
 {% endfor %}
 {% endif %}
 			;
-{% if item.crypto|d('none') == 'none' %}
+{% if op.crypto|d('none') == 'none' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
-{% if item.crypto|d('none') == 'both' %}
+{% if op.crypto|d('none') == 'both' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
 {% include "nginx/logs.j2" %}
-{% if item.crypto|d('none') == 'redirect' %}
+{% if (op.crypto|d('none') == 'redirect' and not op.crypto_le|d()) or (op.crypto|d('none') == 'redirect' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 
-    return		301 https://{{ item.name }}$request_uri;
+    return		301 https://{{ op.name }}$request_uri;
 {% else %}
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+
+{% endif %}
 {% include "nginx/backend.j2" %}
 {% endif %}
 }
-{% if item.crypto|d('none') != 'none' %}
+{% if (op.crypto|d('none') != 'none' and not op.crypto_le|d()) or (op.crypto|d('none') != 'none' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		{{ item.name }}
+    server_name		{{ server_name }}
 			;
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl.j2" %}
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+
+{% endif %}
 {% include "nginx/backend.j2" %}
 }
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		www.{{ item.name }}
+    server_name		www.{{ server_name }}
 			;
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl.j2" %}
 
-    return		301 https://{{ item.name }}$request_uri;
+    return		301 https://{{ server_name }}$request_uri;
 }
 {% endif %}
 
-{% if item.mobile|d() %}
+{% if op.mobile|d() %}
 {% set is_mobile = true %}
 server {
 {% include "nginx/listen-plain.j2" %}
-    server_name		m.{{ item.name }}
-			www.m.{{ item.name }}
+    server_name		m.{{ server_name }}
+			www.m.{{ server_name }}
 			;
-{% if item.crypto_mobile|d(item.crypto|d('none')) == 'none' %}
+{% if op.crypto_mobile|d(op.crypto|d('none')) == 'none' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
-{% if item.crypto_mobile|d(item.crypto|d('none')) == 'both' %}
+{% if op.crypto_mobile|d(op.crypto|d('none')) == 'both' %}
 {% include "nginx/default-d.j2" %}
 {% endif %}
 {% include "nginx/logs.j2" %}
-{% if item.crypto_mobile|d(item.crypto|d('none')) == 'redirect' %}
+{% if (op.crypto_mobile|d(op.crypto|d('none')) == 'redirect' and not op.crypto_le|d()) or (op.crypto_mobile|d(op.crypto|d('none')) == 'redirect' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 
-    return		301 https://m.{{ item.name }}$request_uri;
+    return		301 https://m.{{ server_name }}$request_uri;
 {% else %}
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+
+{% endif %}
 {% include "nginx/backend.j2" %}
 {% endif %}
 }
 
-{% if item.crypto_mobile|d(item.crypto|d('none')) != 'none' %}
+{% if (op.crypto_mobile|d(op.crypto|d('none')) != 'none' and not op.crypto_le|d()) or (op.crypto_mobile|d(op.crypto|d('none')) != 'none' and op.crypto_le|d() and vhost_le_cert_exists|d()) %}
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		m.{{ item.name }}
+    server_name		m.{{ server_name }}
 			;
 {% include "nginx/default-d.j2" %}
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl-mobile.j2" %}
+{% if op.crypto_le|d() %}
+
+    include		include.d/letsencrypt.conf;
+
+{% endif %}
 {% include "nginx/backend.j2" %}
 }
 
 server {
 {% include "nginx/listen-crypto.j2" %}
-    server_name		www.m.{{ item.name }}
+    server_name		www.m.{{ server_name }}
 			;
 {% include "nginx/logs.j2" %}
 {% include "nginx/ssl-mobile.j2" %}
 
-    return		301 https://m.{{ item.name }}$request_uri;
+    return		301 https://m.{{ server_name }}$request_uri;
 }
 {% endif %}
 {% endif %}
-{% if item.nginx_http_snippet is defined %}
+{% if op.nginx_http_snippet is defined %}
 # SNIPPET BEGIN
-{{ item.nginx_http_snippet }}
+{{ op.nginx_http_snippet }}
 # SNIPPET END
 {% endif %}

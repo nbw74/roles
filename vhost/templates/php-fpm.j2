@@ -14,9 +14,11 @@ pm.max_spare_servers = {{ item.fpm.pm.max_spare_servers|d('35') }}
 {% elif item.fpm.pm|d('ondemand') == 'ondemand' %}
 pm.process_idle_timeout = {{ item.fpm.process_idle_timeout|d('10s') }}
 {% endif %}
+{% if item.fpm.status_path is defined %}
+pm.status_path = {{ item.fpm.status_path }}
+{% endif %}
 pm.max_requests = {{ item.fpm.max_requests|d('0') }}
-access.log = log/fpm-access.log
-access.format = "%R - %u %t \"%m %r\" %s"
+access.log = /dev/null
 slowlog = /var/log/php-fpm/www-slow.log
 request_slowlog_timeout = 10s
 php_admin_value[error_log] = log/fpm-error.log
@@ -34,7 +36,7 @@ php_value[session.save_path]    = {{ item.memcached.server1|d('localhost4') }}:{
 {% endif %}
 php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache
 {% if item.php_value is defined %}
-{% for value in item.php_value %}
-php_value[{{ value['key'] }}] = {{ value['value'] }}
+{% for key, value in item.php_value|dictsort %}
+php_value[{{ key }}] = {{ value }}
 {% endfor %}
 {% endif %}

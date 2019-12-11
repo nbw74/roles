@@ -1,0 +1,9 @@
+[Unit]
+After=network.target
+
+[Service]
+{% if ansible_distribution_major_version|int == 7 %}
+EnvironmentFile={{ nspawn_etc }}/%i.env
+ExecStart=
+ExecStart=/usr/bin/systemd-nspawn --quiet --keep-unit --boot $INTERFACES --link-journal=try-guest --machine=%i
+{% endif %}

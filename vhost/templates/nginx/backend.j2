@@ -1,22 +1,22 @@
-{% if item.nginx_server_snippet is defined %}
+{% if op.nginx_server_snippet is defined %}
 # SNIPPET BEGIN
-{{ item.nginx_server_snippet }}
+{{ op.nginx_server_snippet }}
 # SNIPPET END
 {% endif %}
-{% if vhost_backend == 'php-fpm' and item.fpm is defined %}
-{% include "fpm/" ~ item.fpm.template|d('generic') ~ ".j2" %}
+{% if vhost_backend == 'php-fpm' and op.fpm is defined %}
+{% include "fpm/" ~ op.fpm.template|d('generic') ~ ".j2" %}
 {% elif vhost_backend == 'apache' %}
 {% include "nginx/apache-generic.j2" %}
 {% elif vhost_backend == 'reverse-proxy' %}
 
     location / {
-	proxy_pass			{{ item.proxy_pass }};
+	proxy_pass			{{ op.proxy_pass }};
 {% include "nginx/proxy.j2" %}
     }
-{% elif vhost_backend == 'php-fpm' and item.fpm is not defined %}
-    set $root_path	'{{ vhost_basedir }}/{{ item.user|d(item.name) }}/{{ item.webroot|d('www') }}';
+{% elif vhost_backend == 'php-fpm' and op.fpm is not defined %}
+    set $root_path	'{{ vhost_basedir }}/{{ op.user|d(op.name) }}/{{ op.webroot|d('www') }}';
     root		$root_path;
-    index		{{ item.index|d('index.html') }};
+    index		{{ op.index|d('index.html') }};
     charset		utf-8;
 {% endif %}
 

@@ -1,0 +1,76 @@
+---
+- name: Verify role requirements
+  assert:
+    that:
+      - inventory_hostname in groups['redis']
+      - ansible_distribution_file_variety == "RedHat"
+      - ansible_distribution_major_version|int >= 7
+
+- name: Yum install packages
+  yum:
+    name: redis
+    enablerepo: epel
+
+- name: Setup sysfs
+  copy:
+    src: "{{ item.path }}"
+    dest: "/{{ item.path }}"
+    owner: root
+    mode: 0644
+  loop:
+    - path: etc/tmpfiles.d/redis.conf
+
+- name: Sysctl settings
+  sysctl:
+    sysctl_file: "/etc/sysctl.d/redis.conf"
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  loop:
+    - { name: 'vm.overcommit_memory', value: '1' }
+  ignore_errors: yes
+
+- name: Gather the rpm package version
+  yum:
+    list: redis
+  register: redis_package_version
+
+- name: Set redis_version fact
+  set_fact:
+    redis_version: >
+      {{ redis_package_version.results
+      |selectattr('yumstate','equalto','installed')
+      |map(attribute='version')|list|first }}
+
+- name: Template redis.conf
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+    owner: redis
+    group: root
+    mode: 0640
+  loop:
+    - etc/redis.conf
+  notify: restart redis
+
+- name: Manage redis service (systemd)
+  systemd:
+    name: redis
+    state: "{{ redis_service_enabled|ternary('started', omit) }}"
+    enabled: "{{ redis_service_enabled|ternary('yes', 'no') }}"
+    masked: "{{ redis_service_enabled|ternary('no', 'yes') }}"
+  when: "ansible_service_mgr == 'systemd'"
+
+- name: Manage redis service (upstart)
+  service:
+    name: redis
+    state: "{{ redis_service_enabled|ternary('started', omit) }}"
+    enabled: "{{ redis_service_enabled|ternary('yes', 'no') }}"
+  when: "ansible_service_mgr == 'upstart'"
+
+- name: Include pcmk
+  include_tasks: pcmk.yml
+  when:
+    - redis_pcmk_vip|length > 0
+    - pcmk_pool is defined
+...

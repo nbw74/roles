@@ -1,5 +1,6 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-{% set siteroot = vhost_basedir ~ '/' ~ item.user|d(item.name) ~ '/' ~ item.webroot|d('www') %}
+{% set homedir = vhost_basedir ~ '/' ~ item.user|d(item.name) %}
+{% set siteroot = homedir ~ '/' ~ item.webroot|d('www') %}
 
 <VirtualHost 127.0.0.1:8888>
 	ServerAdmin webmaster@{{ item.name }}
@@ -16,7 +17,7 @@
 {% include "bx/apache-vh.j2" %}
 {% if item.bitrix_multisite is defined %}
 {% for multi in item.bitrix_multisite %}
-{% set siteroot = vhost_basedir ~ '/' ~ item.user|d(item.name) ~ '/' ~  multi.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') %}
+{% set siteroot = homedir ~ '/' ~  multi.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') %}
 
 <VirtualHost 127.0.0.1:8888>
 	ServerAdmin webmaster@{{ item.name }}

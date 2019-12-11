@@ -16,19 +16,21 @@ xt_conf: /etc/modprobe.d/xt.conf
 common_required_base_packages:
   - bc
   - bzip2
-  - gdisk
   - libselinux-python
   - mailx
   - man
   - mc
-  - net-snmp
-  - ntp
   - postfix
   - rsync
   - rsyslog
-  - tuned
   - vim
   - zsh
+
+common_required_base_packages_no_ct:
+  - gdisk
+  - net-snmp
+  - ntp
+  - tuned
 
 common_required_base_packages_full:
   - ipset

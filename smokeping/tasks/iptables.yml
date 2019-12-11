@@ -1,3 +1,4 @@
+---
 #####
 # IPTables config
 #
@@ -9,5 +10,5 @@
   with_items:
     - iptables
   notify: config restart iptables
-  tags: [iptables]
-
+  tags: [ iptables ]
+...

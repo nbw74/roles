@@ -1,0 +1,14 @@
+---
+- name: create root's private key
+  copy:
+    dest: "/root/.ssh/{{ item.0.filename }}"
+    content: "{{ item.1.private | b64decode }}"
+    owner: root
+    group: root
+    mode: 0600
+  loop: "{{ icinga2_ssh_root_keys|subelements('key_data') }}"
+  loop_control:
+    label: "{{ item.0.filename }}"
+  tags: [ keys ]
+
+...

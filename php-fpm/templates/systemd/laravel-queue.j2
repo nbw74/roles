@@ -12,8 +12,8 @@ After=network.target
 User=%i
 Group=%i
 Restart=always
-ExecStart=/usr/bin/php /var/www/%i/www/artisan {{ item.command|d('queue:work') }} {{ item.args|d('') }}
-ExecReload=/usr/bin/php /var/www/%i/www/artisan queue:restart
+ExecStart=/usr/bin/php /var/www/%i/www/{{ item.artisan_path|d('artisan') }} {{ item.command|d('queue:work') }} {{ item.args|d('') }}
+ExecReload=/usr/bin/php /var/www/%i/www/{{ item.artisan_path|d('artisan') }} queue:restart
 KillMode=process
 
 [Install]

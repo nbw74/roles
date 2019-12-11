@@ -6,10 +6,9 @@
     owner: root
     group: root
     mode: 0644
+  when: server_type != 'ct'
   notify: xt_recent stop iptables
   tags: [ iptables, xt_recent ]
-
-- meta: flush_handlers
 
 - name: "Check iptables config presence"
   stat:

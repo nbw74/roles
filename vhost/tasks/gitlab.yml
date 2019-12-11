@@ -1,0 +1,65 @@
+---
+- name: Delegate section
+  block:
+    - name: Get Gitlab projects
+      uri:
+        url: >
+          {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true&per_page=100
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+      when: vhost_gitlab|length > 0
+      register: vhost_reg_gitlab_proj_get
+
+    - name: Get Gitlab groups
+      uri:
+        url: >
+          {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true&per_page=100
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+      when: vhost_gitlab|length > 0
+      register: vhost_reg_gitlab_grp_get
+
+    - name: Create Gitlab projects
+      uri:
+        url: >
+          {{ vhost_gitlab.api_url }}/api/v4/projects?name={{ item.gitlab.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
+          }}&path={{ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
+          }}&namespace_id={{ vhost_reg_gitlab_grp_get|json_query("json[?full_path=='" ~ item.gitlab.namespace ~ "'].id")|join()
+          }}&description={{ item.gitlab.description|urlencode|regex_replace('/','%2F')
+          }}&issues_access_level=private&merge_requests_access_level=private&wiki_access_level=private
+        method: POST
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+        status_code: 201
+      when: >
+        item.gitlab is defined and item.state|d(True) and
+        item.gitlab.namespace ~ '/' ~ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
+        not in vhost_reg_gitlab_proj_get|json_query('json[].path_with_namespace')
+      changed_when: vhost_reg_gitlab_create.status == 201
+      loop: "{{ vhost }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: vhost_reg_gitlab_create
+
+    - name: Create Gitlab wiki page
+      uri:
+        url: >
+          {{ item.json._links.self }}/wikis
+        method: POST
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+        body:
+          title: "{{ item.item.name is search(vhost_default_ddns_zone)|ternary('Development', 'Production') }}"
+          content: "{{ lookup('file', '/tmp/vhost_' ~ item.item.name ~ '.txt') }}"
+        body_format: json
+        status_code: 201
+      when: not item.skipped|d()
+      changed_when: vhost_reg_gitlab_wiki.status == 201
+      loop: "{{ vhost_reg_gitlab_create.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      register: vhost_reg_gitlab_wiki
+  delegate_to: localhost
+  become: no
+  tags: [ gitlab ]
+...

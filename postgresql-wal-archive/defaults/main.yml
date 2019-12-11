@@ -9,7 +9,7 @@ pwa_walarchive_user: walarchive
 pwa_walarchive_home: "/srv/{{ pwa_walarchive_user }}"
 
 pwa_walarchive_cron:
-  job: {}
+  job: { }
 
 pwa_walarchive_keys: []
 

@@ -3,11 +3,13 @@
   systemd:
     name: httpd.service
     state: reloaded
-  when: "'httpd' in roles"
+  listen: reload php
+  when: inventory_hostname in groups['httpd']
 
 - name: reload php-fpm
   systemd:
     name: php-fpm.service
     state: reloaded
-  when: "'php-fpm' in roles"
+  listen: reload php
+  when: inventory_hostname in groups['php_fpm']
 ...

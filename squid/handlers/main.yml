@@ -4,19 +4,19 @@
     name: ipset
     enabled: yes
     state: restarted
-  tags: [iptables,ipset]
+  tags: [ iptables, ipset ]
 
 - name: config restart iptables
   service:
     name: iptables
     enabled: yes
     state: restarted
-  tags: [iptables]
+  tags: [ iptables ]
 
 - name: config restart squid
   service:
     name: squid
     enabled: yes
     state: restarted
-  tags: [squid]
+  tags: [ squid ]
 ...

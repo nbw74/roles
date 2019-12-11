@@ -1,18 +1,9 @@
 ---
-- name: Check if role assigned to host
-  fail:
-    msg: "ROLE 'php' IS NOT ASSIGNED TO THIS HOST"
-  when:
-    - "'httpd' not in roles"
-    - "'php-fpm' not in roles"
-
-- name: Check required parameter
-  fail:
-    msg: "Please set PHP version variable"
-  when:
-    - ansible_distribution_major_version|int <= 7
-    - php_remi_version is not defined
-    - not php_oob
+- name: Check role requirements
+  assert:
+    that:
+      - ansible_distribution_major_version|int >= 7
+      - php_remi_version is defined or php_oob
 
 - import_tasks: packages.yml
 
@@ -23,9 +14,7 @@
     option: date.timezone
     value: "{{ timezone|default('Europe/Moscow') }}"
     create: no
-  notify:
-    - reload httpd
-    - reload php-fpm
+  notify: reload php
   tags: [ timezone ]
 
 - name: Custom php.ini options
@@ -35,9 +24,7 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     create: no
-  notify:
-    - reload httpd
-    - reload php-fpm
+  notify: reload php
   with_items: "{{ php_options }}"
 
 - name: Memcached PHP module settings

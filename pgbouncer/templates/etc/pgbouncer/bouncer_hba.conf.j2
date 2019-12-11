@@ -1,0 +1,15 @@
+local		all		postgres			peer
+{% if pgbouncer_hba_line|length > 0 %}
+{% for item in pgbouncer_hba_line %}
+{{ item.type }}		{{ item.database }}	{{ item.user }}		{{ item.address|d('') }}	{{ item.method }}
+{% endfor %}
+{% endif %}
+{% if pgbouncer_config.unix_socket_dir|d('/var/run/pgbouncer') != 'none' %}
+local		all		all				md5
+{% endif %}
+{% if pgbouncer_config.listen_addr is defined %}
+host		all		all		127.0.0.1/32	md5
+{% if pgbouncer_config.listen_addr != '127.0.0.1' %}
+host		all		all		0.0.0.0/0	md5
+{% endif %}
+{% endif %}

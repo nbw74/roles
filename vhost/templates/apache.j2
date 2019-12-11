@@ -13,7 +13,7 @@
 {% endfor %}
 {% endif %}
     ErrorLog {{ homedir }}/log/apache-error.log
-    CustomLog {{ homedir }}/log/apache-access.log combined
+    CustomLog /dev/null combined
 
     <Directory {{ homedir }}/{{ item.webroot|d('www') }}>
         Options -ExecCGI -Indexes -Includes +FollowSymLinks
@@ -48,8 +48,8 @@
 {% endif %}
     php_admin_value mbstring.internal_encoding "UTF-8"
 {% if item.php_value is defined %}
-{% for value in item.php_value %}
-    php_admin_value {{ value['key'] }} "{{ value['value'] }}"
+{% for key, value in item.php_value|dictsort %}
+    php_admin_value {{ key }} "{{ value }}"
 {% endfor %}
 {% endif %}
 

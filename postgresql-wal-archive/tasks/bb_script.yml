@@ -18,9 +18,9 @@
 - name: Basebackup crontab
   cron:
     cron_file: postgresql-wal-archive
-    day: "{{ cron.day|d('*/3')}}"
+    day: "{{ cron.day|d('*/3') }}"
     disabled: "{{ cron.disabled|d(false) }}"
-    hour: "{{ cron.hour|d('4')}}"
+    hour: "{{ cron.hour|d('4') }}"
     job: >
       /usr/local/bin/pwa_basebackupwrapper.sh
       -D {{ cron.job.depth|d('3') }}
@@ -30,11 +30,11 @@
       {%- for item in cron.job.addr %}
       {{ item }}
       {%- endfor %}
-    minute: "{{ cron.minute|d('20')}}"
-    month: "{{ cron.month|d('*')}}"
+    minute: "{{ cron.minute|d('20') }}"
+    month: "{{ cron.month|d('*') }}"
     name: "{{ cron.name }}"
     user: "{{ pwa_basebackup_user }}"
-    weekday: "{{ cron.weekday|d('*')}}"
+    weekday: "{{ cron.weekday|d('*') }}"
   loop: "{{ pwa_basebackup_cron|flatten(levels=1) }}"
   loop_control:
     loop_var: cron

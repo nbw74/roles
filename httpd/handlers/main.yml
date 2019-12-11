@@ -1,13 +1,25 @@
 ---
-- name: config reload systemd
-  command: systemctl daemon-reload
+- name: config validate httpd restart
+  command: >
+    apachectl configtest
   notify: config restart httpd
 
 - name: config restart httpd
-  service: name=httpd enabled=yes state=restarted
+  service:
+    name: httpd
+    enabled: yes
+    state: restarted
+
+- name: config validate httpd reload
+  command: >
+    apachectl configtest
+  notify: config reload httpd
 
 - name: config reload httpd
-  service: name=httpd enabled=yes state=reloaded
+  service:
+    name: httpd
+    enabled: yes
+    state: reloaded
 
 - name: config reboot
   shell: shutdown -r +1

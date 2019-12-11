@@ -1,0 +1,11 @@
+---
+- name: Bitrix cron task absent
+  cron:
+    name: Standard bitrix cron task
+    user: "{{ item.user|d(item.name) }}"
+    state: absent
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "{{ item.name }}"
+...

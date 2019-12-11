@@ -1,0 +1,5 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+PRE_HOOK=""
+POST_HOOK="--post-hook 'systemctl reload nginx.service'"
+DEPLOY_HOOK=""
+CERTBOT_ARGS=""

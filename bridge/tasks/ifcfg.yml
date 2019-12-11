@@ -3,7 +3,7 @@
   template:
     src: "bridge.j2"
     dest: "{{ bridge_ifcfg_path }}/ifcfg-{{ item.dev }}"
-  with_items: "{{ bridge_devices }}"
+  loop: "{{ bridge_devices }}"
   loop_control:
     label: "ifcfg-{{ item.dev }}"
   register: bridge_result
@@ -14,7 +14,7 @@
     dest: "{{ bridge_ifcfg_path }}/route-{{ item.dev }}"
   when:
     - item.routes is defined
-  with_items: "{{ bridge_devices }}"
+  loop: "{{ bridge_devices }}"
   loop_control:
     label: "route-{{ item.dev }}"
 
@@ -22,9 +22,8 @@
   template:
     src: "bridge_port.j2"
     dest: "{{ bridge_ifcfg_path }}/ifcfg-{{ item.1 }}"
-  with_subelements:
-   - "{{ bridge_devices }}"
-   - ports
+  when: not item.0.leave_ports|d()
+  loop: "{{ bridge_devices|subelements('ports') }}"
   loop_control:
     label: "ifcfg-{{ item.1|d('null') }}"
 
@@ -32,13 +31,12 @@
   file:
     path: "{{ bridge_ifcfg_path }}/route-{{ item.1 }}"
     state: absent
-  with_subelements:
-   - "{{ bridge_devices }}"
-   - ports
+  when: not item.0.leave_ports|d()
+  loop: "{{ bridge_devices|subelements('ports') }}"
   loop_control:
     label: "no route-{{ item.1|d('null') }}"
 
-- name: "Check default route presence in route-*"
+- name: "Check default route presence in route-*"  # noqa 306
   shell: >
     awk -v p=default_route_present '/default|0\.0\.0\.0/ { print p }'
     /etc/sysconfig/network-scripts/route-* 2>/dev/null || :

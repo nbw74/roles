@@ -5,13 +5,12 @@ copy-in {{ kvm_templates_path }}/autologin.conf:/etc/systemd/system/getty@ttyS0.
 {% if not kvm_common_case %}
 mkdir /etc/ssh_ansible
 link /usr/sbin/sshd:/usr/sbin/sshd_ansible
+link /etc/pam.d/sshd:/etc/pam.d/sshd_ansible
 copy-in {{ kvm_templates_path }}/sshd_config:/etc/ssh_ansible
-copy-in {{ kvm_templates_path }}/sshd_ansible:/etc/pam.d
 copy-in {{ kvm_templates_path_bis }}/sshd_ansible:/etc/sysconfig
-copy-in {{ kvm_templates_path }}/ansible-sshd-passwd:/etc
-copy-in {{ kvm_templates_path }}/ansible-sshd.conf:/etc/rsyslog.d
-copy-in {{ kvm_templates_path_bis }}/ansible-sshd.conf:/etc/logrotate.d
-copy-in {{ kvm_templates_path }}/sshd_ansible.service:/usr/lib/systemd/system
+copy-in {{ kvm_templates_path }}/sshd_ansible.conf:/etc/rsyslog.d
+copy-in {{ kvm_templates_path }}/sshd_ansible:/etc/logrotate.d
+copy-in {{ kvm_templates_path_bis }}/sshd_ansible.service:/usr/lib/systemd/system
 copy-in {{ kvm_templates_path_bis }}/ansible:/etc/sudoers.d
 {% endif %}
 firstboot {{ kvm_sysprep_tmp_2.path }}

@@ -19,9 +19,7 @@
       failed_when:
         - vhost_dump_mysql_result.failed
         - "'Cannot dump database ' ~ item[0].db.name ~ ' - not found' not in vhost_dump_mysql_result.msg"
-      with_together:
-        - "{{ vhost }}"
-        - "{{ vhost_user.results }}"
+      loop: "{{ vhost|zip(vhost_user_del.results)|list }}"
       loop_control:
         label: "{{ item[0].name }}"
       tags: [ db ]
@@ -36,9 +34,7 @@
         - item[0].db.type == 'mysql'
         - item[1].state == 'absent'
         - item[1].changed
-      with_together:
-        - "{{ vhost }}"
-        - "{{ vhost_user.results }}"
+      loop: "{{ vhost|zip(vhost_user_del.results)|list }}"
       loop_control:
         label: "{{ item[0].user|d(item[0].name) }}"
       tags: [ db ]
@@ -58,10 +54,8 @@
     login_port: "{{ item.db.port|d('3306') }}"
     login_user: "{{ vhost_db_mysql_admin_user }}"
     login_password: "{{ vhost_db_mysql_admin_pass }}"
-  when:
-    - item.db is defined
-    - item.db.type == 'mysql'
-  with_items: "{{ vhost }}"
+  when: item.db.type == 'mysql'
+  loop: "{{ vhost|selectattr('db', 'defined')|list }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -77,10 +71,8 @@
     login_port: "{{ item.db.port|d('3306') }}"
     login_user: "{{ vhost_db_mysql_admin_user }}"
     login_password: "{{ vhost_db_mysql_admin_pass }}"
-  when:
-    - item.db is defined
-    - item.db.type == 'mysql'
-  with_items: "{{ vhost }}"
+  when: item.db.type == 'mysql'
+  loop: "{{ vhost|selectattr('db', 'defined')|list }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]

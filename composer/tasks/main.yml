@@ -1,0 +1,38 @@
+---
+- name: Stat composer
+  stat:
+    path: "{{ composer_path }}"
+  register: composer_reg_stat
+
+- name: Set age fact
+  set_fact:
+    min_composer_epoch: "{{ ansible_date_time.epoch|int - composer_age|int }}"
+
+- name: Install section
+  block:
+    - name: Get expected signature
+      uri:
+        url: https://composer.github.io/installer.sig
+        return_content: yes
+      register: composer_reg_sig
+
+    - name: Download installer
+      get_url:
+        url: https://getcomposer.org/installer
+        dest: /tmp/composer-setup.php
+        checksum: "sha384:{{ composer_reg_sig.content }}"
+
+    - name: Run installer
+      command: >
+        php /tmp/composer-setup.php --quiet
+        --install-dir={{ composer_path|dirname }}
+        --filename={{ composer_path|basename }}
+
+    - name: Remove installer
+      file:
+        path: /tmp/composer-setup.php
+        state: absent
+  when: >
+    not composer_reg_stat.stat.exists or
+    composer_reg_stat.stat.mtime|int < min_composer_epoch|int
+...

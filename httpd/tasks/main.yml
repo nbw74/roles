@@ -1,47 +1,53 @@
 ---
 - name: Check if role assigned to host
-  fail:
-    msg: "Role 'httpd' is not assigned to this host"
-  when: "'httpd' not in roles"
+  assert:
+    that:
+      - inventory_hostname in groups['httpd']
 
 - import_tasks: packages.yml
 
-- name: "Set Listen directive"
-  lineinfile:
-    dest: /etc/httpd/conf/httpd.conf
-    regexp: '^Listen .*'
-    line: "Listen 127.0.0.1:{{ httpd_port |d('8888') }}"
-  tags: [conf]
-  notify: config restart httpd
+- name: Config section
+  block:
+    - name: Comment Listen directives
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^(Listen\s+[.:0-9]+)$'
+        line: "#A \\1"
+        backrefs: yes
+      notify: config validate httpd restart
 
-# MODULES
-- name: "Enable MPM-ITK"
-  lineinfile:
-    dest: "/etc/httpd/conf.modules.d/00-mpm-itk.conf"
-    backrefs: yes
-    regexp: '^.*LoadModule(\s+)mpm_(.*)$'
-    line: 'LoadModule\1mpm_\2'
-  when:  ansible_distribution == "CentOS" and ansible_distribution_major_version|int >= 7
-  tags: [conf]
+    - name: Insert include line
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        insertafter: "#A Listen"
+        line: "Include conf/listen.conf"
+      notify: config validate httpd restart
+
+    - name: Template listen.conf
+      template:
+        src: listen.conf.j2
+        dest: /etc/httpd/conf/listen.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: config validate httpd restart
+
+    # MODULES
+    - name: "Enable MPM-ITK"
+      lineinfile:
+        dest: "/etc/httpd/conf.modules.d/00-mpm-itk.conf"
+        backrefs: yes
+        regexp: '^.*LoadModule(\s+)mpm_(.*)$'
+        line: 'LoadModule\1mpm_\2'
+  tags: [ conf ]
 
 # UMASK
 - name: "Set umask for httpd service (sysconfig)"
   lineinfile:
     dest: "/etc/sysconfig/httpd"
     line: 'umask 002'
-  notify: config restart httpd
-  tags: [services]
-
-# - name: "Set umask for httpd service (systemd)"
-#   blockinfile:
-#     dest: /etc/systemd/system/httpd.service.d/httpd.conf
-#     create: yes
-#     marker: "# {mark} ANSIBLE MANAGED BLOCK: UMASK"
-#     block: |
-#       [Service]
-#       UMask=0002
-#   notify: config reload systemd
-#   tags: [services]
+  notify: config validate httpd restart
+  tags: [ services ]
 
 - import_tasks: logrotate.yml
 

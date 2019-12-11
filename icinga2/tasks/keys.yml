@@ -15,9 +15,9 @@
     owner: icinga
     group: icinga
     mode: 0600
-  with_subelements:
-    - "{{ icinga2_ssh_keys }}"
-    - key_data
+  loop: "{{ icinga2_ssh_keys|subelements('key_data') }}"
+  loop_control:
+    label: "{{ item.0.filename }}"
   tags: [ keys ]
 
 - name: create public keys
@@ -27,9 +27,9 @@
     owner: icinga
     group: icinga
     mode: 0644
-  with_subelements:
-    - "{{ icinga2_ssh_keys }}"
-    - key_data
+  loop: "{{ icinga2_ssh_keys|subelements('key_data') }}"
+  loop_control:
+    label: "{{ item.0.filename }}"
   tags: [ keys ]
 
 - name: populate known_hosts
@@ -42,25 +42,21 @@
     owner: icinga
     group: icinga
     mode: 0644
-  with_items: "{{ icinga2_known_hosts }}"
+  loop: "{{ icinga2_known_hosts }}"
   tags: [ keys ]
 
 - name: put keytabs b64
   copy:
     dest: "/etc/icinga2/{{ item.0.name }}.keytab.b64"
     content: "{{ item.1 }}"
-  with_subelements:
-    - "{{ icinga2_keytabs }}"
-    - data
+  loop: "{{ icinga2_keytabs|subelements('data') }}"
   tags: [ keytab ]
 
 - name: decode keytabs
   shell: "base64 -d /etc/icinga2/{{ item.0.name }}.keytab.b64 > /etc/icinga2/{{ item.0.name }}.keytab"
   args:
     creates: "/etc/icinga2/{{ item.0.name }}.keytab"
-  with_subelements:
-    - "{{ icinga2_keytabs }}"
-    - data
+  loop: "{{ icinga2_keytabs|subelements('data') }}"
   tags: [ keytab ]
 
 - name: set keytabs permissions
@@ -69,8 +65,6 @@
     owner: icinga
     group: icinga
     mode: 0600
-  with_subelements:
-    - "{{ icinga2_keytabs }}"
-    - data
+  loop: "{{ icinga2_keytabs|subelements('data') }}"
   tags: [ keytab ]
 ...

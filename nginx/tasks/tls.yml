@@ -1,45 +1,43 @@
 ---
-- name: "Copy MAIN certificate for dummy host"
-  copy:
-    src: "MAIN.crt"
-    dest: "/etc/pki/tls/certs/{{ nginx_main_cert }}"
-    force: yes
-    owner: root
-    group: root
-    mode: 0644
-  tags: [ nginx, tls ]
-  when: ansible_fqdn is search(nginx_main_domain)
+- name: Self-signed section
+  block:
+    - name: Generate privkey for self-signed cert
+      openssl_privatekey:
+        path: "{{ nginx_self_signed.key }}"
+      notify: validate nginx
 
-- name: "Copy MAIN certificate key for dummy host"
-  copy:
-    src: "MAIN.key"
-    dest: "/etc/pki/tls/private/{{ nginx_main_key }}"
-    force: yes
-    owner: root
-    group: root
-    mode: 0400
-  tags: [ nginx, tls ]
-  when: ansible_fqdn is search(nginx_main_domain)
+    - name: Generate CSR for self-signed cert
+      openssl_csr:
+        path: "{{ nginx_self_signed.csr }}"
+        privatekey_path: "{{ nginx_self_signed.key }}"
+        common_name: "{{ ansible_fqdn }}"
+        country_name: RU
+        organization_name: "{{ nginx_self_signed_csr.org }}"
+        email_address: "{{ nginx_self_signed_csr.email }}"
+      notify: validate nginx
 
-- name: "Copy EXAMPLE certificate for dummy host"
-  copy:
-    src: "EXAMPLE.crt"
-    dest: "/etc/pki/tls/certs/{{ nginx_example_cert }}"
-    force: yes
-    owner: root
-    group: root
-    mode: 0644
-  tags: [ nginx, tls ]
-  when: not ( ansible_fqdn is search(nginx_main_domain) )
+    - name: Generate self-signed cert
+      openssl_certificate:
+        path: "{{ nginx_self_signed.cert }}"
+        privatekey_path: "{{ nginx_self_signed.key }}"
+        csr_path: "{{ nginx_self_signed.csr }}"
+        provider: selfsigned
+      notify: validate nginx
+  when: ansible_distribution_major_version|int >= 7
 
-- name: "Copy EXAMPLE certificate key for dummy host"
-  copy:
-    src: "EXAMPLE.key"
-    dest: "/etc/pki/tls/private/{{ nginx_example_key }}"
-    force: yes
-    owner: root
-    group: root
-    mode: 0400
-  tags: [ nginx, tls ]
-  when: not ( ansible_fqdn is search(nginx_main_domain) )
+- name: Pregen section
+  block:
+    - name: Copy example cert
+      copy:
+        src: "{{ item.path }}"
+        dest: "/{{ item.path }}"
+        owner: root
+        group: root
+        mode: "{{ item.mode|d('0644') }}"
+      loop:
+        - path: "{{ nginx_example_cert }}"
+        - path: "{{ nginx_example_key }}"
+          mode: "0600"
+      notify: validate nginx
+  when: ansible_distribution_major_version|int < 7
 ...

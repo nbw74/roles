@@ -1,4 +1,5 @@
 ---
 - name: "Install smokeping"
   dnf: name=smokeping state=present
-  tags: [packages]
+  tags: [ packages ]
+...
