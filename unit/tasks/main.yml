@@ -6,4 +6,10 @@
 
 - name: Include packages
   include_tasks: packages.yml
+
+- name: Enable unit service
+  service:
+    name: unit
+    enabled: yes
+    state: started
 ...
