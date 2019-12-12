@@ -1,0 +1,7 @@
+---
+unit_base_packages:
+  - unit
+  - unit-php
+  - unit-devel
+  - gcc-c++
+...

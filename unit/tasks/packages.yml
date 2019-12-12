@@ -1,0 +1,22 @@
+---
+- name: Setup remi repo
+  yum_repository:
+    name: remi
+    description: Remi's RPM repository for Enterprise Linux 7 - $basearch
+    file: remi
+    mirrorlist: http://cdn.remirepo.net/enterprise/7/remi/mirror
+    enabled: no
+    gpgcheck: yes
+    gpgkey: https://rpms.remirepo.net/RPM-GPG-KEY-remi
+
+- name: Install packages
+  yum:
+    name: "{{ unit_base_packages|union(unit_add_packages) }}"
+    enablerepo: remi
+
+- name: Npm install unit-http
+  npm:
+    name: unit-http
+    global: yes
+    unsafe_perm: yes
+...

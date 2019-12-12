@@ -1,0 +1,9 @@
+---
+- name: Check if role assigned to host
+  assert:
+    that:
+      - inventory_hostname in groups['unit']
+
+- name: Include packages
+  include_tasks: packages.yml
+...
