@@ -8,7 +8,7 @@
     - "{{ php_git_hooks_dir }}"
   tags: [ git ]
 
-- name: System Git config core.hooksPath
+- name: System Git config core.hooksPath  # noqa 303
   shell: >
     git config --system core.hooksPath {{ php_git_hooks_dir }}
     && touch {{ flags_dir }}/git.core.hooksPath
