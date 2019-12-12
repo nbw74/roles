@@ -1,5 +1,5 @@
 ---
-- name: YUM
+- name: YUM  # noqa 403
   block:
     - name: Remi PHP repository
       yum_repository:
@@ -67,10 +67,10 @@
       tags: [ packages, git ]
 
     - name: Git from Lux  # noqa 403
-      yum:  # noqa 403
-        name: git  # noqa 403
-        enablerepo: lux  # noqa 403
-        state: latest  # noqa 403
+      yum:
+        name: git
+        enablerepo: lux
+        state: latest
       tags: [ packages, git ]
       when: >
         php_reg_git.stdout is version('2.17.0', '<')
