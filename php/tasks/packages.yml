@@ -67,10 +67,10 @@
       tags: [ packages, git ]
 
     - name: Git from Lux  # noqa 403
-      yum:
-        name: git
-        enablerepo: lux
-        state: latest
+      yum:  # noqa 403
+        name: git  # noqa 403
+        enablerepo: lux  # noqa 403
+        state: latest  # noqa 403
       tags: [ packages, git ]
       when: >
         php_reg_git.stdout is version('2.17.0', '<')
