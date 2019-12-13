@@ -4,6 +4,8 @@
 ```yaml
 php_remi_version: int #  Версия PHP для установки из репозитория remi
 
+php_add_packages: []
+
 php_memcached_client: bool # default: false :Установить и настроить библиотеку клиента
                            # memcached для PHP
 php_memcached_nubmer_of_replicas: int # default: 1 :Настроить количество серверов memcached;

@@ -51,7 +51,7 @@
 
     - name: yum Remi packages
       yum:
-        name: "{{ php_remi_packages }}"
+        name: "{{ php_remi_packages|union(php_add_packages) }}"
         state: present
       when: not php_oob
       tags: [ packages ]
