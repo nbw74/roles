@@ -10,13 +10,15 @@
       set_fact:
         common_icinga2_zone: "{{ common_icinga2_master_zone }}"
         common_circuit_prod: true
-      when: ansible_all_ipv4_addresses|intersect(common_icinga2_master_zone_net_list)|length > 0
+      when: common_ipv4_private|ipaddr(item)
+      with_items: "{{ common_icinga2_master_zone_net_list }}"
       tags: [ icinga2 ]
 
     - name: set icinga2 satellite zone
       set_fact:
         common_icinga2_zone: "{{ common_icinga2_satellite_zone }}"
-      when: ansible_all_ipv4_addresses|intersect(common_icinga2_satellite_zone_net_list)|length > 0
+      when: common_ipv4_private|ipaddr(item)
+      with_items: "{{ common_icinga2_satellite_zone_net_list }}"
       tags: [ icinga2 ]
   when: not alien
 
