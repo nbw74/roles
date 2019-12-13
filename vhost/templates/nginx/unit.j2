@@ -1,0 +1,28 @@
+    set $root_path	'{{ vhost_basedir }}/{{ op.user|d(op.name) }}/{{ op.webroot|d('www') }}';
+    set $unitport	{{ op.unit.port }};
+    root		$root_path;
+    charset		utf-8;
+
+    # security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src * data: 'unsafe-eval' 'unsafe-inline'" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    location / {
+        proxy_pass http://unit$unitport;
+{% include "nginx/proxy.j2" %}
+    }
+
+    location ~* \.(?:css(\.map)?|js(\.map)?|jpe?g|png|gif|ico|cur|heic|webp|tiff?|mp3|m4a|aac|ogg|midi?|wav|mp4|mov|webm|mpe?g|avi|ogv|flv|wmv|ttf|ttc|otf|eot|woff2?)$ {
+        try_files /frontend/dist$uri /backend/public$uri =404;
+        expires 120d;
+        access_log off;
+    }
+    
+    location ~ /\.(ht|svn|git) {
+	deny		all;
+    }
+

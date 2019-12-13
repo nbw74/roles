@@ -5,6 +5,8 @@
 {% endif %}
 {% if vhost_backend == 'php-fpm' and op.fpm is defined %}
 {% include "fpm/" ~ op.fpm.template|d('generic') ~ ".j2" %}
+{% elif vhost_backend == 'php-fpm' and op.unit is defined %}
+{% include "nginx/unit.j2" %}
 {% elif vhost_backend == 'apache' %}
 {% include "nginx/apache-generic.j2" %}
 {% elif vhost_backend == 'reverse-proxy' %}

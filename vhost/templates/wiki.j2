@@ -70,6 +70,10 @@ h3. Database
 {% if vhost_backend == 'bitrix' %}
 - **DocumentRoot:** `{{ vhost_basedir }}/{{ item[1].user|d(item[1].name) }}/{{ item[1].webroot|d('www') }}`
 {% endif %}
+{% if item[0].unit is defined %}
+### Unit
+-- ** Listen port:** `{{ item[0].unit.port }}`
+{% endif %}
 ### SSH
 - **Host:** `{{ ansible_fqdn }}`
 - **User:** `{{ item[1].name }}`

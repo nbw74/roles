@@ -6,6 +6,12 @@ upstream fpm{{ op.fpm.port }} {
     server		127.0.0.1:{{ op.fpm.port }};
 }
 {% endif %}
+{% if vhost_backend == 'php-fpm' and op.unit is defined %}
+
+upstream unit{{ op.unit.port }} {
+    server		127.0.0.1:{{ op.unit.port }};
+}
+{% endif %}
 
 server {
 {% include "nginx/listen-plain.j2" %}

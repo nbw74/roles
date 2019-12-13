@@ -17,7 +17,7 @@ Deploy website virtual host configuration:
 ## Common host variables
 ```yaml
 vhost_apache_port: int                          # default: 8888
-vhost_backend: "php-fpm|apache|reverse-proxy|bitrix" # default is "php-fpm"
+vhost_backend: "none|php-fpm|apache|reverse-proxy|bitrix" # default is "php-fpm"
 vhost_basedir: "filesystem_path"                # default is "/var/www"
 vhost_frontuser: "string"                       # default is "nginx"
 vhost_backuser: "string"                        # default is "apache"
@@ -149,6 +149,8 @@ vhost:
     name: example.org
   save_handler: files|memcached|none # optional; default is "files"
   state: bool # optional; default is 'yes'
+  unit:
+    port: uint # begin from 8300
   user: example # optional; default is "name" value
   webcheck: # optional
     enable: bool # default is circuit-dependent
