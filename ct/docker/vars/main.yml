@@ -1,0 +1,11 @@
+---
+docker_req_packages:
+  - yum-utils
+  - device-mapper-persistent-data
+  - lvm2
+
+docker_main_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+...
