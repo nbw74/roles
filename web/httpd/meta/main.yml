@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: web/nginx
+  - role: web/php
+...

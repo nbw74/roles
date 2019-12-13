@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: web/php
+  - role: web/nodejs
+...
