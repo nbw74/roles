@@ -173,4 +173,6 @@
     owner: root
     mode: "0644"
   loop: "{{ vhost|selectattr('unit', 'defined')|list }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }} : {{ item.unit.port|d('0000') }}"
 ...
