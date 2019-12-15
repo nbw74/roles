@@ -117,6 +117,7 @@ vhost:
     server2: address # default is none
     port2: 11211
   mobile: bool # optional; default is 'no'; enable mobile version config with same site root
+  nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
   nginx_auth_basic: # optional
     string: "string" # default: "Restricted"
     user_file: "path" # default: "/etc/nginx/.htpasswd"
@@ -129,7 +130,7 @@ vhost:
   nginx_root_location: bool # default: true
   nginx_server_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'server' context (before "backend section")
-  nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
+  nginx_whitelist: []
   password: string # optional; set password for <user> (changed only on_create)
   php_laravel_units:
     - name: "string" # default: laravel-queue-worker
