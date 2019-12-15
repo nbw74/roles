@@ -35,9 +35,19 @@
         name: "{{ item.name }}"
         state: "{{ item.state|d('yes') }}"
         persistent: yes
-      with_items: "{{ selinux_custom_booleans }}"
+      loop: "{{ selinux_custom_booleans }}"
       loop_control:
         label: "{{ item.name }}:{{ item.state|d('true') }}"
+
+    - name: Add custom SELinux ports
+      seport:
+        ports: "{{ item.port }}"
+        proto: "{{ item.proto|d('tcp') }}"
+        setype: "{{ item.type }}"
+        state: present
+      loop: "{{ selinux_custom_ports }}"
+      loop_control:
+        label: "{{ item.type }}:{{ item.port }}"
 
     - name: directory for SELinux modules
       file:
@@ -82,7 +92,7 @@
       file:
         path: "{{ common_se_dir }}/{{ common_se_module }}.{{ item }}"
         state: absent
-      with_items: [ 'mod', 'pp' ]
+      loop: [ 'mod', 'pp' ]
   when: common_copy_se_module.changed
   tags: [ selinux ]
 

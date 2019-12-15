@@ -11,6 +11,11 @@
 selinux_custom_booleans:
   - { name: 'boolean_name'[, state: 'bool'] }
 
+selinux_custom_ports:
+  - port: uint
+    type: string # (http_port_t, postgresql_port_t, ...)
+    proto: string # default: 'tcp'
+
 selinux_custom_fcontexts:
   - name: "string" # short description
     setype: "string" # e.g. "httpd_sys_rw_content_t"
