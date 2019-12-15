@@ -164,4 +164,13 @@
   loop_control:
     label: "{{ item.user|d(item.name) }}"
   tags: [ user, db ]
+
+- name: File contains unit port number (for use in CI)
+  copy:
+    content: >
+      {{ item.unit.port }}
+    dest: "/var/lib/flags/{{ item.user|d(item.name) }}.uport"
+    owner: root
+    mode: "0644"
+  loop: "{{ vhost|selectattr('unit', 'defined')|list }}"
 ...
