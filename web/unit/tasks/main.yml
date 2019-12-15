@@ -12,4 +12,29 @@
     name: unit
     enabled: yes
     state: started
+
+- name: Get happy three sections
+  uri:
+    unix_socket: "{{ unit_socket }}"
+    url: "http://localhost/config/{{ item }}"
+    status_code: [ 200, 404 ]
+  register: __unit_sections
+  loop:
+    - applications
+    - listeners
+    - routes
+
+- name: Fill happy three sections
+  uri:
+    unix_socket: "{{ unit_socket }}"
+    url: "http://localhost/config/{{ result.item }}"
+    method: PUT
+    body: '{}'
+    body_format: json
+  when: result.status == 404
+  loop: "{{ __unit_sections.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.item }}"
+
 ...
