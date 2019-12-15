@@ -3,6 +3,14 @@
 {{ op.nginx_server_snippet }}
 # SNIPPET END
 {% endif %}
+{% if op.nginx_whitelist is defined %}
+
+{% for item in op.nginx_whitelist %}
+    allow		{{ item }};
+{% endfor %}
+    deny		all;
+
+{% endif %}
 {% if vhost_backend == 'php-fpm' and op.fpm is defined %}
 {% include "fpm/" ~ op.fpm.template|d('generic') ~ ".j2" %}
 {% elif vhost_backend == 'php-fpm' and op.unit is defined %}

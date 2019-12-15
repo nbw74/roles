@@ -20,11 +20,4 @@
 
     return		503;
 {% endif %}
-{% if op.nginx_whitelist is defined %}
-
-{% for item in op.nginx_whitelist %}
-    allow		{{ item }};
-{% endfor %}
-    deny		all;
-{% endif %}
 
