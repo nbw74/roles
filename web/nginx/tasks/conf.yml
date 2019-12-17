@@ -21,6 +21,14 @@
       dest: "{{ defaultd }}"
   notify: validate nginx
 
+- name: Remove obsolete configs
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop:
+    - path: /etc/nginx/default.d/12-body.conf
+  notify: validate nginx
+
 - name: Template configs
   template:
     src: "{{ item.src }}.j2"
