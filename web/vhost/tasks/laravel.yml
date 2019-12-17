@@ -4,10 +4,20 @@
     name: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
     enabled: "{{ item[1].enabled|d(True)|ternary('yes','no') }}"
     state: "{{ item[1].enabled|d(True)|ternary('started','stopped') }}"
-  when: item[0].state|d(True)
-  loop: "{{ vhost|subelements('php_laravel_units', skip_missing=True) }}"
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list|subelements('php_laravel_units', skip_missing=True) }}"
   loop_control:
     label: "{{ item[1].name|d('laravel-queue-worker') }}@{{ item[0].user|d(item[0].name) }}"
+
+- name: Template custom sudoers
+  template:
+    src: sudoers_d.j2
+    dest: "/etc/sudoers.d/vhost_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: 0440
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|selectattr('php_laravel_units', 'defined')|list }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}"
 
 - name: Logrotate section
   block:

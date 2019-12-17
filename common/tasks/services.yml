@@ -54,8 +54,7 @@
     owner: root
     group: root
     mode: 0440
-  when: item.state|d(True)
-  loop: "{{ common_sudoers_d }}"
+  loop: "{{ common_sudoers_d|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -63,8 +62,7 @@
   file:
     path: "/etc/sudoers.d/{{ item.name }}"
     state: absent
-  when: not item.state|d(True)
-  loop: "{{ common_sudoers_d }}"
+  loop: "{{ common_sudoers_d|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
 

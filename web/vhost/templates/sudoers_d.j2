@@ -1,0 +1,4 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% for unit in item.php_laravel_units %}
+{{ item.user|d(item.name) }} ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart {{ unit.name|d('laravel-queue-worker') }}@{{ item.user|d(item.name) }}.service
+{% endfor %}
