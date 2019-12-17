@@ -32,6 +32,9 @@ http {
     {{ key }} {{ value }};
 {% endfor %}
 
+    client_body_timeout   {{ nginx_http_directives['client_body_timeout']|d('240s') }};
+    client_max_body_size  {{ nginx_http_directives['client_max_body_size']|d('16m') }};
+
     include             /etc/nginx/mime.types;
     default_type        application/octet-stream;
 

@@ -19,8 +19,6 @@
       dest: "{{ confd }}"
     - src: 10-gzip.conf
       dest: "{{ defaultd }}"
-    - src: 12-body.conf
-      dest: "{{ defaultd }}"
   notify: validate nginx
 
 - name: Template configs

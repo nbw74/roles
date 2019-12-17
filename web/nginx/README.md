@@ -10,6 +10,8 @@ nginx_certbot:
 
 nginx_http_directives: # Конфигурационные параметры для nginx.conf (контекст http)
   key: value
+  client_body_timeout: intu # default: '240s'
+  client_max_body_size: intu # default: '16m'
 
 nginx_listen_separate: bool # default: True
 
