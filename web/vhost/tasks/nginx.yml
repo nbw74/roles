@@ -1,6 +1,17 @@
 ---
 - name: Nobitrix block
   block:
+    - name: Remove Nginx vhost config
+      file:
+        path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
+        state: absent
+        backup: yes
+      loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      notify: validate nginx
+      tags: [ conf, crypto ]
+
     - name: Include htpasswd tasks
       include_tasks: htpasswd.yml
       when: op.nginx_auth_basic is defined
@@ -18,20 +29,6 @@
     loop_var: op
     label: "{{ op.name }}"
   tags: [ conf, crypto ]
-
-- name: Nobitrix block
-  block:
-    - name: Remove Nginx vhost config
-      file:
-        path: "/etc/nginx/conf.d/{{ item.user|d(item.name) }}.conf"
-        state: absent
-        backup: yes
-      loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
-      loop_control:
-        label: "{{ item.name }}"
-      notify: validate nginx
-      tags: [ conf, crypto ]
-  when: vhost_backend != 'bitrix'
 
 - name: Bitrix block
   block:
