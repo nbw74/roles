@@ -4,6 +4,7 @@ unit_base_packages:
   - unit-php
   - unit-devel
   - gcc-c++
+  - patch
 
 unit_socket: /run/unit/control.sock
 ...

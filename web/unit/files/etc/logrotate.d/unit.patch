@@ -1,0 +1,10 @@
+--- unit       2019-02-07 17:07:48.000000000 +0300
++++ unit       2019-12-20 16:13:27.934502308 +0300
+@@ -1,6 +1,6 @@
+ /var/log/unit/*.log {
+     missingok
+-    nocreate
++    create 0644 root adm
+     notifempty
+     postrotate
+         if [ -f /var/run/unit/unit.pid ]; then

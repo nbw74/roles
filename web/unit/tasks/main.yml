@@ -13,6 +13,24 @@
     enabled: yes
     state: started
 
+- name: Set log dir permissions
+  file:
+    path: /var/log/unit/
+    state: directory
+    mode: "0755"
+
+- name: Set log file permissions
+  file:
+    path: /var/log/unit/unit.log
+    owner: root
+    group: adm
+    mode: "0644"
+
+- name: Patch unit logrotate config
+  patch:
+    src: etc/logrotate.d/unit.patch
+    dest: /etc/logrotate.d/unit
+
 - name: Get happy three sections
   uri:
     unix_socket: "{{ unit_socket }}"
