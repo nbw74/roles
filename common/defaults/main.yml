@@ -17,6 +17,7 @@ common_sudoers_d: []
 common_sysctl_vars: { }
 pkgupdate: False
 selinux_custom_booleans: []
+selinux_custom_ports: []
 selinux_state: "enforcing"
 timezone: "Europe/Moscow"
 ...
