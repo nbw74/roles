@@ -18,16 +18,16 @@ host	{{ item.db }}		{{ item.user }}		127.0.0.1/32		md5
 ## ANSIBLE MANAGED ##
 # IPv4 local connections (ident):
 host	all		all		127.0.0.1/32		md5
-# IPv4 remote connections
-{% if postgresql_hba_tcp is defined %}
-{% for item in postgresql_hba_tcp %}
-host	{{ item.db }}		{{ item.user }}		{{ item.address }}		{{ item.method|d('md5') }}
-{% endfor %}
-{% endif %}
 {% if postgresql_hba_tcp_ident is defined %}
 # IPv4 remote connections (ident)
 {% for item in postgresql_hba_tcp_ident %}
 host	{{ item.db }}		{{ item.user }}		{{ item.address }}		ident map=remote
+{% endfor %}
+{% endif %}
+{% if postgresql_hba_tcp is defined %}
+# IPv4 remote connections
+{% for item in postgresql_hba_tcp %}
+host	{{ item.db }}		{{ item.user }}		{{ item.address }}		{{ item.method|d('md5') }}
 {% endfor %}
 {% endif %}
 
