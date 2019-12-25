@@ -26,7 +26,11 @@ daemonize {{ redis_conf['daemonize']|d()|ternary('yes', 'no') }}
 supervised no
 pidfile {{ redis_conf['pidfile']|d('/var/run/redis/redis-server.pid') }}
 loglevel {{ redis_conf['loglevel']|d('warning') }}
-logfile {{ redis_conf['logfile']|d('/var/log/redis/redis.log') }}
+{% if ansible_service_mgr == 'systemd' %}
+logfile "{{ redis_conf['logfile']|d('') }}"
+{% else %}
+logfile "{{ redis_conf['logfile']|d('/var/log/redis/redis.log') }}"
+{% endif %}
 databases {{ redis_conf['databases']|d('16') }}
 {% if redis_major_version >= 4 %}
 always-show-logo yes
