@@ -13,10 +13,12 @@
   yum:
     name: "{{ unit_base_packages|union(unit_add_packages) }}"
     enablerepo: remi
+    state: "{{ unit_latest|ternary('latest', 'present') }}"
 
 - name: Npm install unit-http
   npm:
     name: unit-http
     global: yes
     unsafe_perm: yes
+    state: "{{ unit_latest|ternary('latest', 'present') }}"
 ...
