@@ -24,5 +24,7 @@ mysql_users:
   - name: string
     password: string
     priv: string # see https://docs.ansible.com/ansible/latest/modules/mysql_user_module.html
+    host: string # default: '%'
+    login_unix_socket: path # default: '/var/lib/mysql/mysql.sock'
     state: bool
 ```
