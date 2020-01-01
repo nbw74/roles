@@ -9,7 +9,7 @@ mysql_version:
  - float
 
 mysql_service:
-  limitnofile: unit # default: 262144
+  limitnofile: uint # default: 262144
 
 mysql_percona_packages: []
 
@@ -20,4 +20,9 @@ mysql_cnf_ver:  # Version-specific config
   <mysql_version>:
     key: value
 
+mysql_users:
+  - name: string
+    password: string
+    priv: string # see https://docs.ansible.com/ansible/latest/modules/mysql_user_module.html
+    state: bool
 ```

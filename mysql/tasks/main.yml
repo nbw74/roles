@@ -8,6 +8,10 @@
       - mysql_flavor is defined
       - mysql_version is defined
 
+- name: Install common packages
+  yum:
+    name: "{{ mysql_common_packages }}"
+
 - name: Include rh-mariadb
   include_tasks: rh_mariadb.yml
   when: "mysql_flavor == 'rh-mariadb'"
@@ -21,4 +25,17 @@
     name: percona-*
     state: absent
   when: mysql_percona_packages|length == 0
+
+- name: Manage mysql users
+  mysql_user:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d(True)|bool|ternary('present', 'absent') }}"
+    password: "{{ item.password }}"
+    priv: "{{ item.priv|d(item.name ~ '.*:ALL') }}"
+    host: "{{ item.host|d('%') }}"
+    login_unix_socket: "{{ item.login_unix_socket|d('/var/lib/mysql/mysql.sock') }}"
+    login_user: root
+  loop: "{{ mysql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
 ...
