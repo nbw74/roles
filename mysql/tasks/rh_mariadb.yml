@@ -1,4 +1,4 @@
-
+---
 - name: Install scl package
   yum:
     name: "{{ mysql_scl_packages }}"
