@@ -1,0 +1,17 @@
+
+- name: Install scl package
+  yum:
+    name: "{{ mysql_scl_packages }}"
+  register: __mysql_scl_install
+
+- name: Enable scl repo
+  command: >
+    yum-config-manager --enable rhel-server-rhscl-7-rpms
+  when: __mysql_scl_install.changed
+
+- name: Include versions
+  include_tasks: rh_mariadb_versions.yml
+  loop: "{{ mysql_version }}"
+  loop_control:
+    loop_var: ver
+...

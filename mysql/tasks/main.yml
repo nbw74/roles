@@ -1,0 +1,24 @@
+---
+- name: Check role requirements
+  assert:
+    that:
+      - inventory_hostname in groups['mysql']
+      - ansible_distribution_file_variety == "RedHat"
+      - ansible_distribution_major_version|int == 7
+      - mysql_flavor is defined
+      - mysql_version is defined
+
+- name: Include rh-mariadb
+  include_tasks: rh_mariadb.yml
+  when: "mysql_flavor == 'rh-mariadb'"
+
+- name: Include percona tasks
+  include_tasks: percona.yml
+  when: mysql_percona_packages|length > 0
+
+- name: Remove percona packages
+  yum:
+    name: percona-*
+    state: absent
+  when: mysql_percona_packages|length == 0
+...

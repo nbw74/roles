@@ -1,0 +1,5 @@
+---
+mysql_scl_packages:
+  - centos-release-scl
+  - yum-utils
+...

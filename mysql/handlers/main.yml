@@ -1,0 +1,10 @@
+---
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: restart rh-mariadb
+  service:
+    name: "rh-mariadb{{ mysql_version_norm }}-mariadb"
+    state: restarted
+...

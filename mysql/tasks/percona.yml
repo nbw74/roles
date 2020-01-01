@@ -1,0 +1,20 @@
+---
+- name: Stat repo files
+  stat:
+    path: "{{ item }}"
+  loop:
+    - /etc/yum.repos.d/percona-release.repo
+    - /etc/yum.repos.d/percona-original-release.repo
+  register: __mysql_percona_repo
+
+- name: Install percona repo package
+  yum:
+    name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+  when:
+    - not __mysql_percona_repo.results[0].stat.exists
+    - not __mysql_percona_repo.results[1].stat.exists
+
+- name: Install percona packages
+  yum:
+    name: "{{ mysql_percona_packages }}"
+...

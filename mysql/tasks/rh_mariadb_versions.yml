@@ -1,0 +1,63 @@
+---
+- name: Set raw fact ({{ ver }})
+  set_fact:
+    mysql_version_raw: "{{ ver|string }}"
+
+- name: Set norm fact ({{ ver }})
+  set_fact:
+    mysql_version_norm: "{{ mysql_version_raw|regex_replace('\\.', '') }}"
+
+- name: Install the collections ({{ ver }})
+  yum:
+    name: "rh-mariadb{{ mysql_version_norm }}"
+
+- name: Unset full config ({{ ver }})
+  set_fact:
+    _cnf: { }
+
+- name: Set full config ({{ ver }})
+  set_fact:
+    _cnf: "{{ mysql_cnf|combine(mysql_cnf_ver[ver]|d({ })) }}"
+
+- name: Template server config ({{ ver }})
+  template:
+    src: etc/opt/rh/rh-mariadb/my.cnf.d/mariadb-server.cnf.j2
+    dest: "/etc/opt/rh/rh-mariadb{{ mysql_version_norm }}/my.cnf.d/mariadb-server.cnf"
+    owner: root
+    mode: "0644"
+    backup: yes
+  notify: restart rh-mariadb
+
+- name: Copy scripts ({{ ver }})
+  copy:
+    src: "{{ item.path }}"
+    dest: "/{{ item.path }}"
+    owner: "{{ item.owner|d('root') }}"
+    mode: "{{ item.mode|d('0755') }}"
+  loop:
+    - path: usr/local/bin/bacula_innobackupex.sh
+
+- name: Dir for limits.conf ({{ ver }})
+  file:
+    path: "/etc/systemd/system/rh-mariadb{{ mysql_version_norm }}-mariadb.service.d"
+    state: directory
+    owner: root
+    mode: "0755"
+
+- name: Template service limits ({{ ver }})
+  template:
+    src: etc/systemd/system/service.d/limits.conf.j2
+    dest: "/etc/systemd/system/rh-mariadb{{ mysql_version_norm }}-mariadb.service.d/limits.conf"
+    owner: root
+    mode: "0644"
+  notify: reload systemd
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Service enabled and started ({{ ver }})
+  service:
+    name: "rh-mariadb{{ mysql_version_norm }}-mariadb"
+    enabled: yes
+    state: started
+...

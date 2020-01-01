@@ -1,0 +1,6 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+[mysqld]
+{% for key, value in _cnf|dictsort %}
+{{ key }} = {{ value }}
+{% endfor %}
+## EOF ##
