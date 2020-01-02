@@ -1,18 +1,19 @@
 ---
 icinga2_common_packages:
-  - "icinga2"
-  - "vim-icinga2"
-  - "nagios-plugins-all"
-  - "perl-Net-SNMP"
-  - "perl-Switch"
-  - "perl-Number-Format"
-  - "perl-Config-IniFiles"
-  - "perl-DateTime"
-  - "perl-IPC-Run"
-  - "perl-libwww-perl"
-  - "perl-Nagios-Plugin"
-  - "openldap-clients"
-  - "python2-pip"
+  - icinga2
+  - vim-icinga2
+  - nagios-plugins-all
+  - perl-Net-SNMP
+  - perl-Switch
+  - perl-Number-Format
+  - perl-Config-IniFiles
+  - perl-DateTime
+  - perl-IPC-Run
+  - perl-libwww-perl
+  - perl-Nagios-Plugin
+  - openldap-clients
+  - python2-pip
+  - MySQL-python
 
 icinga2_icingaweb2_packages:
   - "icinga-gui"
