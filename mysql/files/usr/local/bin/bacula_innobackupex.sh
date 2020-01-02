@@ -3,7 +3,7 @@ shopt -s extglob
 #
 # innobackupex wrapper for using with bacula
 # Written by nbw
-# Version 0.4.4
+# Version 0.4.5
 # 
 
 # 
@@ -55,8 +55,10 @@ Main() {
         exit 131
     fi
 
-    # Условие для нахождения datadir
-    DATADIR=$(awk 'BEGIN { FS = "=" } /datadir/ { gsub(/[[:space:]]/, ""); print $2 }' "$DEFAULTS")
+    if [[ -z "$DATADIR" ]]; then
+	DATADIR=$(awk 'BEGIN { FS = "=" } /datadir/ { gsub(/[[:space:]]/, ""); print $2 }' "$DEFAULTS")
+    fi
+
     if [[ -z "$DATADIR" ]]; then
 	writeLog "ERROR: \"datadir\" option missing or not understood"
 	exit 132
@@ -350,7 +352,7 @@ usage() {
         -f <str>    --defaults-file for innobackupex
         -k          keep (don't delete) previous backup dirs on the disk
         -l <str>    backup level
-	-m <str>    specify (apparently) mysql datadir (unused)
+	-m <str>    specify (apparently) mysql datadir
         -p          prepare incremental backup
         -r          restore backup
         -s <str>    specify (apparently) mysql socket
@@ -361,7 +363,7 @@ usage() {
         "
 }
 
-while getopts "df:kl:prs:xh" OPTION; do
+while getopts "df:kl:m:prs:xh" OPTION; do
     case $OPTION in
         d) DEBUG=1
             ;;
@@ -371,6 +373,8 @@ while getopts "df:kl:prs:xh" OPTION; do
             ;;
         l) LEVEL=$OPTARG
             ;;
+	m) DATADIR=$OPTARG
+	    ;;
         p) PREPARE=1
             ;;
         r) RESTORE=1
