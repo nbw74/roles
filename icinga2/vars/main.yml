@@ -14,6 +14,7 @@ icinga2_common_packages:
   - openldap-clients
   - python2-pip
   - MySQL-python
+  - python2-psycopg2
 
 icinga2_icingaweb2_packages:
   - "icinga-gui"
