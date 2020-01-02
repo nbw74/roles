@@ -1,0 +1,33 @@
+---
+- name: Section 5
+  block:
+    - name: Import endpoint repo key
+      rpm_key:
+        key: https://packages.endpoint.com/endpoint-rpmsign-7.pub
+
+    - name: Setup endpoint repo
+      yum_repository:
+        name: End Point repository
+        file: endpoint
+        baseurl: https://packages.endpoint.com/rhel/$releasever/os/$basearch/
+        enabled: no
+        gpgcheck: yes
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-endpoint
+        protect: no
+
+    - name: Install bacula-fd package (V)
+      yum:
+        name: bacula-client-5.0.2
+        enablerepo: endpoint
+  when: ansible_distribution_major_version|int == 5
+
+- name: Install bacula-fd package (VI)
+  yum:
+    name: bacula-client-5.0.0
+  when: ansible_distribution_major_version|int == 6
+
+- name: Install bacula-fd package (VII)
+  yum:
+    name: bacula-client-5.2.13
+  when: ansible_distribution_major_version|int == 7
+...

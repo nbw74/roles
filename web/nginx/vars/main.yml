@@ -8,9 +8,6 @@ nginx_packages:
   - nginx
   - python-passlib
 
-nginx_sb_packages:
-  - python2-pyOpenSSL-16.2.0
-
 nginx_self_signed:
   cert: /etc/pki/tls/certs/nginx.pem
   key: /etc/pki/tls/private/nginx.pem

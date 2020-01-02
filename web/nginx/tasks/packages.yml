@@ -9,24 +9,6 @@
       yum:
         name: awstats
         state: "{{ awstats_enable|d()|ternary('present','absent') }}"
-
-    - name: pyOpenSSL section
-      block:
-        - name: Setup southbridge repo
-          yum_repository:
-            name: southbridge-stable
-            description: Southbridge stable packages repository
-            baseurl: http://rpms.southbridge.ru/rhel{{ ansible_distribution_major_version }}/stable/$basearch/
-            gpgcheck: yes
-            gpgkey: http://rpms.southbridge.ru/RPM-GPG-KEY-southbridge
-            enabled: no
-            priority: "10"
-
-        - name: Yum install southbridge packages
-          yum:
-            enablerepo: southbridge-stable
-            name: "{{ nginx_sb_packages }}"
-      when: ansible_distribution_major_version|int >= 7
   when: "ansible_pkg_mgr == 'yum'"
 
 - name: dnf install nginx

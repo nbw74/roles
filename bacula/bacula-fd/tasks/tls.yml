@@ -1,0 +1,29 @@
+---
+- name: Stat cert
+  stat:
+    path: "/etc/bacula/{{ inventory_hostname }}.crt"
+  register: __bacula_fd_crt
+
+- name: Create a certificate and key file for new client
+  block:
+    - name: Generate key
+      openssl_privatekey:
+        path: "/etc/pki/tls/private/{{ inventory_hostname }}.key"
+        size: 2048
+
+    - name: Generate signing request
+      openssl_csr:
+        path: "/etc/pki/tls/certs/{{ inventory_hostname }}.csr"
+        digest: sha1
+        key_usage: encipherment
+        common_name: "{{ inventory_hostname }}"
+        country_name: "{{ bacula_fd_csr.C }}"
+        state_or_province_name: "{{ bacula_fd_csr.ST }}"
+        locality_name: "{{ bacula_fd_csr.L }}"
+        organization_name: "{{ bacula_fd_csr.O }}"
+        organizational_unit_name: "{{ bacula_fd_csr.OU|d('') }}"
+        email_address: "{{ bacula_fd_csr.emailAddress }}"
+  when: not __bacula_fd_crt.stat.exists
+  delegate_to: "{{ bacula_director }}"
+
+...
