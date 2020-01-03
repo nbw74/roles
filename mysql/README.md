@@ -10,6 +10,7 @@ mysql_version:
 
 mysql_service:
   limitnofile: uint # default: 262144
+  nostart: bool # default: False
 
 mysql_percona_packages: []
 

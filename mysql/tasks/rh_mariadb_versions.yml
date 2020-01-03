@@ -60,4 +60,5 @@
     name: "rh-mariadb{{ mysql_version_norm }}-mariadb"
     enabled: yes
     state: started
+  when: not mysql_service.nostart|d()
 ...

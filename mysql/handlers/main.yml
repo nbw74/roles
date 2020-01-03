@@ -7,4 +7,5 @@
   service:
     name: "rh-mariadb{{ mysql_version_norm }}-mariadb"
     state: restarted
+  when: not mysql_service.nostart|d()
 ...
