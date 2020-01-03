@@ -1,0 +1,63 @@
+---
+- name: Check role requirements
+  assert:
+    that:
+      - inventory_hostname in groups['mysql']
+      - inventory_hostname in groups['selinux']
+      - ansible_distribution_file_variety == "RedHat"
+      - ansible_distribution_major_version|int >= 7
+
+- name: copy SELinux module file
+  copy:
+    src: "{{ selinux_fd_xtra.path }}.te"
+    dest: "/{{ selinux_fd_xtra.path }}.te"
+  register: __selinux_fd_xtra_module
+
+- name: SELinux module block
+  block:
+    - name: checkmodule command
+      command: >
+        checkmodule -M -m -o /{{ selinux_fd_xtra.path }}.mod
+        /{{ selinux_fd_xtra.path }}.te
+
+    - name: package command
+      command: >
+        semodule_package -o /{{ selinux_fd_xtra.path }}.pp
+        -m /{{ selinux_fd_xtra.path }}.mod
+
+    - name: install command
+      command: >
+        semodule -i /{{ selinux_fd_xtra.path }}.pp
+  rescue:
+    - name: remove module file if error
+      file:
+        path: "/{{ selinux_fd_xtra.path }}.te"
+        state: absent
+  always:
+    - name: remove compiled files
+      file:
+        path: "/{{ selinux_fd_xtra.path }}.{{ item }}"
+        state: absent
+      loop: [ 'mod', 'pp' ]
+  when: __selinux_fd_xtra_module.changed
+
+- name: Add fcontext
+  sefcontext:
+    setype: "{{ item.setype }}"
+    target: "{{ item.target }}"
+    state: present
+  with_items:
+    - name: "Bacula-xtrabackup fcontext"
+      setype: bacula_var_lib_t
+      target: '/var/preserve/xtrabackup(/.*)?'
+    - name: "Bacula-preserve fcontext"
+      setype: bacula_var_lib_t
+      target: '/var/preserve'
+  notify: restorecon preserve
+
+- name: Line in restorecond.conf
+  lineinfile:
+    path: /etc/selinux/restorecond.conf
+    regexp: '^.*\/var\/preserve\/xtrabackup'
+    line: '/var/preserve/xtrabackup'
+...

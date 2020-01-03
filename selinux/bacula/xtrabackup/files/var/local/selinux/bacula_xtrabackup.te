@@ -1,0 +1,48 @@
+
+module bacula_xtrabackup 1.2;
+
+#
+# Changelog:
+#
+# 1.1 : added bacula_t:self limits
+# 1.2 : added df (filesystem) permissions
+#
+
+require {
+        type rsync_exec_t;
+        type bacula_t;
+        type tmp_t;
+        class dir { write remove_name add_name };
+        class file { write create unlink setattr execute execute_no_trans };
+        class process setrlimit;
+        class capability sys_resource;
+
+        type cgroup_t;
+        type device_t;
+        type configfs_t;
+        type pstore_t;
+        type hugetlbfs_t;
+        type tmpfs_t;
+        type binfmt_misc_fs_t;
+        type bacula_t;
+        class filesystem getattr;
+}
+
+#============= bacula_t ==============
+allow bacula_t rsync_exec_t:file { execute execute_no_trans };
+
+allow bacula_t tmp_t:dir { write remove_name add_name };
+allow bacula_t tmp_t:file { write create unlink setattr };
+
+allow bacula_t self:process setrlimit;
+allow bacula_t self:capability sys_resource;
+
+#============= bacula_t ==============
+allow bacula_t binfmt_misc_fs_t:filesystem getattr;
+allow bacula_t cgroup_t:filesystem getattr;
+allow bacula_t configfs_t:filesystem getattr;
+allow bacula_t device_t:filesystem getattr;
+allow bacula_t hugetlbfs_t:filesystem getattr;
+allow bacula_t pstore_t:filesystem getattr;
+allow bacula_t tmpfs_t:filesystem getattr;
+

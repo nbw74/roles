@@ -1,0 +1,5 @@
+---
+- name: restorecon preserve
+  command: >
+    restorecon -r /var/preserve
+...

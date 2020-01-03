@@ -1,0 +1,4 @@
+---
+selinux_fd_xtra:
+  path: var/local/selinux/bacula_xtrabackup
+...
