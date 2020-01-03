@@ -1,0 +1,11 @@
+---
+- name: restart bacula-fd
+  service:
+    name: bacula-fd
+    state: restarted
+
+- name: reload bacula-dir
+  shell: >
+    echo reload | bconsole
+  delegate_to: "{{ bacula_dir.host }}"
+...

@@ -1,0 +1,42 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+Director {
+  Name = "{{ bacula_dir.prefix }}-dir"
+  Password = "{{ __bacula_fd_passwd.content|b64decode|trim }}"
+  TLS Enable = yes
+  TLS Require = yes
+  TLS Verify Peer = yes
+  TLS Allowed CN = "{{ bacula_dir.cn }}"
+  TLS CA Certificate File = "/etc/bacula/{{ bacula_ca.path|basename }}"
+  TLS Certificate = "/etc/bacula/{{ inventory_hostname }}.crt"
+  TLS Key = "/etc/bacula/{{ inventory_hostname }}.key"
+}
+
+Director {
+  Name = "{{ bacula_dir.prefix }}-mon"
+  Password = "{{ __bacula_fd_passwd.content|b64decode|trim }}"
+  Monitor = no
+}
+
+FileDaemon {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  FDport = 9102
+{% if ansible_distribution_major_version < 6 %}
+  WorkingDirectory = "/var/lib/bacula"
+{% else %}
+  WorkingDirectory = "/var/spool/bacula"
+{% endif %}
+  Pid Directory = "/var/run"
+  Maximum Concurrent Jobs = 20
+  TLS Enable = yes
+  TLS Require = yes
+  TLS CA Certificate File = "/etc/bacula/{{ bacula_ca.path|basename }}"
+  TLS Certificate = "/etc/bacula/{{ inventory_hostname }}.crt"
+  TLS Key = "/etc/bacula/{{ inventory_hostname }}.key"
+}
+
+Messages {
+  Name = Standard
+  director = {{ bacula_dir.prefix }}-dir = all, !skipped, !restored
+}
+

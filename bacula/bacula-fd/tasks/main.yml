@@ -4,12 +4,71 @@
     that:
       - ansible_distribution_file_variety == "RedHat"
       - ansible_distribution_major_version|int >= 5
-      - bacula_director is defined
+      - bacula_ca.host is defined
+      - bacula_ca.path is defined
+      - bacula_ca.key_path is defined
+      - bacula_ca.key_pass is defined
+      - bacula_fd.pool is defined or bacula_fd.pools is defined
+      - bacula_fd_csr.C is defined
+      - bacula_fd_csr.ST is defined
+      - bacula_fd_csr.L is defined
+      - bacula_fd_csr.O is defined
+      - bacula_fd_csr.emailAddress is defined
+      - bacula_dir.prefix is defined
+      - bacula_dir.cn is defined
+      - bacula_dir.host is defined
       - inventory_hostname not in groups['nobacula']
 
 - name: Include packages
   include_tasks: packages.yml
 
+- name: Include legacy
+  include_tasks: legacy.yml
+
+- name: Stat trifile
+  stat:
+    path: "{{ item }}"
+  loop:
+    - "/etc/bacula/{{ bacula_ca.path|basename }}"
+    - "/etc/bacula/{{ inventory_hostname }}.crt"
+    - "/etc/bacula/{{ inventory_hostname }}.key"
+  register: __bacula_fd_crt
+
 - name: Include tls
   include_tasks: tls.yml
+  when: >
+    not __bacula_fd_crt.results[0].stat.exists or
+    not __bacula_fd_crt.results[1].stat.exists or
+    not __bacula_fd_crt.results[2].stat.exists
+
+- name: Include password
+  include_tasks: password.yml
+
+- name: Template FD config
+  template:
+    src: "{{ item.path }}.j2"
+    dest: "/{{ item.path }}"
+    owner: root
+    group: bacula
+    mode: 0640
+  loop:
+    - path: etc/bacula/bacula-fd.conf
+  notify: restart bacula-fd
+
+- name: FD enabled and started
+  service:
+    name: bacula-fd
+    state: started
+    enabled: yes
+
+- name: Template Client config to Director
+  template:
+    src: etc/bacula/conf.d/client.conf.j2
+    dest: "/etc/bacula/conf.d/ansible_{{ inventory_hostname }}.conf"
+    owner: root
+    group: bacula
+    mode: "0644"
+  delegate_to: "{{ bacula_dir.host }}"
+  notify: reload bacula-dir
+
 ...

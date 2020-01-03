@@ -1,0 +1,38 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+Client {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  Address = "{{ inventory_hostname }}"
+  FDPort = 9102
+  Catalog = BaculaCatalog
+  Password = "{{ __bacula_fd_passwd.content|b64decode|trim }}"
+  File Retention = {{ bacula_fd.file_retention|d('16 months') }}
+  Job Retention = {{ bacula_fd.job_retention|d('16 months') }}
+  AutoPrune = yes
+  Maximum Concurrent Jobs = 1
+  TLS Enable = yes
+  TLS Require = yes
+  TLS CA Certificate File = "/etc/bacula/{{ bacula_ca.path|basename }}"
+  TLS Certificate = "/etc/bacula/{{ bacula_dir.cn }}.crt"
+  TLS Key = "/etc/bacula/{{ bacula_dir.cn }}.key"
+}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-conf"
+  JobDefs = "OrdinaryJob"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+{% if bacula_fd.pool is defined %}
+  Pool = {{ bacula_fd.pool }}
+{% else %}
+  Pool = {{ bacula_fd.pools.full }}
+  Full Backup Pool = {{ bacula_fd.pools.full }}
+{% if bacula_fd.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.pools.differential }}
+{% endif %}
+{% if bacula_fd.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.pools.incremental }}
+{% endif %}
+{% endif %}
+  Enabled = yes
+}
+

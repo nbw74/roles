@@ -1,8 +1,2 @@
 ---
-bacula_fd_csr:
-  C: RU
-  ST: Russian Federation
-  L: Moscow
-  O: KGB
-  emailAddress: sig@kgb.ru
 ...

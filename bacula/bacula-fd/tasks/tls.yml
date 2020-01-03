@@ -1,10 +1,5 @@
 ---
-- name: Stat cert
-  stat:
-    path: "/etc/bacula/{{ inventory_hostname }}.crt"
-  register: __bacula_fd_crt
-
-- name: Create a certificate and key file for new client
+- name: Delegate section
   block:
     - name: Generate key
       openssl_privatekey:
@@ -14,16 +9,60 @@
     - name: Generate signing request
       openssl_csr:
         path: "/etc/pki/tls/certs/{{ inventory_hostname }}.csr"
+        privatekey_path: "/etc/pki/tls/private/{{ inventory_hostname }}.key"
         digest: sha1
-        key_usage: encipherment
+        key_usage: digitalSignature
         common_name: "{{ inventory_hostname }}"
         country_name: "{{ bacula_fd_csr.C }}"
         state_or_province_name: "{{ bacula_fd_csr.ST }}"
         locality_name: "{{ bacula_fd_csr.L }}"
         organization_name: "{{ bacula_fd_csr.O }}"
-        organizational_unit_name: "{{ bacula_fd_csr.OU|d('') }}"
+        organizational_unit_name: "{{ (bacula_fd_csr.OU is defined)|ternary(bacula_fd_csr.OU, omit) }}"
         email_address: "{{ bacula_fd_csr.emailAddress }}"
-  when: not __bacula_fd_crt.stat.exists
-  delegate_to: "{{ bacula_director }}"
+
+    - name: Generate cert
+      openssl_certificate:
+        provider: ownca
+        path: "/etc/pki/tls/certs/{{ inventory_hostname }}.crt"
+        csr_path: "/etc/pki/tls/certs/{{ inventory_hostname }}.csr"
+        privatekey_path: "/etc/pki/tls/private/{{ inventory_hostname }}.key"
+        ownca_digest: sha1
+        ownca_not_after: 21000101000000Z
+        ownca_path: "{{ bacula_ca.path }}"
+        ownca_privatekey_path: "{{ bacula_ca.key_path }}"
+        ownca_privatekey_passphrase: "{{ bacula_ca.key_pass }}"
+
+    - name: Fetch trifile
+      fetch:
+        src: "{{ item }}"
+        dest: "/tmp/{{ item|basename }}"
+        flat: yes
+      loop:
+        - "{{ bacula_ca.path }}"
+        - "/etc/pki/tls/certs/{{ inventory_hostname }}.crt"
+        - "/etc/pki/tls/private/{{ inventory_hostname }}.key"
+  delegate_to: "{{ bacula_ca.host }}"
+
+- name: Copy trifile
+  copy:
+    src: "/tmp/{{ item }}"
+    dest: "/etc/bacula/{{ item }}"
+    owner: root
+    group: bacula
+    mode: "0640"
+  loop:
+    - "{{ bacula_ca.path|basename }}"
+    - "{{ inventory_hostname }}.crt"
+    - "{{ inventory_hostname }}.key"
+
+- name: Remove trifile
+  local_action:
+    module: file
+    path: "/tmp/{{ item }}"
+    state: absent
+  loop:
+    - "{{ bacula_ca.path|basename }}"
+    - "{{ inventory_hostname }}.crt"
+    - "{{ inventory_hostname }}.key"
 
 ...

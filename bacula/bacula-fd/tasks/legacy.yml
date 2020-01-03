@@ -1,0 +1,18 @@
+---
+- name: Stat nop key
+  stat:
+    path: "/etc/bacula/{{ inventory_hostname }}-nop.key"
+  register: __bacula_fd_nop
+
+- name: Copy to plain named key
+  copy:
+    src: "/etc/bacula/{{ inventory_hostname }}-nop.key"
+    remote_src: yes
+    dest: "/etc/bacula/{{ inventory_hostname }}.key"
+  when: __bacula_fd_nop.stat.exists
+
+- name: nop key is absent
+  file:
+    path: "/etc/bacula/{{ inventory_hostname }}-nop.key"
+    state: absent
+...
