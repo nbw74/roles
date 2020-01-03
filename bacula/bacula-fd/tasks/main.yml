@@ -8,6 +8,7 @@
       - bacula_ca.path is defined
       - bacula_ca.key_path is defined
       - bacula_ca.key_pass is defined
+      - bacula_fd is defined
       - bacula_fd_csr.C is defined
       - bacula_fd_csr.ST is defined
       - bacula_fd_csr.L is defined

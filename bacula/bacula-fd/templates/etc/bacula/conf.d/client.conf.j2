@@ -68,4 +68,22 @@ Job {
   Enabled = {{ bacula_fd.jobs.pgconf.enabled|d(True)|ternary('yes', 'no') }}
 }
 {% endif %}
+{% if bacula_fd.jobs.opt is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-opt"
+  JobDefs = "OrdinaryJob"
+  FileSet = "justopt"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  Pool = {{ bacula_fd.jobs.opt.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.opt.pools.full }}
+{% if bacula_fd.jobs.opt.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.opt.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.opt.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.opt.pools.incremental }}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.opt.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
 
