@@ -51,4 +51,21 @@ Job {
   Enabled = {{ bacula_fd.jobs.mysql.enabled|d(True)|ternary('yes', 'no') }}
 }
 {% endif %}
+{% if bacula_fd.jobs.pgconf is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-pgconf"
+  JobDefs = "PostgresConfJob"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  Pool = {{ bacula_fd.jobs.pgconf.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.pgconf.pools.full }}
+{% if bacula_fd.jobs.pgconf.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.pgconf.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.pgconf.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.pgconf.pools.incremental }}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.pgconf.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
 
