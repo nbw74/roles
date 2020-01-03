@@ -53,6 +53,9 @@
     - name: "Bacula-preserve fcontext"
       setype: bacula_var_lib_t
       target: '/var/preserve'
+    - name: "Innobackupex log"
+      setype: bacula_log_t
+      target: '/var/log/innobackupex.log'
   notify: restorecon preserve
   loop_control:
     label: "{{ item.name }} : {{ item.setype }}"
