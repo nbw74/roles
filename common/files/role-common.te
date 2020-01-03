@@ -1,16 +1,13 @@
 
-module role-common 2.8;
+module role-common 3.0;
 
 require {
-	type bacula_t;
 	type http_port_t;
         type kernel_t;
         type kmsg_device_t;
 	type shadow_t;
 	type snmpd_t;
-	type sysctl_net_t;
         class chr_file { read open };
-	class dir search;
 	class file { read open getattr };
 	class tcp_socket name_connect;
         class system syslog_read;
@@ -26,9 +23,4 @@ allow snmpd_t shadow_t:file { read open getattr };
 
 allow snmpd_t kernel_t:system syslog_read;
 allow snmpd_t kmsg_device_t:chr_file { read open };
-
-#============= bacula_t ==============
-
-allow bacula_t sysctl_net_t:dir search;
-allow bacula_t sysctl_net_t:file { read open getattr };
 
