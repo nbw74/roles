@@ -70,6 +70,7 @@ common_fedora_specific_packages_ipa:
 
 common_fedora_specific_packages_selinux:
   - policycoreutils-python-utils
+  - policycoreutils-restorecond
 
 common_virt_unnecessary_packages:
   - acpid
