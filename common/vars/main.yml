@@ -61,6 +61,8 @@ common_centos_specific_packages_ipa:
 
 common_centos_specific_packages_selinux:
   - policycoreutils-python
+
+common_centos_7_specific_packages_selinux:
   - policycoreutils-restorecond
 
 common_fedora_specific_packages_ipa:

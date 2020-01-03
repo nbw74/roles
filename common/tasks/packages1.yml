@@ -41,6 +41,14 @@
       when: selinux_state != "disabled"
       tags: [ packages, selinux ]
 
+    - name: "Install SELinux packages (YUM) (VII)"
+      yum:
+        name: "{{ common_centos_7_specific_packages_selinux }}"
+      when:
+        - selinux_state != "disabled"
+        - ansible_distribution_major_version|int == 7
+      tags: [ packages, selinux ]
+
     - name: "Remove SELinux packages (YUM)"
       yum:
         name: setroubleshoot-server
