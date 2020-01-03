@@ -1,0 +1,4 @@
+---
+bacula_fd_se:
+  path: var/local/selinux/bacula_fd
+...

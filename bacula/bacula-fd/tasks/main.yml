@@ -54,6 +54,10 @@
     - path: etc/bacula/bacula-fd.conf
   notify: restart bacula-fd
 
+- name: Include SELinux tasks
+  include_tasks: selinux.yml
+  when: selinux_state != "disabled"
+
 - name: FD enabled and started
   service:
     name: bacula-fd

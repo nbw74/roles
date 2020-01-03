@@ -1,0 +1,35 @@
+---
+- name: copy SELinux module file
+  copy:
+    src: "{{ bacula_fd_se.path }}.te"
+    dest: "/{{ bacula_fd_se.path }}.te"
+  register: __bacula_fd_se_module
+
+- name: SELinux module block
+  block:
+    - name: checkmodule command
+      command: >
+        checkmodule -M -m -o /{{ bacula_fd_se.path }}.mod
+        /{{ bacula_fd_se.path }}.te
+
+    - name: package command
+      command: >
+        semodule_package -o /{{ bacula_fd_se.path }}.pp
+        -m /{{ bacula_fd_se.path }}.mod
+
+    - name: install command
+      command: >
+        semodule -i /{{ bacula_fd_se.path }}.pp
+  rescue:
+    - name: remove module file if error
+      file:
+        path: "/{{ bacula_fd_se.path }}.te"
+        state: absent
+  always:
+    - name: remove compiled files
+      file:
+        path: "/{{ bacula_fd_se.path }}.{{ item }}"
+        state: absent
+      loop: [ 'mod', 'pp' ]
+  when: __bacula_fd_se_module.changed
+...

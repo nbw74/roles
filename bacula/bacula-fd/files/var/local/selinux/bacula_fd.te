@@ -1,0 +1,14 @@
+
+module bacula_fd 1.0;
+
+# SELinux policy for bacula-fd
+
+require {
+	type bacula_var_lib_t;
+	type bacula_t;
+	class lnk_file create;
+}
+
+#============= bacula_t ==============
+allow bacula_t bacula_var_lib_t:lnk_file create;
+
