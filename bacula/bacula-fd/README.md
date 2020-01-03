@@ -27,8 +27,9 @@ bacula_fd:
   job_retention: string # Default: '16 months'
   jobs:
     <job_postfix>:
-      client_run_before_job: string
+      client_run_before_job: string # optional
       enabled: bool # default: True
+      fileset: string # optional
       pools:
         full: string
         differential: string
