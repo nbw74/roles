@@ -36,7 +36,7 @@ Job {
 {% if bacula_fd.jobs.mysql is defined %}
 
 Job {
-  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-conf"
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-mysql"
   JobDefs = "InnoBakIncr"
   Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
   ClientRunBeforeJob = "{{ bacula_fd.jobs.mysql.client_run_before_job }}"

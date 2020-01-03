@@ -8,4 +8,11 @@
   shell: >
     echo reload | bconsole
   delegate_to: "{{ bacula_dir.host }}"
+  notify: check bacula-dir
+
+- name: check bacula-dir
+  service:
+    name: bacula-dir
+    state: started
+  delegate_to: "{{ bacula_dir.host }}"
 ...
