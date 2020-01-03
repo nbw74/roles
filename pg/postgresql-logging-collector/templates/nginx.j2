@@ -8,7 +8,9 @@ server {
         autoindex               on;
         autoindex_exact_size    off;
         autoindex_localtime     on;
+{% if plc_nginx.htpasswd_users is defined %}
         auth_basic              on;
         auth_basic_user_file    {{ plc_htpasswd }};
+{% endif %}
     }
 }

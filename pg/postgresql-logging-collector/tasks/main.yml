@@ -55,7 +55,7 @@
     owner: root
     group: nginx
     mode: 0440
-  with_dict: "{{ plc_nginx.htpasswd_users }}"
+  with_dict: "{{ plc_nginx.htpasswd_users|d({ }) }}"
   notify: reload nginx
 
 - name: Template nginx include
