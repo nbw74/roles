@@ -1,6 +1,16 @@
 ---
 - name: restart rsyslog
-  systemd:
-    name: rsyslog.service
+  service:
+    name: rsyslog
     state: restarted
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: reload crond
+  service:
+    name: crond
+    state: reloaded
 ...
