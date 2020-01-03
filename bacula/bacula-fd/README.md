@@ -25,9 +25,12 @@ bacula_fd:
   prefix: string # default: '{{ inventory_hostname.split('.')[0] }}'
   file_retention: string # Default: '16 months'
   job_retention: string # Default: '16 months'
-  pool: string # mutually exclusive with 'pools: { }'
-  pools:
-    full: string
-    differential: string
-    incremental: string
+  jobs:
+    <job_postfix>:
+      client_run_before_job: string
+      enabled: bool # default: True
+      pools:
+        full: string
+        differential: string
+        incremental: string
 ```

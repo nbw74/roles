@@ -16,23 +16,41 @@ Client {
   TLS Certificate = "/etc/bacula/{{ bacula_dir.cn }}.crt"
   TLS Key = "/etc/bacula/{{ bacula_dir.cn }}.key"
 }
+{% if bacula_fd.jobs.conf is defined %}
 
 Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-conf"
   JobDefs = "OrdinaryJob"
   Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
-{% if bacula_fd.pool is defined %}
-  Pool = {{ bacula_fd.pool }}
-{% else %}
-  Pool = {{ bacula_fd.pools.full }}
-  Full Backup Pool = {{ bacula_fd.pools.full }}
-{% if bacula_fd.pools.differential is defined %}
-  Differential Backup Pool = {{ bacula_fd.pools.differential }}
+  Pool = {{ bacula_fd.jobs.conf.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.conf.pools.full }}
+{% if bacula_fd.jobs.conf.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.conf.pools.differential }}
 {% endif %}
-{% if bacula_fd.pools.incremental is defined %}
-  Incremental Backup Pool = {{ bacula_fd.pools.incremental }}
+{% if bacula_fd.jobs.conf.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.conf.pools.incremental }}
 {% endif %}
 {% endif %}
-  Enabled = yes
+  Enabled = {{ bacula_fd.jobs.conf.enabled|d(True)|ternary('yes', 'no') }}
 }
+{% endif %}
+{% if bacula_fd.jobs.mysql is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-conf"
+  JobDefs = "InnoBakIncr"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  ClientRunBeforeJob = "{{ bacula_fd.jobs.mysql.client_run_before_job }}"
+  Pool = {{ bacula_fd.jobs.mysql.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.mysql.pools.full }}
+{% if bacula_fd.jobs.mysql.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.mysql.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.mysql.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.mysql.pools.incremental }}
+{% endif %}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.mysql.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
 
