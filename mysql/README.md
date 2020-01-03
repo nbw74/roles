@@ -23,6 +23,7 @@ mysql_cnf_ver:  # Version-specific config
 mysql_users:
   - name: string
     password: string
+    password_file: bool
     priv: string # see https://docs.ansible.com/ansible/latest/modules/mysql_user_module.html
     host: string # default: '%'
     login_unix_socket: path # default: '/var/lib/mysql/mysql.sock'

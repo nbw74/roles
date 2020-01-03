@@ -3,7 +3,7 @@ shopt -s extglob
 #
 # innobackupex wrapper for using with bacula
 # Written by nbw
-# Version 0.4.5
+# Version 0.4.6
 # 
 
 # 
@@ -14,6 +14,7 @@ readonly XBDIR=/var/preserve/xtrabackup
 declare BASEDIR=$XBDIR/FULL
 
 readonly CREDFILE=/root/.mypass
+readonly CREDFILE2=/root/.passwd.mysql.bacula
 # Log file
 readonly LOGFILE=/var/log/innobackupex.log
 # MySQL configuration file
@@ -33,7 +34,7 @@ typeset -i RESTORE=0
 typeset -i KEEPOLD=0
 typeset -i DEBUG=0
 typeset -i FLUSH=0
-typeset DEFAULTS="" DATADIR="" SOCKET=""
+typeset DEFAULTS="" DATADIR="" SOCKET="" MUSER="" MPASS=""
 
 Main() {
     # Проверка, воскрес ли Христос
@@ -105,8 +106,10 @@ chkXB() {
 }
 
 credLoad() {
-    # Подгружаем файлик с учётными данными
-    if [ -f "$CREDFILE" ]; then
+    if [[ -f "$CREDFILE2" ]]; then
+	MUSER=bacula
+	MPASS=$(cat "$CREDFILE2")
+    elif [[ -f "$CREDFILE" ]]; then
 # shellcheck disable=SC1090
 	. "$CREDFILE"
     else
