@@ -30,7 +30,6 @@ Job {
 {% if bacula_fd.jobs.conf.pools.incremental is defined %}
   Incremental Backup Pool = {{ bacula_fd.jobs.conf.pools.incremental }}
 {% endif %}
-{% endif %}
   Enabled = {{ bacula_fd.jobs.conf.enabled|d(True)|ternary('yes', 'no') }}
 }
 {% endif %}
@@ -48,7 +47,6 @@ Job {
 {% endif %}
 {% if bacula_fd.jobs.mysql.pools.incremental is defined %}
   Incremental Backup Pool = {{ bacula_fd.jobs.mysql.pools.incremental }}
-{% endif %}
 {% endif %}
   Enabled = {{ bacula_fd.jobs.mysql.enabled|d(True)|ternary('yes', 'no') }}
 }
