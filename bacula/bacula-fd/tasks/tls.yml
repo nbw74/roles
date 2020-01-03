@@ -64,4 +64,5 @@
     - "{{ inventory_hostname }}.crt"
     - "{{ inventory_hostname }}.key"
   delegate_to: localhost
+  become: no
 ...

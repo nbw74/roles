@@ -1,7 +1,7 @@
 ---
 - name: restorecon preserve
   command: >
-    restorecon -r /var/preserve
+    restorecon -r /var/preserve /var/log
 
 - name: restart restorecond
   service:
