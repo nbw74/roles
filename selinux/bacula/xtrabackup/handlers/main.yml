@@ -2,4 +2,9 @@
 - name: restorecon preserve
   command: >
     restorecon -r /var/preserve
+
+- name: restart restorecond
+  service:
+    name: restorecond
+    state: restarted
 ...

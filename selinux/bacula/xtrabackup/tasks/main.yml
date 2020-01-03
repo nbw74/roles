@@ -46,7 +46,7 @@
     setype: "{{ item.setype }}"
     target: "{{ item.target }}"
     state: present
-  with_items:
+  loop:
     - name: "Bacula-xtrabackup fcontext"
       setype: bacula_var_lib_t
       target: '/var/preserve/xtrabackup(/.*)?'
@@ -54,10 +54,13 @@
       setype: bacula_var_lib_t
       target: '/var/preserve'
   notify: restorecon preserve
+  loop_control:
+    label: "{{ item.name }} : {{ item.setype }}"
 
 - name: Line in restorecond.conf
   lineinfile:
     path: /etc/selinux/restorecond.conf
     regexp: '^.*\/var\/preserve\/xtrabackup'
     line: '/var/preserve/xtrabackup'
+  notify: restart restorecond
 ...

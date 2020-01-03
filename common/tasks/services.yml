@@ -136,6 +136,13 @@
     - server_type != 'ct'
   tags: [ services, snmp ]
 
+- name: Enable and start restorecond
+  service:
+    name: restorecond
+    enabled: yes
+    state: started
+  when: selinux_state != "disabled"
+
 - name: Set mdraid presence
   set_fact:
     mdraid_is_present: >-
