@@ -22,7 +22,7 @@ Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-conf"
   JobDefs = "OrdinaryJob"
 {% if bacula_fd.jobs.conf.fileset is defined %}
-  FileSet = {{ bacula_fd.jobs.conf.fileset }}
+  FileSet = "{{ bacula_fd.jobs.conf.fileset }}"
 {% endif %}
   Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
   Pool = {{ bacula_fd.jobs.conf.pools.full }}
