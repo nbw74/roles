@@ -56,13 +56,12 @@
     - "{{ inventory_hostname }}.key"
 
 - name: Remove trifile
-  local_action:
-    module: file
+  file:
     path: "/tmp/{{ item }}"
     state: absent
   loop:
     - "{{ bacula_ca.path|basename }}"
     - "{{ inventory_hostname }}.crt"
     - "{{ inventory_hostname }}.key"
-
+  delegate_to: localhost
 ...
