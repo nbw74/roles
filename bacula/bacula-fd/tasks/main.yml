@@ -72,6 +72,6 @@
     group: bacula
     mode: "0644"
   delegate_to: "{{ bacula_dir.host }}"
-  notify: reload bacula-dir
+  notify: validate bacula-dir
 
 ...

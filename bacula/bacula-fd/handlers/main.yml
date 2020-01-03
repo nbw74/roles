@@ -4,6 +4,12 @@
     name: bacula-fd
     state: restarted
 
+- name: validate bacula-dir
+  command: >
+    bacula-dir -t
+  delegate_to: "{{ bacula_dir.host }}"
+  notify: reload bacula-dir
+
 - name: reload bacula-dir
   shell: >
     echo reload | bconsole
