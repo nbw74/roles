@@ -69,7 +69,10 @@
     - name: remove old module
       command: >
         semodule -r snmpd_porntube_c6
-      ignore_errors: yes
+      register: __common_rm_porntube
+      failed_when:
+        - __common_rm_porntube is failed
+        - __common_rm_porntube.stderr is not search('No such file')
 
     - name: checkmodule command
       command: >
