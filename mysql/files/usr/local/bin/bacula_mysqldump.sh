@@ -41,7 +41,7 @@ main() {
     fi
 
     IFS_BAK="$IFS"
-    while read db; do
+    while read -r db; do
         Dblist+=("$db")
     done < <(echo 'SHOW DATABASES;' | mysql -u $muser ${mpass:+-p$mpass} -BN)
     IFS="$IFS_BAK"
