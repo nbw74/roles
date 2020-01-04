@@ -22,6 +22,8 @@ vhost_basedir: "filesystem_path"                # default is "/var/www"
 vhost_frontuser: "string"                       # default is "nginx"
 vhost_backuser: "string"                        # default is "apache"
 vhost_logbuffer: "intUNIT|none"                 # default is "128k"
+vhost_logrotate_cake_enable: bool               # default: False
+vhost_logrotate_laravel_enable: bool            # default: False
 vhost_db_pgsql_admin_user: "string"             # default is "ansible"
 vhost_db_pgsql_admin_pass: "string"             # mandatory if use postgresql
 vhost_db_mysql_admin_user: "string"             # mandatory if use mysql

@@ -1,0 +1,21 @@
+---
+- name: Template Cake logrotate config
+  template:
+    src: logrotate/cake.j2
+    dest: "/etc/logrotate.d/cake_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: "0644"
+  when: item.nginx_301_only is not defined
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "cake_{{ item.user|d(item.name) }}"
+
+- name: Cake logrotate config absent
+  file:
+    path: "/etc/logrotate.d/cake_{{ item.user|d(item.name) }}"
+    state: absent
+  loop: "{{ vhost|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "cake_{{ item.user|d(item.name) }}"
+...

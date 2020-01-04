@@ -56,6 +56,10 @@
       include_tasks: laravel.yml
   when: vhost_backend == 'php-fpm'
 
+- name: cake logrotate
+  include_tasks: logrotate_cake.yml
+  when: vhost_logrotate_cake_enable
+
 - name: Ordinary section
   block:
     - name: Include ddns
