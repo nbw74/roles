@@ -89,4 +89,21 @@ Job {
   Enabled = {{ bacula_fd.jobs.opt.enabled|d(True)|ternary('yes', 'no') }}
 }
 {% endif %}
+{% if bacula_fd.jobs.ipa is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-ipa"
+  JobDefs = "ipaBackup"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  Pool = {{ bacula_fd.jobs.ipa.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.ipa.pools.full }}
+{% if bacula_fd.jobs.ipa.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.ipa.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.ipa.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.ipa.pools.incremental }}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.ipa.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
 
