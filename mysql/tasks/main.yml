@@ -47,4 +47,14 @@
   loop: "{{ mysql_users|selectattr('password_file', 'sameas', True)|list }}"
   loop_control:
     label: "{{ item.name }}"
+
+- name: Copy scripts
+  copy:
+    src: "{{ item.path }}"
+    dest: "/{{ item.path }}"
+    owner: "{{ item.owner|d('root') }}"
+    mode: "{{ item.mode|d('0755') }}"
+  loop:
+    - path: usr/local/bin/bacula_innobackupex.sh
+    - path: usr/local/bin/bacula_mysqldump.sh
 ...
