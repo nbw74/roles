@@ -40,10 +40,23 @@ main() {
 	mpass=$(cat /root/.passwd.mysql.bacula)
     fi
 
+    echo_info_n "Get a list of mysql users..."
+    mysql -u$muser ${mpass:+-p$mpass} -BNe \
+	"SELECT CONCAT('\'', user,'\'@\'', host, '\'') FROM user WHERE user != 'root' AND user != ''" mysql \
+	> "${SPOOL}/mysql_users.txt"
+    echo "Done."
+
+    echo_info_n "Obtain a list of user privileges..."
+    while read -r line; do
+	mysql -u$muser ${mpass:+-p$mpass} -BNe "SHOW GRANTS FOR $line"
+    done < "${SPOOL}/mysql_users.txt" > "${SPOOL}/mysql_users.sql"
+    sed -i 's/$/;/' "${SPOOL}/mysql_users.sql"
+    echo "Done."
+
     IFS_BAK="$IFS"
     while read -r db; do
         Dblist+=("$db")
-    done < <(echo 'SHOW DATABASES;' | mysql -u $muser ${mpass:+-p$mpass} -BN)
+    done < <(mysql -u$muser ${mpass:+-p$mpass} -BNe "SHOW DATABASES")
     IFS="$IFS_BAK"
 
     for (( i = 0; i < ${#Dblist[@]}; i++ )); do
@@ -51,7 +64,8 @@ main() {
 	    continue
 	else
 	    echo_info_n "Backing up ${Dblist[i]}... "
-	    mysqldump --routines --single-transaction --skip-dump-date -u $muser ${mpass:+-p$mpass} \
+	    mysqldump --routines --single-transaction --skip-dump-date --ignore-table=mysql.event \
+		-u $muser ${mpass:+-p$mpass} \
 		"${Dblist[i]}" | bzip2 - > "${SPOOL}/${Dblist[i]}.sql.bz2"
 	    echo "Done."
 	fi
