@@ -40,6 +40,8 @@ main() {
 	mpass=$(cat /root/.passwd.mysql.bacula)
     fi
 
+    [[ -d "$SPOOL" ]] || mkdir -p "$SPOOL"
+
     echo_info_n "Get a list of mysql users..."
     mysql -u$muser ${mpass:+-p$mpass} -BNe \
 	"SELECT CONCAT('\'', user,'\'@\'', host, '\'') FROM user WHERE user != 'root' AND user != ''" mysql \
