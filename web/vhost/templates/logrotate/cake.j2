@@ -1,6 +1,8 @@
 # THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
 
-/var/www/{{ item.user|d(item.name) }}/www/app/tmp/logs {
+/var/www/{{ item.user|d(item.name) }}/www/app/tmp/logs/*.log
+/var/www/{{ item.user|d(item.name) }}/www/app/tmp/logs/*.err
+{
     weekly
     missingok
     rotate 8
