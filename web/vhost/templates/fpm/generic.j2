@@ -6,6 +6,14 @@
 
     location / {
 	try_files	$uri $uri/ /index.php?$args;
+{% if op.nginx_whitelist is defined and op.nginx_whitelist.context|d('server') == 'root' %}
+
+{% for item in op.nginx_whitelist.allow %}
+    allow		{{ item }};
+{% endfor %}
+    deny		all;
+
+{% endif %}
 {% if (op.nginx_auth_basic|default(dict(enable=false)))['enable']|d(false) %}
 	auth_basic		"{{ op.nginx_auth_basic.string|d('Restricted') }}";
 	auth_basic_user_file	"{{ op.nginx_auth_basic.user_file|d(vhost_default_htpasswd) }}";

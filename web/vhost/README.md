@@ -136,7 +136,9 @@ vhost:
   nginx_root_location: bool # default: true
   nginx_server_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'server' context (before "backend section")
-  nginx_whitelist: []
+  nginx_whitelist:
+    allow: []
+    context: string # server (default) or root (/)
   password: string # optional; set password for <user> (changed only on_create)
   php_laravel_units:
     - name: "string" # default: laravel-queue-worker

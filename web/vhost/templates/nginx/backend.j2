@@ -3,9 +3,9 @@
 {{ op.nginx_server_snippet }}
 # SNIPPET END
 {% endif %}
-{% if op.nginx_whitelist is defined %}
+{% if op.nginx_whitelist is defined and op.nginx_whitelist.context|d('server') == 'server' %}
 
-{% for item in op.nginx_whitelist %}
+{% for item in op.nginx_whitelist.allow %}
     allow		{{ item }};
 {% endfor %}
     deny		all;
