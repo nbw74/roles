@@ -122,7 +122,7 @@
 
 - name: Include certbot from nginx role
   include_role:
-    name: nginx
+    name: web/nginx
     tasks_from: certbot.yml
 
 - name: Import mail
