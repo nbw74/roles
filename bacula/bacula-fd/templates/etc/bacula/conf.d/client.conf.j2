@@ -124,4 +124,40 @@ Job {
   Enabled = {{ bacula_fd.jobs.www.enabled|d(True)|ternary('yes', 'no') }}
 }
 {% endif %}
+{% if bacula_fd.jobs.redmine is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-redmine"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  JobDefs = "OrdinaryJob"
+  FileSet = "redmineFiles"
+  Pool = {{ bacula_fd.jobs.redmine.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.redmine.pools.full }}
+{% if bacula_fd.jobs.redmine.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.redmine.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.redmine.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.redmine.pools.incremental }}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.redmine.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
+{% if bacula_fd.jobs.svn is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-svn"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  JobDefs = "OrdinaryJob"
+  FileSet = "SVN"
+  Pool = {{ bacula_fd.jobs.svn.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.svn.pools.full }}
+{% if bacula_fd.jobs.svn.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.svn.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.svn.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.svn.pools.incremental }}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.svn.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
 
