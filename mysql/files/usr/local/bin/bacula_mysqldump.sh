@@ -32,8 +32,8 @@ main() {
 
     checks
 
-    local -a Dblist=()
-    local muser="root" mpass="" auth_string=""
+    local -a Dblist=() auth_string=()
+    local muser="root" mpass=""
 
     if [[ -f /root/.passwd.mysql.bacula ]]; then
 	muser=bacula
@@ -41,22 +41,22 @@ main() {
     fi
 
     if [[ -f /etc/debian_version ]]; then
-	auth_string="--defaults-file=/etc/mysql/debian.cnf"
+	auth_string=( "--defaults-file=/etc/mysql/debian.cnf" )
     else
-	auth_string="-u$muser ${mpass:+-p$mpass}"
+	auth_string=( "-u$muser" "${mpass:+-p$mpass}" )
     fi
 
     [[ -d "$SPOOL" ]] || mkdir -p "$SPOOL"
 
     echo_info_n "Get a list of mysql users..."
-    mysql $auth_string -BNe \
+    mysql "${auth_string[@]}" -BNe \
 	"SELECT CONCAT('\'', user,'\'@\'', host, '\'') FROM user WHERE user != 'root' AND user != ''" mysql \
 	> "${SPOOL}/mysql_users.txt"
     echo "Done."
 
     echo_info_n "Obtain a list of user privileges..."
     while read -r line; do
-	mysql $auth_string -BNe "SHOW GRANTS FOR $line"
+	mysql "${auth_string[@]}" -BNe "SHOW GRANTS FOR $line"
     done < "${SPOOL}/mysql_users.txt" > "${SPOOL}/mysql_users.sql"
     sed -i 's/$/;/' "${SPOOL}/mysql_users.sql"
     echo "Done."
@@ -64,7 +64,7 @@ main() {
     IFS_BAK="$IFS"
     while read -r db; do
         Dblist+=("$db")
-    done < <(mysql $auth_string -BNe "SHOW DATABASES")
+    done < <(mysql "${auth_string[@]}" -BNe "SHOW DATABASES")
     IFS="$IFS_BAK"
 
     for (( i = 0; i < ${#Dblist[@]}; i++ )); do
@@ -72,7 +72,7 @@ main() {
 	    continue
 	else
 	    echo_info_n "Backing up ${Dblist[i]}... "
-	    mysqldump $auth_string --routines --single-transaction --skip-dump-date --ignore-table=mysql.event \
+	    mysqldump "${auth_string[@]}" --routines --single-transaction --skip-dump-date --ignore-table=mysql.event \
 		"${Dblist[i]}" | bzip2 - > "${SPOOL}/${Dblist[i]}.sql.bz2"
 	    echo "Done."
 	fi
