@@ -24,10 +24,6 @@ vhost_backuser: "string"                        # default is "apache"
 vhost_logbuffer: "intUNIT|none"                 # default is "128k"
 vhost_logrotate_cake_enable: bool               # default: False
 vhost_logrotate_laravel_enable: bool            # default: False
-vhost_db_pgsql_admin_user: "string"             # default is "ansible"
-vhost_db_pgsql_admin_pass: "string"             # mandatory if use postgresql
-vhost_db_mysql_admin_user: "string"             # mandatory if use mysql
-vhost_db_mysql_admin_pass: "string"             # mandatory if use mysql
 vhost_git_server: "string"                      # mandatory if use git
 vhost_git_path: "filesystem_path"               # default is "/var/lib/git"
 vhost_git_group: "string"                       # default is "developers"
@@ -36,6 +32,14 @@ vhost_default_ddns_zone: "string"               # mandatory if use ddns, git, re
 vhost_ddns_key_name: "string"                   # default is "ddns_key"
 vhost_ddns_key_algorithm: "string"              # default is "hmac-md5"
 vhost_ddns_key_secret: "string"                 # mandatory if use ddns
+
+vhost_db_admin:
+  pgsql:
+    user: "string"             # default is "ansible"
+    pass: "string"             # mandatory if use postgresql
+  mysql:
+    user: "string"             # default is "ansible"
+    pass: "string"             # mandatory if use mysql
 
 vhost_gitlab:
   api_url: uri

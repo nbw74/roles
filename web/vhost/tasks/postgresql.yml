@@ -21,8 +21,8 @@
         target_opts: "-Fc -Z9"
         login_host: "{{ item[0].db.host }}"
         port: "{{ item[0].db.port|d('5432') }}"
-        login_user: "{{ vhost_db_pgsql_admin_user }}"
-        login_password: "{{ vhost_db_pgsql_admin_pass }}"
+        login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
+        login_password: "{{ vhost_db_admin.pgsql.pass }}"
         ssl_mode: disable
       register: vhost_dump_pgsql_result
       when:
@@ -66,8 +66,8 @@
     role_attr_flags: LOGIN,NOSUPERUSER
     login_host: "{{ item.db.host }}"
     port: "{{ item.db.port|d('5432') }}"
-    login_user: "{{ vhost_db_pgsql_admin_user }}"
-    login_password: "{{ vhost_db_pgsql_admin_pass }}"
+    login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
+    login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
   when:
     - item.db.type == 'postgresql'
@@ -84,8 +84,8 @@
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
     login_host: "{{ item.db.host }}"
     port: "{{ item.db.port|d('5432') }}"
-    login_user: "{{ vhost_db_pgsql_admin_user }}"
-    login_password: "{{ vhost_db_pgsql_admin_pass }}"
+    login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
+    login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
   when:
     - item.db is defined
@@ -113,8 +113,8 @@
     state: present
     login_host: "{{ item.0.db.host }}"
     port: "{{ item.0.db.port|d('5432') }}"
-    login_user: "{{ vhost_db_pgsql_admin_user }}"
-    login_password: "{{ vhost_db_pgsql_admin_pass }}"
+    login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
+    login_password: "{{ vhost_db_admin.pgsql.pass }}"
   when:
     - item.0.db is defined
     - item.0.db.type == 'postgresql'
@@ -129,8 +129,8 @@
     state: absent
     login_host: "{{ item.db.host }}"
     port: "{{ item.db.port|d('5432') }}"
-    login_user: "{{ vhost_db_pgsql_admin_user }}"
-    login_password: "{{ vhost_db_pgsql_admin_pass }}"
+    login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
+    login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
   when:
     - item.db is defined

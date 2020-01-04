@@ -8,8 +8,8 @@
         target: "{{ vhost_preserve }}/{{ item[0].db.name }}-{{ vhost_timestamp }}.sql.bz2"
         login_host: "{{ item[0].db.host }}"
         login_port: "{{ item[0].db.port|d('3306') }}"
-        login_user: "{{ vhost_db_mysql_admin_user }}"
-        login_password: "{{ vhost_db_mysql_admin_pass }}"
+        login_user: "{{ vhost_db_admin.mysql.user|d('ansible') }}"
+        login_password: "{{ vhost_db_admin.mysql.pass }}"
       register: vhost_dump_mysql_result
       when:
         - item[0].db is defined
@@ -52,8 +52,8 @@
     collation: "{{ item.db.collation|d('utf8_general_ci') }}"
     login_host: "{{ item.db.host }}"
     login_port: "{{ item.db.port|d('3306') }}"
-    login_user: "{{ vhost_db_mysql_admin_user }}"
-    login_password: "{{ vhost_db_mysql_admin_pass }}"
+    login_user: "{{ vhost_db_admin.mysql.user|d('ansible') }}"
+    login_password: "{{ vhost_db_admin.mysql.pass }}"
   when: item.db.type == 'mysql'
   loop: "{{ vhost|selectattr('db', 'defined')|list }}"
   loop_control:
@@ -69,8 +69,8 @@
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
     login_host: "{{ item.db.host }}"
     login_port: "{{ item.db.port|d('3306') }}"
-    login_user: "{{ vhost_db_mysql_admin_user }}"
-    login_password: "{{ vhost_db_mysql_admin_pass }}"
+    login_user: "{{ vhost_db_admin.mysql.user|d('ansible') }}"
+    login_password: "{{ vhost_db_admin.mysql.pass }}"
   when: item.db.type == 'mysql'
   loop: "{{ vhost|selectattr('db', 'defined')|list }}"
   loop_control:

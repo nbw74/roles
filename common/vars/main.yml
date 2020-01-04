@@ -25,6 +25,7 @@ common_required_base_packages:
   - rsyslog
   - vim
   - zsh
+  - bash-completion
 
 common_required_base_packages_no_ct:
   - gdisk
