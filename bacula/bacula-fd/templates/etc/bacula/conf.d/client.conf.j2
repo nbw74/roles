@@ -20,11 +20,11 @@ Client {
 
 Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-conf"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
   JobDefs = "OrdinaryJob"
 {% if bacula_fd.jobs.conf.fileset is defined %}
   FileSet = "{{ bacula_fd.jobs.conf.fileset }}"
 {% endif %}
-  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
   Pool = {{ bacula_fd.jobs.conf.pools.full }}
   Full Backup Pool = {{ bacula_fd.jobs.conf.pools.full }}
 {% if bacula_fd.jobs.conf.pools.differential is defined %}
@@ -40,8 +40,8 @@ Job {
 
 Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-mysql"
-  JobDefs = "InnoBakIncr"
   Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  JobDefs = "InnoBakIncr"
   ClientRunBeforeJob = "{{ bacula_fd.jobs.mysql.client_run_before_job }}"
   Pool = {{ bacula_fd.jobs.mysql.pools.full }}
   Full Backup Pool = {{ bacula_fd.jobs.mysql.pools.full }}
@@ -58,8 +58,8 @@ Job {
 
 Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-pgconf"
-  JobDefs = "PostgresConfJob"
   Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  JobDefs = "PostgresConfJob"
   Pool = {{ bacula_fd.jobs.pgconf.pools.full }}
   Full Backup Pool = {{ bacula_fd.jobs.pgconf.pools.full }}
 {% if bacula_fd.jobs.pgconf.pools.differential is defined %}
@@ -75,9 +75,9 @@ Job {
 
 Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-opt"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
   JobDefs = "OrdinaryJob"
   FileSet = "justopt"
-  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
   Pool = {{ bacula_fd.jobs.opt.pools.full }}
   Full Backup Pool = {{ bacula_fd.jobs.opt.pools.full }}
 {% if bacula_fd.jobs.opt.pools.differential is defined %}
@@ -93,8 +93,8 @@ Job {
 
 Job {
   Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-ipa"
-  JobDefs = "ipaBackup"
   Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  JobDefs = "ipaBackup"
   Pool = {{ bacula_fd.jobs.ipa.pools.full }}
   Full Backup Pool = {{ bacula_fd.jobs.ipa.pools.full }}
 {% if bacula_fd.jobs.ipa.pools.differential is defined %}
@@ -104,6 +104,24 @@ Job {
   Incremental Backup Pool = {{ bacula_fd.jobs.ipa.pools.incremental }}
 {% endif %}
   Enabled = {{ bacula_fd.jobs.ipa.enabled|d(True)|ternary('yes', 'no') }}
+}
+{% endif %}
+{% if bacula_fd.jobs.www is defined %}
+
+Job {
+  Name = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-www"
+  Client = "{{ bacula_fd.prefix|d(inventory_hostname.split('.')[0]) }}-fd"
+  JobDefs = "OrdinaryJob"
+  FileSet = "varwww"
+  Pool = {{ bacula_fd.jobs.www.pools.full }}
+  Full Backup Pool = {{ bacula_fd.jobs.www.pools.full }}
+{% if bacula_fd.jobs.www.pools.differential is defined %}
+  Differential Backup Pool = {{ bacula_fd.jobs.www.pools.differential }}
+{% endif %}
+{% if bacula_fd.jobs.www.pools.incremental is defined %}
+  Incremental Backup Pool = {{ bacula_fd.jobs.www.pools.incremental }}
+{% endif %}
+  Enabled = {{ bacula_fd.jobs.www.enabled|d(True)|ternary('yes', 'no') }}
 }
 {% endif %}
 
