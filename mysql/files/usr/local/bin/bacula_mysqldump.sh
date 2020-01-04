@@ -17,6 +17,7 @@ readonly BIN_REQUIRED="mysql mysqldump bzip2"
 # DEFAULTS BEGIN
 typeset -i KEEPDAYS=2
 typeset SPOOL=/var/preserve/mysqldump
+# shellcheck disable=SC2034
 typeset -a Nobase=(
     "information_schema"
     "performance_schema"
@@ -32,32 +33,31 @@ main() {
     checks
 
     local -a Dblist=()
-    local timestamp="" muser="root" mpass=""
+    local muser="root" mpass=""
 
     if [[ -f /root/.passwd.mysql.bacula ]]; then
 	muser=bacula
 	mpass=$(cat /root/.passwd.mysql.bacula)
     fi
 
-    timestamp=$(date +'%FT%H%M%S')
-
-    mapfile -t Dblist < <(echo 'SHOW DATABASES;' | mysql -u $muser ${mpass:+-p$mpass} -BN)
-
-    mkdir -p "${SPOOL}/$timestamp"
+    IFS_BAK="$IFS"
+    while read db; do
+        Dblist+=("$db")
+    done < <(echo 'SHOW DATABASES;' | mysql -u $muser ${mpass:+-p$mpass} -BN)
+    IFS="$IFS_BAK"
 
     for (( i = 0; i < ${#Dblist[@]}; i++ )); do
 	if inArray Nobase "${Dblist[i]}"; then
 	    continue
 	else
 	    echo_info_n "Backing up ${Dblist[i]}... "
-	    mysqldump --routines --single-transaction -u $muser ${mpass:+-p$mpass} \
-		"${Dblist[i]}" | bzip2 - > "${SPOOL}/${timestamp}/${Dblist[i]}.sql.bz2"
+	    mysqldump --routines --single-transaction --skip-dump-date -u $muser ${mpass:+-p$mpass} \
+		"${Dblist[i]}" | bzip2 - > "${SPOOL}/${Dblist[i]}.sql.bz2"
 	    echo "Done."
 	fi
     done
 
-    find ${SPOOL} -mindepth 1 -type f -mtime +${KEEPDAYS} -delete
-    find ${SPOOL} -mindepth 1 -type d -empty -delete
+    find ${SPOOL} -type f -mtime +${KEEPDAYS} -delete
 
     exit 0
 }
