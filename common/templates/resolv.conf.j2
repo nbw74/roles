@@ -1,0 +1,15 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% for ns in common_resolv_conf.nameservers %}
+nameserver {{ ns }}
+{% endfor %}
+{% if common_resolv_conf.domain is defined %}
+domain {{ common_resolv_conf.domain }}
+{% endif %}
+{% if common_resolv_conf.search is defined %}
+search{%- for string in common_resolv_conf.search %} {{ string }}{% endfor %}
+
+{% endif %}
+{% if common_resolv_conf.options is defined %}
+options{%- for option in common_resolv_conf.options %} {{ option }}{% endfor %}
+
+{% endif %}

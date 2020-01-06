@@ -2,6 +2,9 @@
 - name: init.yml
   import_tasks: init.yml
 
+- name: Import resolv
+  import_tasks: resolv.yml
+
 - name: Import packages1
   import_tasks: packages1.yml
 

@@ -84,6 +84,11 @@ common_ntp_domains: # Хэш с локальными доменами и обс�
 common_ntp_servers: []
 common_ntp_pool: ru
 
+common_resolv_conf:
+  domain: string
+  search: []
+  nameservers: []
+
 common_rsyslog_collector: "string" # Хостнейм коллектора логов (rsyslog)
 
 common_selinux_alert_recipients: "string" # Почтовый адрес для отсылки уведомлений SELinux

@@ -1,0 +1,14 @@
+---
+- name: Include dns/unbound role
+  include_role:
+    name: dns/unbound
+  when: unbound_enable|d()
+
+- name: Template resolv.conf
+  template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    mode: "0644"
+  when: common_resolv_conf|length > 0
+...
