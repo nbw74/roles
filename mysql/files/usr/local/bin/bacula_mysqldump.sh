@@ -11,7 +11,7 @@ set -o pipefail
 # CONSTANTS BEGIN
 readonly PATH=/bin:/usr/bin:/sbin:/usr/sbin
 readonly bn="$(basename "$0")"
-readonly BIN_REQUIRED="mysql mysqldump bzip2"
+readonly BIN_REQUIRED="mysql mysqldump lbzip2"
 # CONSTANTS END
 
 # DEFAULTS BEGIN
@@ -73,7 +73,7 @@ main() {
 	else
 	    echo_info_n "Backing up ${Dblist[i]}... "
 	    mysqldump "${auth_string[@]}" --routines --single-transaction --skip-dump-date --ignore-table=mysql.event \
-		"${Dblist[i]}" | bzip2 - > "${SPOOL}/${Dblist[i]}.sql.bz2"
+		"${Dblist[i]}" | nice lbzip2 - > "${SPOOL}/${Dblist[i]}.sql.bz2"
 	    echo "Done."
 	fi
     done
