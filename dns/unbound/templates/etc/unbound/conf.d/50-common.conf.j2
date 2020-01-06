@@ -1,0 +1,31 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+server:
+	num-threads: {{ unbound_conf['num-threads']|d('1') }}
+{% if unbound_conf['interface'] is defined %}
+{% for item in unbound_conf['interface'] %}
+	interface: {{ item }}
+{% endfor %}
+{% else %}
+	interface: 127.0.0.1
+{% endif %}
+	do-ip4: yes
+	do-ip6: no
+	do-udp: yes
+	do-tcp: no
+	access-control: 0.0.0.0/0 refuse
+	access-control: 127.0.0.0/8 allow
+{% if unbound_conf['access-control'] is defined %}
+{% for item in unbound_conf['access-control'] %}
+	access-control: {{ item }} allow
+{% endfor %}
+{% endif %}
+	minimal-responses: no
+	module-config: "validator iterator"
+{% if unbound_conf['local-data'] is defined %}
+{% for item in unbound_conf['local-data'] %}
+	local-data: '{{ item }}'
+{% endfor %}
+{% endif %}
+remote-control:
+	control-enable: yes
+	control-interface: 127.0.0.1

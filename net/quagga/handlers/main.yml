@@ -1,0 +1,7 @@
+---
+- name: restart ospfd
+  service:
+    name: ospfd
+    state: restarted
+  when: quagga_ospfd_restart
+...

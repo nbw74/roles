@@ -1,0 +1,10 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+	local-zone: "{{ zone['name'] }}." {{ zone['type']|d('static') }}
+{% for item in zone['data'] %}
+	local-data: '{{ item }}'
+{% endfor %}
+{% if zone['ptr'] is defined %}
+{% for item in zone['ptr'] %}
+	local-data-ptr: '{{ item }}'
+{% endfor %}
+{% endif %}

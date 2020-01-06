@@ -1,0 +1,52 @@
+---
+- name: Install openssl package
+  yum:
+    name: openssl
+  when: unbound_enable
+
+- name: Manage unbound package
+  yum:
+    name: unbound
+    state: "{{ unbound_enable|ternary('present', 'absent') }}"
+
+- name: Unbound config section
+  block:
+    - name: Template unbound config
+      template:
+        src: "{{ item.file }}.j2"
+        dest: "/{{ item.file }}"
+        owner: root
+        group: root
+        mode: "0444"
+      loop:
+        - file: etc/unbound/conf.d/50-common.conf
+      notify: restart unbound
+
+    - name: Template zone files
+      template:
+        src: etc/unbound/local.d/zone.conf.j2
+        dest: "/etc/unbound/local.d/{{ zone.name }}.conf"
+        owner: root
+        group: root
+        mode: "0444"
+      loop: "{{ unbound_local_zones|rejectattr('state', 'sameas', false)|list }}"
+      loop_control:
+        loop_var: zone
+        label: "{{ zone.name }} : {{ zone.type|d('static') }}"
+      notify: restart unbound
+
+    - name: Remove zone files
+      file:
+        path: "/etc/unbound/local.d/{{ item.name }}.conf"
+        state: absent
+      loop: "{{ unbound_local_zones|selectattr('state', 'sameas', false)|list }}"
+      notify: restart unbound
+  when: unbound_enable
+
+- name: Manage unbound service
+  service:
+    name: unbound
+    state: started
+    enabled: yes
+  when: unbound_enable
+...
