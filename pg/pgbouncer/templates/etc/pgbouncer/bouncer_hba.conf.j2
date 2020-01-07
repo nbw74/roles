@@ -1,7 +1,7 @@
 local		all		postgres			peer
 {% if pgbouncer_hba_line|length > 0 %}
 {% for item in pgbouncer_hba_line %}
-{{ item.type }}		{{ item.database }}	{{ item.user }}		{{ item.address|d('') }}	{{ item.method }}
+{{ item.type|d('host') }}		{{ item.database|d('sameuser') }}	{{ item.user }}		{{ item.address|d('') }}	{{ item.method|d('md5') }}
 {% endfor %}
 {% endif %}
 {% if pgbouncer_config.unix_socket_dir|d('/var/run/pgbouncer') != 'none' %}

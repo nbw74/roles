@@ -35,11 +35,11 @@ pgbouncer_user: # userlist.txt
     password: string # Optional
 
 pgbouncer_hba_line: # bouncer_hba.conf (see https://pgbouncer.github.io/config.html)
-  - type: local|host|hostssl|hostnossl
-    database: all|sameuser|string
-    user: all|string
+  - type: string # local | host (default) | hostssl | hostnossl
+    database: string # all | sameuser (default) | <string>
+    user: string # all | <string>
     address: ipv4 # Optional
-    method: trust|reject|md5|password|peer|cert
+    method: string # trust | reject | md5 (default) | password | peer | cert
 
 pgbouncer_enable: bool # default: true - Enable pgbouncer service
 
