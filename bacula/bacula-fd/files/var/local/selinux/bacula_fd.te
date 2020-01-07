@@ -1,23 +1,26 @@
 
-module bacula_fd 2.0;
+module bacula_fd 2.1;
 
 # SELinux policy for bacula-fd
 
 require {
 	type bacula_t;
 	type bacula_var_lib_t;
+	type http_port_t;
 	type sysctl_net_t;
 	class lnk_file create;
 	class dir search;
 	class file { read open getattr };
+	class tcp_socket name_bind;
 }
 
 #============= bacula_t ==============
-#
 allow bacula_t bacula_var_lib_t:lnk_file create;
 
 #============= bacula_t ==============
-
 allow bacula_t sysctl_net_t:dir search;
 allow bacula_t sysctl_net_t:file { read open getattr };
+
+#============= bacula_t ==============
+allow bacula_t http_port_t:tcp_socket name_bind;
 
