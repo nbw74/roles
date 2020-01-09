@@ -17,4 +17,15 @@
   loop: "{{ vhost|rejectattr('state', 'sameas', false)|selectattr('nuxt', 'defined')|list }}"
   loop_control:
     label: "node-nuxt-frontend@{{ item.user|d(item.name) }}"
+
+- name: Template custom sudoers
+  template:
+    src: sudoers_d_nuxt.j2
+    dest: "/etc/sudoers.d/vhost_nuxt_{{ item.user|d(item.name) }}"
+    owner: root
+    group: root
+    mode: 0440
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|selectattr('nuxt', 'defined')|list }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}"
 ...

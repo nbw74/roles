@@ -10,7 +10,7 @@
 
 - name: Remove custom sudoers
   file:
-    path: "/etc/sudoers.d/vhost_{{ item.user|d(item.name) }}"
+    path: "/etc/sudoers.d/vhost_laravel_{{ item.user|d(item.name) }}"
     state: absent
   loop: "{{ vhost|selectattr('state', 'sameas', false)|selectattr('php_laravel_units', 'defined')|list }}"
   loop_control:

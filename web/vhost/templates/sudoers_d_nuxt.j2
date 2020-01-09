@@ -1,0 +1,2 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{{ item.user|d(item.name) }} ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart node-nuxt-frontend@{{ item.user|d(item.name) }}.service

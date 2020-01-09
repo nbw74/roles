@@ -10,8 +10,8 @@
 
 - name: Template custom sudoers
   template:
-    src: sudoers_d.j2
-    dest: "/etc/sudoers.d/vhost_{{ item.user|d(item.name) }}"
+    src: sudoers_d_laravel.j2
+    dest: "/etc/sudoers.d/vhost_laravel_{{ item.user|d(item.name) }}"
     owner: root
     group: root
     mode: 0440
