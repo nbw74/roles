@@ -16,22 +16,23 @@ Deploy website virtual host configuration:
 + create Icinga2 webcheck configuration
 ## Common host variables
 ```yaml
-vhost_apache_port: int                          # default: 8888
+vhost_apache_port: int                  # default: 8888
 vhost_backend: "none|php-fpm|apache|reverse-proxy|bitrix" # default is "php-fpm"
-vhost_basedir: "filesystem_path"                # default is "/var/www"
-vhost_frontuser: "string"                       # default is "nginx"
-vhost_backuser: "string"                        # default is "apache"
-vhost_logbuffer: "intUNIT|none"                 # default is "128k"
-vhost_logrotate_cake_enable: bool               # default: False
-vhost_logrotate_laravel_enable: bool            # default: False
-vhost_git_server: "string"                      # mandatory if use git
-vhost_git_path: "filesystem_path"               # default is "/var/lib/git"
-vhost_git_group: "string"                       # default is "developers"
-vhost_ddns_server: "string"                     # mandatory if use ddns
-vhost_default_ddns_zone: "string"               # mandatory if use ddns, git, redmine
-vhost_ddns_key_name: "string"                   # default is "ddns_key"
-vhost_ddns_key_algorithm: "string"              # default is "hmac-md5"
-vhost_ddns_key_secret: "string"                 # mandatory if use ddns
+vhost_backuser: "string"                # default is "apache"
+vhost_basedir: "filesystem_path"        # default is "/var/www"
+vhost_ddns_server: "string"             # mandatory if use ddns
+vhost_ddns_key_name: "string"           # default is "ddns_key"
+vhost_ddns_key_algorithm: "string"      # default is "hmac-md5"
+vhost_ddns_key_secret: "string"         # mandatory if use ddns
+vhost_default_ddns_zone: "string"       # mandatory if use ddns, git, redmine
+vhost_frontuser: "string"               # default is "nginx"
+vhost_git_server: "string"              # mandatory if use git
+vhost_git_path: "filesystem_path"       # default is "/var/lib/git"
+vhost_git_group: "string"               # default is "developers"
+vhost_logbuffer: "intUNIT|none"         # default is "128k"
+vhost_logrotate_cake_enable: bool       # default: False
+vhost_logrotate_laravel_enable: bool    # default: False
+vhost_nuxt_enable: bool                 # default: False; include configuration for nuxt.js
 
 vhost_db_admin:
   pgsql:
@@ -139,6 +140,8 @@ vhost:
   nginx_whitelist:
     allow: []
     context: string # server (default) or root (/)
+  nuxt: # Create nuxt.js systemd unit file, upstream and other Nginx configuration
+    port: uint # start from 5020
   password: string # optional; set password for <user> (changed only on_create)
   php_laravel_units:
     - name: "string" # default: laravel-queue-worker

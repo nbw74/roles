@@ -12,6 +12,12 @@ upstream unit{{ op.unit.port }} {
     server		127.0.0.1:{{ op.unit.port }};
 }
 {% endif %}
+{% if vhost_backend == 'php-fpm' and op.nuxt is defined %}
+
+upstream node{{ op.nuxt.port }} {
+    server		127.0.0.1:{{ op.nuxt.port }};
+}
+{% endif %}
 
 server {
 {% include "nginx/listen-plain.j2" %}

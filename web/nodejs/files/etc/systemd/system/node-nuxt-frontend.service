@@ -1,0 +1,21 @@
+# Nuxt.js instantiated service
+# ----------------------------------
+#
+# run this command to enable service:
+# systemctl enable node-nuxt-frontend@<username>
+
+[Unit]
+Description=Frontend nuxt.js on %I (node-nuxt-frontend)
+After=network.target
+
+[Service]
+User=%i
+Group=%i
+EnvironmentFile=/usr/local/etc/nuxt/%i.env
+Restart=always
+WorkingDirectory=/var/www/%i/www/frontend
+ExecStart=/usr/bin/npx nuxt start --modern --port=$NUXT_PORT
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

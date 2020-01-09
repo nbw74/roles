@@ -1,0 +1,20 @@
+---
+- name: Template nuxt service environment files
+  copy:
+    dest: "/usr/local/etc/nuxt/{{ item.user|d(item.name) }}.env"
+    mode: "0644"
+    content: >
+      NUXT_PORT={{ item.nuxt.port }}
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|selectattr('nuxt', 'defined')|list }}"
+  loop_control:
+    label: "{{ item.user|d(item.name) }}.env"
+
+- name: Enable nuxt.js instantiated units
+  systemd:
+    name: "node-nuxt-frontend@{{ item.user|d(item.name) }}"
+    enabled: yes
+    state: started
+  loop: "{{ vhost|rejectattr('state', 'sameas', false)|selectattr('nuxt', 'defined')|list }}"
+  loop_control:
+    label: "node-nuxt-frontend@{{ item.user|d(item.name) }}"
+...

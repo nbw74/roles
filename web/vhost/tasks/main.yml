@@ -54,6 +54,9 @@
 
     - name: Include laravel
       include_tasks: laravel.yml
+
+    - name: Include nuxt
+      include_tasks: nuxt.yml
   when: vhost_backend == 'php-fpm'
 
 - name: cake logrotate
