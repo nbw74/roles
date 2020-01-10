@@ -15,7 +15,6 @@ EnvironmentFile=/usr/local/etc/nuxt/%i.env
 Restart=always
 WorkingDirectory=/var/www/%i/www/frontend
 ExecStart=/bin/bash -c "/usr/bin/npx nuxt start --modern --port=${NUXT_PORT}"
-KillMode=process
 
 [Install]
 WantedBy=multi-user.target
