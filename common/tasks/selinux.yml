@@ -73,6 +73,7 @@
       failed_when:
         - __common_rm_porntube is failed
         - __common_rm_porntube.stderr is not search('No such file')
+        - __common_rm_porntube.stderr is not search('was not found')
 
     - name: checkmodule command
       command: >
