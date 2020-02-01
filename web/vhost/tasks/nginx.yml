@@ -74,7 +74,9 @@
     owner: root
     group: root
     mode: 0644
-  when: item.nginx_301_only is not defined
+  when:
+    - item.nginx_301_only is not defined
+    - vhost_backend != 'reverse-proxy'
   loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "nginx_{{ item.user|d(item.name) }}"
