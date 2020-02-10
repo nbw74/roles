@@ -16,7 +16,7 @@
     src: "sendxmpp-py/sendxmpp"
     dest: "/usr/local/bin/sendxmpp.py"
     remote_src: yes
-    mode: 0755
+    mode: "0755"
 
 - name: sendxmpp config directory
   file:
@@ -24,7 +24,7 @@
     path: "{{ icinga2_home }}/.config"
     owner: icinga
     group: icinga
-    mode: 0755
+    mode: "0755"
 
 - name: template sendxmpp config
   template:
@@ -32,5 +32,23 @@
     dest: "{{ icinga2_home }}/.config/sendxmpp.cfg"
     owner: icinga
     group: icinga
-    mode: 0644
+    mode: "0644"
+
+- name: stat sendxmpp log file
+  stat:
+    path: /var/log/sendxmpp.log
+  register: __icinga2_sendxmpp_log
+
+- name: create sendxmpp log file
+  file:
+    state: touch
+    path: /var/log/sendxmpp.log
+  when: not __icinga2_sendxmpp_log.stat.exists
+
+- name: set sendxmpp log perms
+  file:
+    path: /var/log/sendxmpp.log
+    owner: icinga
+    group: icinga
+    mode: "0644"
 ...
