@@ -2,6 +2,8 @@
 icinga2_icingaweb2_node: false
 icinga2_client_node: false
 
+icinga2_config_http: []
+
 icinga2_release_rpm: "https://packages.icinga.com/epel/icinga-rpm-release-7-latest.noarch.rpm"
 
 icinga2_pgdg_rpm: "https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm"

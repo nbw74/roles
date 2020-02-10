@@ -58,4 +58,14 @@
     - include_tasks: ipmi.yml
     - include_tasks: wmi.yml
   when: not icinga2_client_node
+
+- name: Include http config
+  template:
+    src: config/http.j2
+    dest: "/etc/icinga2/zones.d/{{ item[0].check_location }}/http/{{ item[1].name }}.conf"
+    mode: "0644"
+  loop: "{{ icinga2_config_http|subelements('domains', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item[0].check_location }} : {{ item[1].name }}"
+  notify: service icinga2 reload
 ...

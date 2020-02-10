@@ -4,8 +4,13 @@
 
 - name: service icinga2 restart
   systemd:
-    name: "icinga2.service"
+    name: icinga2.service
     state: restarted
+
+- name: service icinga2 reload
+  systemd:
+    name: icinga2.service
+    state: reloaded
 
 - name: pip installed
   command: "pip3 install dnspython sleekxmpp"
