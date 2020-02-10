@@ -1,0 +1,20 @@
+---
+- name: Template http configs
+  template:
+    src: config/http.j2
+    dest: "/etc/icinga2/zones.d/{{ loc.check_location }}/http/{{ item.name }}.conf"
+    mode: "0644"
+  loop: "{{ loc.domains|rejectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "{{ loc.check_location }} : {{ item.name }}"
+  notify: service icinga2 reload
+
+- name: Remove http configs
+  file:
+    path: "/etc/icinga2/zones.d/{{ loc.check_location }}/http/{{ item.name }}.conf"
+    state: absent
+  loop: "{{ loc.domains|selectattr('state', 'sameas', false)|list }}"
+  loop_control:
+    label: "{{ loc.check_location }} : {{ item.name }}"
+  notify: service icinga2 reload
+...

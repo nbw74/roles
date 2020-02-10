@@ -1,15 +1,15 @@
 /* THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST */
-{% if item[1].crypto|d() %}
-    vars.www_tls["{{ item[1].name }}"] = {
+{% if item.crypto|d() %}
+    vars.www_tls["{{ item.name }}"] = {
 {% else %}
-    vars.www["{{ item[1].name }}"] = {
+    vars.www["{{ item.name }}"] = {
 {% endif %}
-        http_string = "{{ item[1].content }}"
-{% if item.webcheck.url is defined %}
-        http_url = "{{ item[1].url }}"
+        http_string = "{{ item.content }}"
+{% if item.url is defined %}
+        http_url = "{{ item.url }}"
 {% endif %}
-{% if item[1].notify is defined %}
-        notification_entity = "{{ item[1].notify }}"
+{% if item.notify is defined %}
+        notification_entity = "{{ item.notify }}"
 {% endif %}
     }
 /* EOF */
