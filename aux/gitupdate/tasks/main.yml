@@ -1,0 +1,37 @@
+---
+- name: Section 7
+  block:
+    - name: Import GPG key for Lux repo
+      rpm_key:
+        key: http://repo.iotti.biz/RPM-GPG-KEY-LUX
+
+    - name: Lux repository
+      yum_repository:
+        name: "lux"
+        description: "CentOS $releasever - $basearch - Lux"
+        baseurl: "http://repo.iotti.biz/CentOS/$releasever"
+        enabled: no
+        gpgcheck: yes
+        gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
+
+    - name: Get installed git version
+      command: >
+        rpm -q --queryformat '%{VERSION}' git
+      args:
+        warn: no
+      register: php_reg_git
+      changed_when: no
+      failed_when: no
+
+    - name: Git from Lux  # noqa 403
+      yum:
+        name: git
+        enablerepo: lux
+        state: latest
+      when: >
+        php_reg_git.stdout is version('2.17.0', '<')
+        or php_reg_git.stdout is search('not installed')
+  when:
+    - ansible_distribution_file_variety == "RedHat"
+    - ansible_distribution_major_version|int == 7
+...

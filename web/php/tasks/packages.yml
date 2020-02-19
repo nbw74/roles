@@ -23,26 +23,6 @@
       when: not php_oob
       tags: [ packages, remi ]
 
-    - name: GPG key for Lux repo
-      copy:
-        src: "RPM-GPG-KEY-LUX"
-        dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
-        force: no
-        mode: 0644
-        owner: root
-        group: root
-      tags: [ packages, git ]
-
-    - name: Lux repository
-      yum_repository:
-        name: "lux"
-        description: "CentOS $releasever - $basearch - Lux"
-        baseurl: "http://repo.iotti.biz/CentOS/$releasever"
-        enabled: no
-        gpgcheck: yes
-        gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
-      tags: [ packages, git ]
-
     - name: yum common packages
       yum:
         name: "{{ php_common_packages }}"
@@ -55,26 +35,6 @@
         state: present
       when: not php_oob
       tags: [ packages ]
-
-    - name: Get installed git version
-      command: >
-        rpm -q --queryformat '%{VERSION}' git
-      args:
-        warn: no
-      register: php_reg_git
-      changed_when: no
-      failed_when: no
-      tags: [ packages, git ]
-
-    - name: Git from Lux  # noqa 403
-      yum:
-        name: git
-        enablerepo: lux
-        state: latest
-      tags: [ packages, git ]
-      when: >
-        php_reg_git.stdout is version('2.17.0', '<')
-        or php_reg_git.stdout is search('not installed')
 
     - name: yum memcached client package
       yum:
