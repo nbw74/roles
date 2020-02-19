@@ -12,7 +12,6 @@
         baseurl: "http://repo.iotti.biz/CentOS/$releasever"
         enabled: no
         gpgcheck: yes
-        gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LUX"
 
     - name: Get installed git version
       command: >

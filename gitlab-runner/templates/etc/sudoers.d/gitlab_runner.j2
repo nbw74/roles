@@ -5,5 +5,5 @@ Defaults:gitlab-runner env_keep += "{{ runner_sudo_env_keep|join(' ') }}", !requ
 Defaults:gitlab-runner !requiretty
 {% endif %}
 {% for command in runner_sudo_commands %}
-gitlab-runner ALL=(ALL) NOPASSWD: {{ command }}
+gitlab-runner ALL=({{ command.user|d('ALL') }}) NOPASSWD: {{ command.command }}
 {% endfor %}

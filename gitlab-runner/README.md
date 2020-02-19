@@ -22,7 +22,8 @@ runner_custom_script_files: # Copy custom scripts from inventory
     mode: 'oct' # default: '0755'
 
 runner_sudo_commands:  # List of sudo commands that the runner is allowed to execute:
-  - <command>  # gitlab-runner ALL=(ALL) NOPASSWD: <command>
+  - command: string    # gitlab-runner ALL=(<user|d(ALL)>) NOPASSWD: <command>
+    user: string
 
 runner_sudo_env_keep:  # Variables list for adding in env_keep +=
   - VAR  # Defaults:gitlab-runner  env_keep += "VAR"
