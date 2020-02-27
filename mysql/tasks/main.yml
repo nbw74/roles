@@ -35,7 +35,19 @@
     host: "{{ item.host|d('%') }}"
     login_unix_socket: "{{ item.login_unix_socket|d('/var/lib/mysql/mysql.sock') }}"
     login_user: root
-  loop: "{{ mysql_users }}"
+  loop: "{{ mysql_user }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Manage mysql databases
+  mysql_db:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
+    encoding: "{{ item.encoding|d('utf8') }}"
+    collation: "{{ item.collation|d('utf8_general_ci') }}"
+    login_unix_socket: "{{ item.login_unix_socket|d('/var/lib/mysql/mysql.sock') }}"
+    login_user: root
+  loop: "{{ mysql_db }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -44,7 +56,7 @@
     dest: "/root/.passwd.mysql.{{ item.name }}"
     content: >
       {{ item.password }}
-  loop: "{{ mysql_users|selectattr('password_file', 'sameas', True)|list }}"
+  loop: "{{ mysql_user|selectattr('password_file', 'sameas', True)|list }}"
   loop_control:
     label: "{{ item.name }}"
 
