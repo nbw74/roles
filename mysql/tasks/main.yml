@@ -26,6 +26,18 @@
     state: absent
   when: mysql_percona_packages|length == 0
 
+- name: Manage mysql databases
+  mysql_db:
+    name: "{{ item.name }}"
+    state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
+    encoding: "{{ item.encoding|d('utf8') }}"
+    collation: "{{ item.collation|d('utf8_general_ci') }}"
+    login_unix_socket: "{{ item.login_unix_socket|d('/var/lib/mysql/mysql.sock') }}"
+    login_user: root
+  loop: "{{ mysql_db }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Manage mysql users
   mysql_user:
     name: "{{ item.name }}"
@@ -36,18 +48,6 @@
     login_unix_socket: "{{ item.login_unix_socket|d('/var/lib/mysql/mysql.sock') }}"
     login_user: root
   loop: "{{ mysql_user }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-- name: Manage mysql databases
-  mysql_db:
-    name: "{{ item.name }}"
-    state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
-    encoding: "{{ item.encoding|d('utf8') }}"
-    collation: "{{ item.collation|d('utf8_general_ci') }}"
-    login_unix_socket: "{{ item.login_unix_socket|d('/var/lib/mysql/mysql.sock') }}"
-    login_user: root
-  loop: "{{ mysql_db }}"
   loop_control:
     label: "{{ item.name }}"
 
