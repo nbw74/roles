@@ -68,6 +68,12 @@
   loop:
     - path: etc/sudoers.d/gitlab_runner
 
+- name: Generate ssh key
+  user:
+    name: gitlab-runner
+    generate_ssh_key: yes
+    ssh_key_type: ed25519
+
 - name: Copy custom scripts
   copy:
     src: "{{ inventory_dir }}/../files/{{ item.path }}"
