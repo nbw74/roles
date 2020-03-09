@@ -12,9 +12,6 @@
     name: icinga2.service
     state: reloaded
 
-- name: pip installed
-  command: "pip3 install dnspython sleekxmpp"
-
 - name: restart authd
   systemd:
     name: "auth.socket"
