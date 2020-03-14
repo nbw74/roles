@@ -1,6 +1,15 @@
 ---
-- name: restart runner
+- name: restart runner (systemd)
   systemd:
     name: gitlab-runner.service
     state: restarted
+  listen: restart runner
+  when: "ansible_service_mgr == 'systemd'"
+
+- name: restart runner (upstart)
+  service:
+    name: gitlab-runner
+    state: restarted
+  listen: restart runner
+  when: "ansible_service_mgr == 'upstart'"
 ...

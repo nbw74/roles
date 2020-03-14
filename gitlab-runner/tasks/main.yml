@@ -3,7 +3,8 @@
   assert:
     that:
       - ansible_distribution_file_variety == "RedHat"
-      - ansible_distribution_major_version|int >= 7
+      - ansible_distribution_major_version|int >= 6
+      - ansible_distribution_major_version|int <= 7
       - runner_reg_token is defined
       - runner_tags is defined
 
@@ -23,9 +24,9 @@
     sslverify: yes
   loop:
     - name: runner_gitlab-runner
-      baseurl: https://packages.gitlab.com/runner/gitlab-runner/el/7/$basearch
+      baseurl: https://packages.gitlab.com/runner/gitlab-runner/el/{{ ansible_distribution_major_version }}/$basearch
     - name: runner_gitlab-runner-source
-      baseurl: https://packages.gitlab.com/runner/gitlab-runner/el/7/SRPMS
+      baseurl: https://packages.gitlab.com/runner/gitlab-runner/el/{{ ansible_distribution_major_version }}/SRPMS
 
 - name: Yum install packages
   yum:
@@ -72,7 +73,7 @@
   user:
     name: gitlab-runner
     generate_ssh_key: yes
-    ssh_key_type: ed25519
+    ssh_key_type: "{{ (ansible_distribution_major_version|int >= 7)|ternary('ed25519', 'rsa') }}"
 
 - name: Copy custom scripts
   copy:
