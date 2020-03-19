@@ -37,7 +37,7 @@
 
     location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf|webp)$ {
 	try_files	$uri @opencart;
-	expires		30d;
+	expires		1y;
 	log_not_found	off;
     }
 
