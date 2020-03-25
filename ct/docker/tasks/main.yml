@@ -21,6 +21,10 @@
   yum:
     name: "{{ docker_main_packages }}"
 
+- name: Install Docker SDK for Python (I)
+  yum:
+    name: "python-docker{{ (ansible_python_version is version('2.7', '<='))|ternary('-py', '') }}"
+
 - name: Create daemon.json file
   copy:
     dest: "/etc/docker/daemon.json"
