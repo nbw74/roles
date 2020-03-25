@@ -11,7 +11,7 @@
 - name: Template custom sudoers
   template:
     src: sudoers_d_laravel.j2
-    dest: "/etc/sudoers.d/vhost_laravel_{{ item.user|d(item.name) }}"
+    dest: "/etc/sudoers.d/vhost_laravel_{{ item.user|d(item.name)|regex_replace('\.', '_') }}"
     owner: root
     group: root
     mode: 0440
