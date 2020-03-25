@@ -37,4 +37,14 @@
     name: docker
     enabled: yes
     state: started
+
+- name: Run containers
+  docker_container:
+    name: "{{ item.name }}"
+    image: "{{ item.image|d(omit) }}"
+    published_ports: "{{ item.published_ports|d(omit) }}"
+    volumes: "{{ item.volumes|d(omit) }}"
+    restart_policy: "{{ item.restart_policy|d('unless-stopped') }}"
+    state: "{{ item.state|d('started') }}"
+  loop: "{{ docker_containers }}"
 ...
