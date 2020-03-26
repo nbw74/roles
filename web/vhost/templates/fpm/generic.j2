@@ -3,6 +3,7 @@
     root		$root_path;
     index		{{ op.index|d('index.php') }};
     charset		utf-8;
+{% if op.nginx_root_location|d(True) %}
 
     location / {
 	try_files	$uri $uri/ /index.php?$args;
@@ -19,6 +20,7 @@
 	auth_basic_user_file	"{{ op.nginx_auth_basic.user_file|d(vhost_default_htpasswd) }}";
 {% endif %}
     }
+{% endif %}
 
     location ~ \.php$ {
 	include				/etc/nginx/fastcgi_params;
