@@ -2,7 +2,7 @@
 {% for item in docker_override %}
 [{{ item.section }}]
 {% for key, value in item.props|d({})|dictsort %}
-{{ key }}={{ value|d('') }}
+{{ key|regex_replace('\\.\d+$', '') }}={{ value|d('') }}
 {% endfor %}
 
 {% endfor %}

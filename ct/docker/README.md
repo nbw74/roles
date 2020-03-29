@@ -18,4 +18,6 @@ docker_containers:  # Optionally run docker containers
 
 docker_override:  # Ini-file content for /etc/systemd/system/docker.service/ansible-docker.conf
   KEY: value
+  REPEATING_KEY.1: value
+  REPEATING_KEY.2: value
 ```
