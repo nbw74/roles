@@ -1,0 +1,8 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% for item in docker_override %}
+[{{ item.section }}]
+{% for key, value in item.props|d({})|dictsort %}
+{{ key }}={{ value|d('') }}
+{% endfor %}
+
+{% endfor %}

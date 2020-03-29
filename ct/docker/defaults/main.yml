@@ -1,4 +1,5 @@
 ---
 docker_daemon_json: { }
 docker_containers: []
+docker_override: { }
 ...

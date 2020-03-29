@@ -15,4 +15,7 @@ docker_containers:  # Optionally run docker containers
                      # Use docker CLI-style syntax: /host:/container[:mode]
     restart_policy: string  # no, on-failure, always or unless-stopped (default)
     state: string  # absent, present, stopped or started (default)
+
+docker_override:  # Ini-file content for /etc/systemd/system/docker.service/ansible-docker.conf
+  KEY: value
 ```

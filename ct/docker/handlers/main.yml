@@ -3,4 +3,8 @@
   service:
     name: docker
     state: reloaded
+
+- name: reload systemd
+  systemd:
+    daemon-reload: yes
 ...
