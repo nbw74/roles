@@ -25,13 +25,22 @@
   yum:
     name: "python-docker{{ (ansible_python_version is version('2.7', '<='))|ternary('-py', '') }}"
 
-- name: Create systemd override file
-  template:
-    src: etc/systemd/system/docker.service/ansible-docker.conf.j2
-    dest: /etc/systemd/system/docker.service/ansible-docker.conf
-    owner: root
-    mode: "0644"
-  notify: reload systemd
+- name: Override block
+  block:
+    - name: Create dir for systemd override file
+      file:
+        path: /etc/systemd/system/docker.service
+        state: directory
+        owner: root
+        mode: "0755"
+
+    - name: Create systemd override file
+      template:
+        src: etc/systemd/system/docker.service/ansible-docker.conf.j2
+        dest: /etc/systemd/system/docker.service/ansible-docker.conf
+        owner: root
+        mode: "0644"
+      notify: reload systemd
   when: docker_override|length > 0
 
 - name: Remove systemd override file
