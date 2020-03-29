@@ -16,7 +16,7 @@ docker_containers:  # Optionally run docker containers
     restart_policy: string  # no, on-failure, always or unless-stopped (default)
     state: string  # absent, present, stopped or started (default)
 
-docker_override:  # Ini-file content for /etc/systemd/system/docker.service/ansible-docker.conf
+docker_override:  # Ini-file content for /etc/systemd/system/docker.service.d/ansible-docker.conf
   KEY: value
   REPEATING_KEY.1: value
   REPEATING_KEY.2: value
