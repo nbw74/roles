@@ -1,9 +1,0 @@
-# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
-{% if runner_sudo_env_keep|length > 0 %}
-Defaults:gitlab-runner env_keep += "{{ runner_sudo_env_keep|join(' ') }}", !requiretty
-{% else %}
-Defaults:gitlab-runner !requiretty
-{% endif %}
-{% for command in runner_sudo_commands %}
-gitlab-runner ALL=({{ command.user|d('ALL') }}) NOPASSWD: {{ command.command }}
-{% endfor %}
