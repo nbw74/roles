@@ -1,4 +1,4 @@
 ---
 dependencies:
-  - role: net/bridge
+  - role: bridge
 ...
