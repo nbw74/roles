@@ -17,7 +17,7 @@
       - bacula_dir.prefix is defined
       - bacula_dir.cn is defined
       - bacula_dir.host is defined
-      - inventory_hostname not in groups['nobacula']
+      - not bacula_fd_skip
 
 - name: Include packages
   include_tasks: packages.yml
