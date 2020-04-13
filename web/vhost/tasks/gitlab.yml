@@ -49,7 +49,7 @@
         headers:
           Private-Token: "{{ vhost_gitlab.api_token }}"
         body:
-          title: "{{ item.item.name is search(vhost_default_ddns_zone)|ternary('Development', 'Production') }}"
+          title: "{{ item.item.name is search(vhost_default_ddns_zone)|ternary('Staging', 'Production') }}"
           content: "{{ lookup('file', '/tmp/vhost_' ~ item.item.name ~ '.txt') }}"
         body_format: json
         status_code: 201
