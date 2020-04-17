@@ -5,6 +5,10 @@
     state: reloaded
   listen: reload php
   when: inventory_hostname in groups['httpd']
+  register: __php_httpd_reload
+  failed_when:
+    - __php_httpd_reload is failed
+    - __php_httpd_reload.msg is not search('not find the requested service')
 
 - name: reload php-fpm
   systemd:
@@ -12,4 +16,8 @@
     state: reloaded
   listen: reload php
   when: inventory_hostname in groups['php_fpm']
+  register: __php_phpfpm_reload
+  failed_when:
+    - __php_phpfpm_reload is failed
+    - __php_phpfpm_reload.msg is not search('not find the requested service')
 ...
