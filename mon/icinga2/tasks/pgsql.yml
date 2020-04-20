@@ -3,6 +3,10 @@
   yum:
     name: "{{ icinga2_pgdg_rpm }}"
     state: present
+  register: __icinga2_pgdg_rpm
+  failed_when:
+    - __icinga2_pgdg_rpm.failed
+    - __icinga2_pgdg_rpm.msg is not search('Not Found')
   tags: [ pgsql ]
 
 - name: install postgresql
