@@ -7,4 +7,13 @@
     opts: "{{ item.opts|d(omit) }}"
     state: "{{ item.state|d('mounted') }}"
   loop: "{{ common_mounts }}"
+
+- name: Set modes
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.modes.owner|d(omit) }}"
+    owner: "{{ item.modes.group|d(omit) }}"
+    mode: "{{ item.modes.mode|d(omit) }}"
+  loop: "{{ common_mounts|selectattr('modes', 'defined')|list }}"
 ...

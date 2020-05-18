@@ -83,6 +83,10 @@ common_mounts:
     fstype: string  # Filesystem type. Required when state is present or mounted.
     opts: string  # Mount options (see fstab(5))
     state: string  # absent, mounted, present or unmounted. Default is 'mounted'. See details in the ansible docs.
+    modes:  # Optional access permissions
+      owner: string  # default is omit
+      group: string  # default is omit
+      mode: oct  # default is omit
 
 common_ntp_domains: # Хэш с локальными доменами и обслуживающими их NTP-серверами
   - domain: "fqdn"
