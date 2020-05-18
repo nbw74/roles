@@ -77,6 +77,13 @@ common_journal_gateway_enable: bool # default: false
 
 common_leave_networkmanager: bool # default: false
 
+common_mounts:
+  - path: string  # Required; path to the mount point (e.g. /mnt/files)
+    src: string  # Device to be mounted on path. Required when state set to present or mounted.
+    fstype: string  # Filesystem type. Required when state is present or mounted.
+    opts: string  # Mount options (see fstab(5))
+    state: string  # absent, mounted, present or unmounted. Default is 'mounted'. See details in the ansible docs.
+
 common_ntp_domains: # Хэш с локальными доменами и обслуживающими их NTP-серверами
   - domain: "fqdn"
     servers: [ 'string', 'string', ... ]

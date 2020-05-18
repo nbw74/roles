@@ -12,6 +12,7 @@ common_ifcfg_restart: True
 common_iptables_enable: True
 common_journal_gateway_enable: False
 common_leave_networkmanager: False
+common_mounts: []
 common_resolv_conf: { }
 common_snmpd_conf_line: []
 common_sudoers_d: []

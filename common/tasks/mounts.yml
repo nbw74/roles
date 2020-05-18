@@ -1,0 +1,10 @@
+---
+- name: Setup mounts
+  mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src|d(omit) }}"
+    fstype: "{{ item.fstype|d(omit) }}"
+    opts: "{{ item.opts|d(omit) }}"
+    state: "{{ item.state|d('mounted') }}"
+  loop: "{{ common_mounts }}"
+...

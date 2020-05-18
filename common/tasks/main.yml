@@ -11,6 +11,10 @@
 - name: Import hostname
   import_tasks: hostname.yml
 
+- name: Include mounts
+  include_tasks: mounts.yml
+  when: common_mounts|length > 0
+
 - name: No-ct section
   block:
     - name: Include selinux
