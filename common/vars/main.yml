@@ -81,6 +81,9 @@ common_unnecessary_packages:
   - abrt
   - 'iwl*'
 
+common_unnecessary_packages_dnf:
+  - abrt
+
 common_unnecessary_packages_nm:
   - NetworkManager
   - ModemManager

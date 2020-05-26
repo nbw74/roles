@@ -8,7 +8,7 @@
 
 - name: "Remove unnecessary packages (DNF)"
   dnf:
-    name: "{{ common_unnecessary_packages }}"
+    name: "{{ common_unnecessary_packages_dnf }}"
     state: absent
   when: ansible_distribution_major_version|int > 7
   tags: [ packages ]
