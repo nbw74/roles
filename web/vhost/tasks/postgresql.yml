@@ -46,7 +46,8 @@
       when:
         - item[0].db is defined
         - item[0].db.type == 'postgresql'
-        - item[1].state == 'absent'
+        - item[1].changed
+        - item[1].state|d('present') == 'absent'
       loop: "{{ vhost|zip(vhost_user_del.results)|list }}"
       loop_control:
         label: "{{ item[0].user|d(item[0].name) }}"
