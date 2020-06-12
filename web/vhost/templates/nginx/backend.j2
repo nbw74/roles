@@ -29,4 +29,12 @@
     index		{{ op.index|d('index.html') }};
     charset		utf-8;
 {% endif %}
+{% for location in nginx_locations|d([]) %}
+
+    location {{ location.path }} {
+{% for key, value in location.directives|dictsort %}
+	{{ key }}	{{ value }};
+{% endfor %}
+    }
+{% endfor %}
 
