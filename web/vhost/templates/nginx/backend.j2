@@ -33,7 +33,7 @@
 
     location {{ location.path }} {
 {% for key, value in location.directives|dictsort %}
-	{{ key }}	{{ value }};
+	{{ key }}	{{ value|string }};
 {% endfor %}
     }
 {% endfor %}
