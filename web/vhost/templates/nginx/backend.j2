@@ -3,6 +3,9 @@
 {{ op.nginx_server_snippet }}
 # SNIPPET END
 {% endif %}
+{% for key, value in op.nginx_server_directives|d({ })|dictsort %}
+    {{ key }} {{ value|string }};
+{% endfor %}
 {% if op.nginx_whitelist is defined and op.nginx_whitelist.context|d('server') == 'server' %}
 
 {% for item in op.nginx_whitelist.allow %}
@@ -33,7 +36,7 @@
 
     location {{ location.path }} {
 {% for key, value in location.directives|dictsort %}
-	{{ key }}	{{ value|string }};
+	{{ key }} {{ value|string }};
 {% endfor %}
     }
 {% endfor %}

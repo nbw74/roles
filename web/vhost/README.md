@@ -138,6 +138,7 @@ vhost:
     - path: string
       directives: { }
   nginx_root_location: bool # default: true
+  nginx_server_directives: { }
   nginx_server_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'server' context (before "backend section")
   nginx_whitelist:
