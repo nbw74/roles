@@ -14,6 +14,14 @@
     deny		all;
 
 {% endif %}
+{% for location in op.nginx_locations|d([]) %}
+    location {{ location.path }} {
+{% for key, value in location.directives|dictsort %}
+	{{ key|regex_replace('\\.\d+$', '') }} {{ value|string }};
+{% endfor %}
+    }
+
+{% endfor %}
 {% if vhost_backend == 'php-fpm' and op.fpm is defined %}
 {% include "fpm/" ~ op.fpm.template|d('generic') ~ ".j2" %}
 {% elif vhost_backend == 'php-fpm' and op.unit is defined %}
@@ -32,12 +40,4 @@
     index		{{ op.index|d('index.html') }};
     charset		utf-8;
 {% endif %}
-{% for location in op.nginx_locations|d([]) %}
-
-    location {{ location.path }} {
-{% for key, value in location.directives|dictsort %}
-	{{ key|regex_replace('\\.\d+$', '') }} {{ value|string }};
-{% endfor %}
-    }
-{% endfor %}
 
