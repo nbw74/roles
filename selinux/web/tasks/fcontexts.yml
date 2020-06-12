@@ -4,7 +4,7 @@
     setype: "{{ item.setype }}"
     target: "{{ item.target }}"
     state: present
-  with_items:
+  loop:
     - name: "Crontab fix"
       setype: user_cron_spool_t
       target: '/var/spool/cron/[^/]*'
@@ -41,6 +41,9 @@
     - name: "CakePHP tmp"
       setype: httpd_sys_rw_content_t
       target: '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp(/.*)?'
+    - name: "CakePHP tmp logs"
+      setype: httpd_log_t
+      target: '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp/logs(/.*)?'
     - name: "Yii framework assets"
       setype: httpd_sys_rw_content_t
       target: '/var/www/[-a-zA-Z0-9\.]+/www/web/assets(/.*)?'
@@ -59,7 +62,7 @@
     setype: "{{ item.setype }}"
     target: "{{ item.target }}"
     state: present
-  with_items: "{{ selinux_custom_fcontexts }}"
+  loop: "{{ selinux_custom_fcontexts }}"
   loop_control:
     label: "{{ item.setype }}:{{ item.name|d('Unnamed') }}:{{ item.target }}"
   notify: restorecon www
