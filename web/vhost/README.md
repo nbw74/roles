@@ -167,6 +167,7 @@ vhost:
   unit:
     port: uint # begin from 8300
   user: example # optional; default is "name" value
+  user_id: uint  # optional; default is omitted
   webcheck: # optional
     enable: bool # default is circuit-dependent
     ignore: bool # don't touch existing Icinga2 http check config

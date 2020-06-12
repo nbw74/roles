@@ -2,6 +2,7 @@
 - name: Delete user
   user:
     name: "{{ item.user|d(item.name) }}"
+    uid: "{{ item.user_id|d(omit) }}"
     state: absent
     force: yes
     remove: no
@@ -27,6 +28,7 @@
 - name: Create user
   user:
     name: "{{ item.user|d(item.name) }}"
+    uid: "{{ item.user_id|d(omit) }}"
     shell: "/bin/bash"
     home: "{{ vhost_basedir }}/{{ item.user|d(item.name) }}"
     generate_ssh_key: yes
