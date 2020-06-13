@@ -1,5 +1,0 @@
----
-- name: Main include
-  include_tasks: tasks.yml
-  when: quagga_daemons|length > 0
-...

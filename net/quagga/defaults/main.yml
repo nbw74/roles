@@ -1,5 +1,0 @@
----
-quagga_daemons: []
-quagga_ospfd_config: { }
-quagga_ospfd_restart: True
-...
