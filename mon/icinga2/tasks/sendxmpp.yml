@@ -8,7 +8,6 @@
   yum:
     name: "python36-pip"
     state: present
-  notify: pip installed
 
 - name: pip install modules
   pip:
