@@ -20,7 +20,9 @@
       loop:
         - { regexp: '^IPV6INIT=', line: 'IPV6INIT="no"' }
       ignore_errors: yes
-  when: not common_leave_networkmanager
+  when:
+    - not common_leave_networkmanager
+    - ansible_default_ipv4.interface is defined
   tags: [ services, ifcfg ]
 
 - name: Ifcfg template section
