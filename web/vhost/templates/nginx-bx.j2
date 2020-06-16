@@ -47,6 +47,12 @@ server {
 {% include "nginx/listen-crypto.j2" %}
     server_name		{{ server_name }}
 			www.{{ server_name }}
+{% if op.alias is defined %}
+{% for name in op.alias %}
+			{{ name }}
+			www.{{ name }}
+{% endfor %}
+{% endif %}
 			;
 {% if op.disabled|d() %}
 
