@@ -32,13 +32,6 @@
   ignore_errors: yes
   tags: [ services ]
 
-- name: "Reconfigure logrotate"
-  replace:
-    dest: /etc/logrotate.conf
-    regexp: '^#\s*compress'
-    replace: 'compress'
-  tags: [ logrotate ]
-
 - name: "Reconfigure sudo"
   replace:
     dest: /etc/sudoers

@@ -44,6 +44,10 @@
 - name: Include services
   include_tasks: services.yml
 
+- name: Include logrotate
+  include_tasks: logrotate.yml
+  when: common_logrotate_d|length > 0
+
 - name: Include journal
   include_tasks: journal.yml
   when: "ansible_service_mgr == 'systemd'"

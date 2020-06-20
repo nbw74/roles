@@ -77,6 +77,17 @@ common_journal_gateway_enable: bool # default: false
 
 common_leave_networkmanager: bool # default: false
 
+common_logrotate_d:  # Optional add custom file in /etc/logrotate.d
+  - name: string
+    paths:
+      - path: string
+        directives: { }  # See example below
+        prerotate: |-
+          <prerotate script>
+        postrotate: |-
+          <postrotate script>
+    state: bool
+
 common_mounts:
   - path: string  # Required; path to the mount point (e.g. /mnt/files)
     src: string  # Device to be mounted on path. Required when state set to present or mounted.
@@ -138,6 +149,34 @@ common_sysctl_vars:
 selinux_state: bool # default: "enforcing"
 
 timezone: "string" # default: "Europe/Moscow"
+```
+
+Examples
+--------
+
+Logrotate syntax example
+```yaml
+common_logrotate_d:
+  - name: myapp
+    paths:
+    - path: /var/www/myapp/*.log
+      directives:
+        daily:
+        rotate: 10
+        missingok:
+        sharedscripts:
+      postrotate: |-
+        /bin/kill -USR1 `cat /run/nginx.pid 2>/dev/null` 2>/dev/null || true
+      prerotate: |-
+        if [ -d /etc/logrotate.d/nginx-prerotate ]; then \
+            run-parts /etc/logrotate.d/nginx-prerotate; \
+        fi; \
+    - path: /var/www/anotherapp/*.log
+      directives:
+        monthly:
+        notifempty:
+        compress:
+        su: root nginx
 ```
 
 ## Tags

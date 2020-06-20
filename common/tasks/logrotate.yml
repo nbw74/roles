@@ -1,0 +1,25 @@
+---
+- name: Check compress option in logrotate.conf
+  lineinfile:
+    path: /etc/logrotate.conf
+    regexp: '^#*\s*compress'
+    line: 'compress'
+
+- name: Template file in logrotate.d
+  template:
+    src: etc/logrorate.d/name.j2
+    dest: "/etc/logrotate.d/{{ file.name }}"
+  loop: "{{ common_logrotate_d|rejectattr('state', 'sameas', False)|list }}"
+  loop_control:
+    loop_var: file
+    label: "{{ file.name }}"
+
+- name: Remove file in logrotate.d
+  file:
+    path: "/etc/logrotate.d/{{ file.name }}"
+    state: absent
+  loop: "{{ common_logrotate_d|selectattr('state', 'sameas', False)|list }}"
+  loop_control:
+    loop_var: file
+    label: "{{ file.name }}"
+...

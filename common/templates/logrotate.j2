@@ -1,0 +1,20 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+{% for path in file.paths %}
+
+{{ path.path }} {
+{% for key, value in path.directives|dictsort %}
+    {{ key }} {{ value|d('') }}
+{% endfor %}
+{% if path.prerotate is defined %}
+    prerotate
+        {{ path.prerotate|indent(width=8) }}
+    endscript
+{% endif %}
+{% if path.postrotate is defined %}
+    postrotate
+        {{ path.postrotate|indent(width=8) }}
+    endscript
+{% endif %}
+}
+{% endfor %}
+
