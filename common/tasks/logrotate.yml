@@ -7,7 +7,7 @@
 
 - name: Template file in logrotate.d
   template:
-    src: etc/logrorate.d/name.j2
+    src: logrorate.j2
     dest: "/etc/logrotate.d/{{ file.name }}"
   loop: "{{ common_logrotate_d|rejectattr('state', 'sameas', False)|list }}"
   loop_control:

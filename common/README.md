@@ -161,10 +161,10 @@ common_logrotate_d:
     paths:
     - path: /var/www/myapp/*.log
       directives:
-        daily:
+        daily: ~
         rotate: 10
-        missingok:
-        sharedscripts:
+        missingok: ~
+        sharedscripts: ~
       postrotate: |-
         /bin/kill -USR1 `cat /run/nginx.pid 2>/dev/null` 2>/dev/null || true
       prerotate: |-
@@ -173,9 +173,9 @@ common_logrotate_d:
         fi; \
     - path: /var/www/anotherapp/*.log
       directives:
-        monthly:
-        notifempty:
-        compress:
+        monthly: ~
+        notifempty: ~
+        compress: ~
         su: root nginx
 ```
 
