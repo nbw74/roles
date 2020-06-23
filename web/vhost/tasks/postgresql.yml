@@ -154,7 +154,11 @@
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_ini_line
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+    - item.db.pgbouncer is defined
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
@@ -169,7 +173,11 @@
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_txt_line
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
+  when:
+    - item.db is defined
+    - item.db.type == 'postgresql'
+    - item.db.pgbouncer is defined
+  loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
