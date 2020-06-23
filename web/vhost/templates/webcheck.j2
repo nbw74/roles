@@ -4,7 +4,9 @@
 {% else %}
     vars.www_tls["{{ (item.webcheck|default(dict(fqdn=item.name)))['fqdn']|d(item.idna|d()|ternary(item.name.encode('idna'), item.name)) }}"] = {
 {% endif %}
+{% if item.nginx_301_only is not defined %}
         http_string = "{{ (item.webcheck|default(dict(content=vhost_default_content)))['content']|d(vhost_default_content) }}"
+{% endif %}
 {% if item.webcheck is defined %}
 {% if item.webcheck.url is defined %}
         http_url = "{{ item.webcheck.url }}"
@@ -21,7 +23,9 @@
 {% else %}
     vars.www_tls["{{ (item.webcheck|default(dict(fqdn_mobile="m." ~ item.name)))['fqdn_mobile']|d('m.' ~ item.name) }}"] = {
 {% endif %}
+{% if item.nginx_301_only is not defined %}
         http_string = "{{ (item.webcheck|default(dict(content_mobile=vhost_default_content)))['content_mobile']|d(vhost_default_content) }}"
+{% endif %}
 {% if item.webcheck is defined %}
 {% if item.webcheck.url_mobile is defined %}
         http_url = "{{ item.webcheck.url_mobile }}"
