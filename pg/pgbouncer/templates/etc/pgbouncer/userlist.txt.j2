@@ -1,8 +1,0 @@
-{% if not pgbouncer_vhost_compat %}
-"postgres" ""
-{% endif %}
-{% if pgbouncer_user|length > 0 %}
-{% for item in pgbouncer_user %}
-"{{ item.name }}" "{{ item.password|d('') }}"
-{% endfor %}
-{% endif %}
