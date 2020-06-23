@@ -5,8 +5,7 @@
     state: directory
     owner: postgres
   delegate_to: "{{ item.db.host }}"
-  when: item.db.type == 'postgresql'
-  loop: "{{ vhost|selectattr('db', 'defined')|list }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -70,10 +69,7 @@
     login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
-  when:
-    - item.db.type == 'postgresql'
-    - item.state|d(true)
-  loop: "{{ vhost|selectattr('db', 'defined')|list }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|rejectattr('state', 'sameas', False)|list }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -88,14 +84,11 @@
     login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
   register: vhost_delete_pgsql_result
   failed_when:
     - vhost_delete_pgsql_result is failed
     - vhost_delete_pgsql_result.msg is not search('is being accessed by other users')
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -126,15 +119,11 @@
     login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
-    - not item.state|d(true)
   register: vhost_delete_pgsql_user_result
   failed_when:
     - vhost_delete_pgsql_user_result is failed
     - vhost_delete_pgsql_user_result.msg is not search('nable to remove user')
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|selectattr('state', 'sameas', false)|list }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -165,11 +154,7 @@
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_ini_line
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
-    - item.db.pgbouncer is defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
@@ -178,17 +163,13 @@
 - name: line in userlist.txt
   lineinfile:
     path: "/etc/pgbouncer/userlist.txt"
-    regexp: '^[ "]*{{ item.db.name }}\ '
+    regexp: '^[ "]*{{ item.db.name }}[ "]*'
     line: "\"{{ item.db.name }}\"\t\"{{ item.db.pass }}\""
     insertafter: EOF
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_txt_line
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
-    - item.db.pgbouncer is defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
