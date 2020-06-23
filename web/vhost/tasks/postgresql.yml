@@ -167,7 +167,7 @@
 - name: line in userlist.txt
   lineinfile:
     path: "/etc/pgbouncer/userlist.txt"
-    regexp: '^[ "]*{{ item.db.name }}[ "]*'
+    regexp: '^[ "]*{{ item.db.name }}[ "]+'
     line: "\"{{ item.db.name }}\"\t\"{{ item.db.pass }}\""
     insertafter: EOF
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
