@@ -93,19 +93,12 @@
     - item.db.type == 'postgresql'
   register: vhost_delete_pgsql_result
   failed_when:
-    - vhost_delete_pgsql_result.failed
-    - "'database \"' ~ item.db.name ~ '\" is being accessed by other users' not in vhost_delete_pgsql_result.msg"
-  ignore_errors: yes
+    - vhost_delete_pgsql_result is failed
+    - vhost_delete_pgsql_result.msg is not search('is being accessed by other users')
   loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
-
-# - debug:
-#     msg: "{{ vhost_delete_pgsql_result }}"
-#
-# - fail:
-#     msg: "EXIT"
 
 - name: manage postgresql extensions
   postgresql_ext:
@@ -139,8 +132,8 @@
     - not item.state|d(true)
   register: vhost_delete_pgsql_user_result
   failed_when:
-    - vhost_delete_pgsql_user_result.failed
-    - "'unable to remove user' not in vhost_delete_pgsql_user_result.msg"
+    - vhost_delete_pgsql_user_result is failed
+    - vhost_delete_pgsql_user_result.msg is not search('nable to remove user')
   loop: "{{ vhost }}"
   loop_control:
     label: "{{ item.name }}"
