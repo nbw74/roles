@@ -1,42 +1,66 @@
 ---
 - name: Delegate section
   block:
-    - name: Get Gitlab projects
-      uri:
-        url: >
-          {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true&per_page=100
-        headers:
-          Private-Token: "{{ vhost_gitlab.api_token }}"
-      when: vhost_gitlab|length > 0
-      register: vhost_reg_gitlab_proj_get
+    - name: If vhost_gitlab defined
+      block:
+        - name: Get Gitlab projects list
+          uri:
+            headers:
+              Private-Token: "{{ vhost_gitlab.api_token }}"
+            url: >
+              {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true&per_page=20&page={{ item }}
+          when: >
+            __vhost_gitlab_projects is not defined or
+            __vhost_gitlab_projects.x_next_page|d()
+          loop: "{{ range(1, 11)|list }}"
+          register: __vhost_gitlab_projects
 
-    - name: Get Gitlab groups
-      uri:
-        url: >
-          {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true&per_page=100
-        headers:
-          Private-Token: "{{ vhost_gitlab.api_token }}"
+        - name: Get Gitlab groups list
+          uri:
+            headers:
+              Private-Token: "{{ vhost_gitlab.api_token }}"
+            url: >
+              {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true&per_page=20&page={{ item }}
+          when: >
+            __vhost_gitlab_groups is not defined or
+            __vhost_gitlab_groups.x_next_page|d()
+          loop: "{{ range(1, 11)|list }}"
+          register: __vhost_gitlab_groups
+
+        - name: Set list facts
+          set_fact:
+            _vhost_gitlab_projects: >
+              {{ __vhost_gitlab_projects.results
+              |rejectattr('skipped', 'sameas', true)
+              |map(attribute='json')
+              |flatten(levels=1)
+              |map(attribute='path_with_namespace')
+              |list }}
+            _vhost_gitlab_groups: >
+              {{ __vhost_gitlab_groups.results
+              |rejectattr('skipped', 'sameas', true)
+              |map(attribute='json')
+              |flatten(levels=1)
+              |list }}
       when: vhost_gitlab|length > 0
-      register: vhost_reg_gitlab_grp_get
 
     - name: Create Gitlab projects
       uri:
+        headers:
+          Private-Token: "{{ vhost_gitlab.api_token }}"
+        method: POST
+        status_code: 201
         url: >
           {{ vhost_gitlab.api_url }}/api/v4/projects?name={{ item.gitlab.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
           }}&path={{ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
-          }}&namespace_id={{ vhost_reg_gitlab_grp_get|json_query("json[?full_path=='" ~ item.gitlab.namespace ~ "'].id")|join()
+          }}&namespace_id={{ _vhost_gitlab_groups|selectattr('full_path', 'equalto', item.gitlab.namespace)|map(attribute='id')|list|join()
           }}&description={{ item.gitlab.description|urlencode|regex_replace('/','%2F')
           }}&issues_access_level=private&merge_requests_access_level=private&wiki_access_level=private
-        method: POST
-        headers:
-          Private-Token: "{{ vhost_gitlab.api_token }}"
-        status_code: 201
       when: >
-        item.gitlab is defined and item.state|d(True) and
         item.gitlab.namespace ~ '/' ~ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
-        not in vhost_reg_gitlab_proj_get|json_query('json[].path_with_namespace')
+        not in _vhost_gitlab_projects
       changed_when: vhost_reg_gitlab_create.status == 201
-      loop: "{{ vhost }}"
+      loop: "{{ vhost|selectattr('gitlab', 'defined')|rejectattr('state', 'sameas', false)|list }}"
       loop_control:
         label: "{{ item.name }}"
       register: vhost_reg_gitlab_create
@@ -53,9 +77,8 @@
           content: "{{ lookup('file', '/tmp/vhost_' ~ item.item.name ~ '.txt') }}"
         body_format: json
         status_code: 201
-      when: not item.skipped|d()
       changed_when: vhost_reg_gitlab_wiki.status == 201
-      loop: "{{ vhost_reg_gitlab_create.results }}"
+      loop: "{{ vhost_reg_gitlab_create.results|rejectattr('skipped', 'sameas', true)|list }}"
       loop_control:
         label: "{{ item.item.name }}"
       register: vhost_reg_gitlab_wiki
