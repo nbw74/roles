@@ -11,7 +11,7 @@
               {{ vhost_gitlab.api_url }}/api/v4/projects?simple=true&per_page=20&page={{ item }}
           when: >
             __vhost_gitlab_projects is not defined or
-            __vhost_gitlab_projects.x_next_page != ""
+            __vhost_gitlab_projects.x_next_page|d()
           loop: "{{ range(1, 11)|list }}"
           register: __vhost_gitlab_projects
 
@@ -23,7 +23,7 @@
               {{ vhost_gitlab.api_url }}/api/v4/groups?simple=true&per_page=20&page={{ item }}
           when: >
             __vhost_gitlab_groups is not defined or
-            __vhost_gitlab_groups.x_next_page != ""
+            __vhost_gitlab_groups.x_next_page|d()
           loop: "{{ range(1, 11)|list }}"
           register: __vhost_gitlab_groups
 
