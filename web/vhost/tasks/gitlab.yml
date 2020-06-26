@@ -53,7 +53,7 @@
         url: >
           {{ vhost_gitlab.api_url }}/api/v4/projects?name={{ item.gitlab.name|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
           }}&path={{ item.gitlab.path|d(item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', ''))
-          }}&namespace_id={{ __vhost_gitlab_groups|selectattr('full_path', 'equalto', item.gitlab.namespace)|map(attribute='id')|list|join()
+          }}&namespace_id={{ _vhost_gitlab_groups|selectattr('full_path', 'equalto', item.gitlab.namespace)|map(attribute='id')|list|join()
           }}&description={{ item.gitlab.description|urlencode|regex_replace('/','%2F')
           }}&issues_access_level=private&merge_requests_access_level=private&wiki_access_level=private
       when: >
