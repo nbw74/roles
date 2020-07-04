@@ -47,7 +47,9 @@
 
 - import_tasks: admins.yml
 
-- import_tasks: backup.yml
+- name: Iclude backup
+  include_tasks: backup.yml
+  when: kvm_backup_cron_job|length > 0
 
 - import_tasks: net.yml
 

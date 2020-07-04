@@ -187,7 +187,7 @@ makeDump() {
     local dev=$1
 
     if (( NO_COMPRESS )); then
-	logInfo "Compression disabled"
+	logInfo "compression disabled"
 
 	if (( LOCAL )); then
 	    logInfo "dump to local server"

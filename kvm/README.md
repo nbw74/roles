@@ -24,21 +24,24 @@ kvm_accept_existing_disks: bool # (default: false) Не фейлиться, ес
 
 kvm_backup_cron_job:
   - name: "Unique string"
+    day: "string" # Default: *; day of the month the job should run ( 1-31, *, */2, etc )
+    disabled: bool # Default: no; if the job should be disabled (commented out) in the crontab
+    hour: "string" # Default: *; hour when the job should run ( 0-23, *, */2, etc )
+    minute: "string" # Default: *; minute when the job should run ( 0-59, *, */2, etc )
+    month: "string" # Default: *; month of the year the job should run ( 1-12, *, */2, etc )
+    state: bool # Default: yes; whether to ensure the job is present or absent
     vmbackup_config:
-      vm_list: [] # Mandatory
-      remote_host: "string" # Mandatory
-      remote_user: "string" # Default: root
-      remote_basedir: "path" # Mandatory
       backup_depth: "int" # Default: 3
       backup_method: "shutdown|snapshot" # Default: snapshot
+      basedir: "path" # Mandatory
+      device: "path" # manually set block device for backup¶
+      local_backup: bool # do local backup instead of remote
+      no_compress: bool # disable compression 
+      remote_host: "string" # Mandatory if not local_backup
+      remote_user: "string" # Mandatory if not local_backup
       snapshot_size: "int" # Default: 10; snapshot size in GB
-    minute: "string" # Default: *; minute when the job should run ( 0-59, *, */2, etc )
-    hour: "string" # Default: *; hour when the job should run ( 0-23, *, */2, etc )
-    day: "string" # Default: *; day of the month the job should run ( 1-31, *, */2, etc )
+      vm_list: [] # Mandatory
     weekday: "string" # Default: *; day of the week that the job should run ( 0-6 for Sunday-Saturday, *, etc )
-    month: "string" # Default: *; month of the year the job should run ( 1-12, *, */2, etc )
-    disabled: bool # Default: no; if the job should be disabled (commented out) in the crontab
-    state: bool # Default: yes; whether to ensure the job is present or absent
 
 kvm_common_case: bool # (default: false) Не выполнять таски, специфичные для Southbridge
 kvm_leave_hostname: bool # (default: false) Не устанавливать sysprep'ом hostname
