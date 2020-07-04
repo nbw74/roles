@@ -13,7 +13,7 @@ set -o pipefail
 typeset -i DEBUG=0 IGNORE_POWEROFF=0 SHUTDOWN=0 LOCAL=0
 typeset -i BACKUP_DEPTH=3 SNAPSHOT_SIZE=10
 typeset REMOTE_USER=$(whoami)
-typeset REMOTE_HOST="" BASEDIR=""
+typeset REMOTE_HOST="" BASEDIR="" DEVICE=""
 # DEFAULTS END
 
 # CONSTANTS BEGIN
@@ -53,8 +53,18 @@ main() {
 	(( DEBUG )) && echo "* DEBUG: domain=$domain backup_dir=$backup_dir"
 
 	removeOld
-	# Get first block device
-	device=$(virsh domblklist "$domain"|awk '/[sv]d[a-z]/ { print $2; exit }')
+
+	if [[ -z "$DEVICE" ]]; then
+	    # Get first block device
+	    device=$(virsh domblklist "$domain"|awk '/[sv]d[a-z]/ { print $2; exit }')
+	else
+	    if [[ -b "$DEVICE" ]]; then
+		device="$DEVICE"
+	    else
+		echo "Path '$DEVICE' is not a block device" >&2
+		false
+	    fi
+	fi
 	# Sanity checks
 	blk_count=$(virsh domblklist "$domain" | grep -c '[sv]d[a-z]')
 	if (( blk_count != 1 )); then
@@ -207,12 +217,12 @@ checks() {
 	false
     fi
 
-    if [[ "$1" == "nop" || ${BASEDIR:-nop} == "nop" ]]; then
+    if [[ "$1" == "nop" || -z $BASEDIR ]]; then
 	echo "required parameter missing" >&2
 	false
     fi
 
-    if [[ $LOCAL == 0 && ${REMOTE_HOST:-nop} == "nop" ]]; then
+    if [[ $LOCAL == 0 && -z $REMOTE_HOST ]]; then
 	echo "required parameter missing" >&2
 	false
     fi
@@ -238,10 +248,12 @@ _exit() {
     fi
 
     if (( frozen )); then
+	logInfo "thawing filesystem"
 	virsh -q domfsthaw "$domain"
     fi
 
     if (( snapshotted )); then
+	logInfo "removing snapshot"
 	lvremove -qqf "$snapshot"
     fi
 
@@ -255,6 +267,7 @@ usage() {
     Options:
 
     -b, --basedir <path>	base directory for backups on remote or local host
+    -d, --device <path>		manually set block device for backup
     -D, --depth <int>		backup depth (default is ${BACKUP_DEPTH})
     -H, --host <string>		remote host
     -U, --user <strng>		remote user
@@ -269,7 +282,7 @@ usage() {
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o b:D:H:S:U:ilsdh --longoptions basedir:,depth:,host:,user:,ignore-poweroff,local,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o b:d:D:H:S:U:ilsdh --longoptions basedir:,device:,depth:,host:,user:,ignore-poweroff,local,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -281,6 +294,7 @@ unset TEMP
 while true; do
     case $1 in
 	-b|--basedir)		BASEDIR=$2 ;		shift 2	;;
+	-d|--device)		DEVICE=$2 ;		shift 2	;;
 	-D|--depth)		BACKUP_DEPTH=$2 ;	shift 2	;;
 	-H|--host)		REMOTE_HOST=$2 ;	shift 2	;;
 	-U|--user)		REMOTE_USER=$2 ;	shift 2	;;
