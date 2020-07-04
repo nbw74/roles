@@ -10,7 +10,7 @@ set -o pipefail
 # set -xv
 
 # DEFAULTS BEGIN
-typeset -i DEBUG=0 IGNORE_POWEROFF=0 SHUTDOWN=0 LOCAL=0
+typeset -i DEBUG=0 IGNORE_POWEROFF=0 SHUTDOWN=0 LOCAL=0 NO_COMPRESS=0
 typeset -i BACKUP_DEPTH=3 SNAPSHOT_SIZE=10
 typeset REMOTE_USER=$(whoami)
 typeset REMOTE_HOST="" BASEDIR="" DEVICE=""
@@ -186,12 +186,26 @@ makeDump() {
     local fn=${FUNCNAME[0]}
     local dev=$1
 
-    if (( LOCAL )); then
-	logInfo "dump to local server"
-	ionice -c3 dd if="$dev" bs=8M | nice lbzip2 - | dd of="${backup_dir}/$(date +'%s')-${domain}.img.bz2" bs=8M
+    if (( NO_COMPRESS )); then
+	logInfo "Compression disabled"
+
+	if (( LOCAL )); then
+	    logInfo "dump to local server"
+	    ionice -c3 dd if="$dev" of="${backup_dir}/$(date +'%s')-${domain}.img" bs=8M
+	else
+	    logInfo "dump to remote server"
+	    ionice -c3 dd if="$dev" bs=8M | $connect "dd of=${backup_dir}/$(date +'%s')-${domain}.img bs=8M"
+	fi
     else
-	logInfo "dump to remote server"
-	ionice -c3 dd if="$dev" bs=8M | nice lbzip2 - | $connect "dd of=${backup_dir}/$(date +'%s')-${domain}.img.bz2 bs=8M"
+	logInfo "Compression enabled"
+
+	if (( LOCAL )); then
+	    logInfo "dump to local server"
+	    ionice -c3 dd if="$dev" bs=8M | nice lbzip2 - | dd of="${backup_dir}/$(date +'%s')-${domain}.img.bz2" bs=8M
+	else
+	    logInfo "dump to remote server"
+	    ionice -c3 dd if="$dev" bs=8M | nice lbzip2 - | $connect "dd of=${backup_dir}/$(date +'%s')-${domain}.img.bz2 bs=8M"
+	fi
     fi
 }
 
@@ -274,6 +288,7 @@ usage() {
     -U, --user <strng>		remote user
     -i, --ignore-poweroff	don't error if host is already powered off
     -l, --local			do local backup instead of remote
+    -n, --no-compress		disable compression
     -s, --shutdown		shut down VM before backup (instead of making snapshot)
     -S, --snapshot-size <int>	size of snapshot, GB (default is ${SNAPSHOT_SIZE})
     -h, --help			print help
@@ -282,7 +297,7 @@ usage() {
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o b:B:D:H:S:U:ilsdh --longoptions basedir:,device:,depth:,host:,user:,ignore-poweroff,local,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o b:B:D:H:S:U:ilnsdh --longoptions basedir:,device:,depth:,host:,user:,ignore-poweroff,local,no-compress,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -301,6 +316,7 @@ while true; do
 	-U|--user)		REMOTE_USER=$2 ;	shift 2	;;
 	-i|--ignore-poweroff)	IGNORE_POWEROFF=1 ;	shift	;;
 	-l|--local)		LOCAL=1 ;		shift	;;
+	-n|--no-compress)	NO_COMPRESS=1 ;		shift	;;
 	-s|--shutdown)		SHUTDOWN=1 ;		shift	;;
 	-S|--snapshot-size)	SNAPSHOT_SIZE=$2 ;	shift 2	;;
 	-h|--help)		usage ;		exit 0	;;
