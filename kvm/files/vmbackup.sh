@@ -267,7 +267,8 @@ usage() {
     Options:
 
     -b, --basedir <path>	base directory for backups on remote or local host
-    -d, --device <path>		manually set block device for backup
+    -B, --device <path>		manually set block device for backup
+    -d, --debug			print some info in stdout/stderr
     -D, --depth <int>		backup depth (default is ${BACKUP_DEPTH})
     -H, --host <string>		remote host
     -U, --user <strng>		remote user
@@ -275,14 +276,13 @@ usage() {
     -l, --local			do local backup instead of remote
     -s, --shutdown		shut down VM before backup (instead of making snapshot)
     -S, --snapshot-size <int>	size of snapshot, GB (default is ${SNAPSHOT_SIZE})
-    -d, --debug			print some info in stdout/stderr
     -h, --help			print help
 "
 }
 # Getopts
 getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
 
-if ! TEMP=$(getopt -o b:d:D:H:S:U:ilsdh --longoptions basedir:,device:,depth:,host:,user:,ignore-poweroff,local,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
+if ! TEMP=$(getopt -o b:B:D:H:S:U:ilsdh --longoptions basedir:,device:,depth:,host:,user:,ignore-poweroff,local,shutdown,snapshot-size:,debug,help -n "$bn" -- "$@")
 then
     echo "Terminating..." >&2
     exit 1
@@ -294,7 +294,8 @@ unset TEMP
 while true; do
     case $1 in
 	-b|--basedir)		BASEDIR=$2 ;		shift 2	;;
-	-d|--device)		DEVICE=$2 ;		shift 2	;;
+	-B|--device)		DEVICE=$2 ;		shift 2	;;
+	-d|--debug)		DEBUG=1 ;		shift	;;
 	-D|--depth)		BACKUP_DEPTH=$2 ;	shift 2	;;
 	-H|--host)		REMOTE_HOST=$2 ;	shift 2	;;
 	-U|--user)		REMOTE_USER=$2 ;	shift 2	;;
@@ -302,7 +303,6 @@ while true; do
 	-l|--local)		LOCAL=1 ;		shift	;;
 	-s|--shutdown)		SHUTDOWN=1 ;		shift	;;
 	-S|--snapshot-size)	SNAPSHOT_SIZE=$2 ;	shift 2	;;
-	-d|--debug)		DEBUG=1 ;		shift	;;
 	-h|--help)		usage ;		exit 0	;;
 	--)			shift ;		break	;;
 	*)			usage ;		exit 1
