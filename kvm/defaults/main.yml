@@ -1,5 +1,6 @@
 ---
 kvm_accept_existing_disks: false
+kvm_backup_cron_job: []
 kvm_common_case: false
 kvm_leave_hostname: false
 kvm_nested: false
