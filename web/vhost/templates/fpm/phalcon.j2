@@ -21,12 +21,14 @@
 	fastcgi_pass			fpm$fpmport;
 {% include "nginx/proxy.j2" %}
     }
+{% if op.nginx_static_location|d(True) %}
 
     location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf|webp)$ {
 	try_files	$uri $uri/ /index.php?$args;
 	expires		1y;
 	log_not_found	off;
     }
+{% endif %}
 
     location ~ /\.(ht|svn|git) {
 	deny		all;

@@ -141,6 +141,7 @@ vhost:
   nginx_server_directives: { }
   nginx_server_snippet: | # insert configuration block into nginx vhost config
     block # ... in the 'server' context (before "backend section")
+  nginx_static_location: bool # default: true
   nginx_whitelist:
     allow: []
     context: string # server (default) or root (/)

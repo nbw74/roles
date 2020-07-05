@@ -44,12 +44,14 @@
     location ^~ /_nuxt/ {
 	proxy_pass	http://node$nodeport;
     }
+{% if op.nginx_static_location|d(True) %}
 
     location ~* \.(?:css(\.map)?|js(\.map)?|jpe?g|png|gif|ico|cur|heic|webp|tiff?|mp3|m4a|aac|ogg|midi?|wav|mp4|mov|webm|mpe?g|avi|ogv|flv|wmv|ttf|ttc|otf|eot|woff2?)$ {
 	try_files	/frontend/dist$uri /frontend/static$uri /backend/public$uri =404;
 	expires		1y;
 	log_not_found	off;
     }
+{% endif %}
 
     location ~ /\.(ht|svn|git) {
 	deny		all;
