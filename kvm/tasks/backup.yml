@@ -15,14 +15,14 @@
     job: >
       {{ kvm_backup_script }}
       --basedir {{ item.vmbackup_config['basedir'] }}
-      {{ (item.vmbackup_config['device'] is defined)|ternary('--device ' ~ item.vmbackup_config['device']|d(''), '') }}
-      {{ (item.vmbackup_config['backup_depth'] is defined)|ternary('--depth ' ~ item.vmbackup_config['backup_depth']|d(''), '') }}
+      {{ (item.vmbackup_config['device'] is defined)|ternary('--device=' ~ item.vmbackup_config['device']|d(''), '') }}
+      {{ (item.vmbackup_config['backup_depth'] is defined)|ternary('--depth=' ~ item.vmbackup_config['backup_depth']|d(''), '') }}
       {{ (item.vmbackup_config['local_backup']|d())|ternary('--local','') }}
       {{ (item.vmbackup_config['backup_method']|d('snapshot') == 'shutdown')|ternary('--shutdown','') }}
       {{ (item.vmbackup_config['no_compress']|d())|ternary('--no-compress','') }}
-      {{ (item.vmbackup_config['remote_host'] is defined)|ternary('--host ' ~ item.vmbackup_config['remote_host']|d(''), '') }}
-      {{ (item.vmbackup_config['remote_user'] is defined)|ternary('--user ' ~ item.vmbackup_config['remote_user']|d(''), '') }}
-      {{ (item.vmbackup_config['snapshot_size'] is defined)|ternary('--snapshot-size ' ~ item.vmbackup_config['snapshot_size']|d(''), '') }}
+      {{ (item.vmbackup_config['remote_host'] is defined)|ternary('--host=' ~ item.vmbackup_config['remote_host']|d(''), '') }}
+      {{ (item.vmbackup_config['remote_user'] is defined)|ternary('--user=' ~ item.vmbackup_config['remote_user']|d(''), '') }}
+      {{ (item.vmbackup_config['snapshot_size'] is defined)|ternary('--snapshot-size=' ~ item.vmbackup_config['snapshot_size']|d(''), '') }}
       {{ item.vmbackup_config['vm_list']|join(' ') }}
     minute: "{{ item.minute|d('*') }}"
     hour: "{{ item.hour|d('*') }}"
@@ -32,5 +32,7 @@
     disabled: "{{ item.disabled|d('false') }}"
     state: "{{ item.state|d(true)|ternary('present','absent') }}"
   loop: "{{ kvm_backup_cron_job }}"
+  loop_control:
+    label: "{{ item.name }}"
   notify: reload crond
 ...
