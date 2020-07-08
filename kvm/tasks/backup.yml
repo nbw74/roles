@@ -14,7 +14,7 @@
     user: root
     job: >
       {{ kvm_backup_script }}
-      --basedir {{ item.vmbackup_config['basedir'] }}
+      --basedir={{ item.vmbackup_config['basedir'] }}
       {{ (item.vmbackup_config['device'] is defined)|ternary('--device=' ~ item.vmbackup_config['device']|d(''), '') }}
       {{ (item.vmbackup_config['backup_depth'] is defined)|ternary('--depth=' ~ item.vmbackup_config['backup_depth']|d(''), '') }}
       {{ (item.vmbackup_config['local_backup']|d())|ternary('--local','') }}
