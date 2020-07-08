@@ -15,7 +15,8 @@
     job: >
       {{ kvm_backup_script }}
       --basedir {{ item.vmbackup_config['basedir'] }}
-      --depth {{ item.vmbackup_config['backup_depth']|d('3') }}
+      {{ (item.vmbackup_config['device'] is defined)|ternary('--device ' ~ item.vmbackup_config['device']|d(''), '') }}
+      {{ (item.vmbackup_config['backup_depth'] is defined)|ternary('--depth ' ~ item.vmbackup_config['backup_depth']|d(''), '') }}
       {{ (item.vmbackup_config['local_backup']|d())|ternary('--local','') }}
       {{ (item.vmbackup_config['backup_method']|d('snapshot') == 'shutdown')|ternary('--shutdown','') }}
       {{ (item.vmbackup_config['no_compress']|d())|ternary('--no-compress','') }}

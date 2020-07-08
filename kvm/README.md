@@ -35,8 +35,8 @@ kvm_backup_cron_job:
       backup_method: "shutdown|snapshot" # Default: snapshot
       basedir: "path" # Mandatory
       device: "path" # manually set block device for backup¶
-      local_backup: bool # do local backup instead of remote
-      no_compress: bool # disable compression 
+      local_backup: bool # do local backup instead of remote (default: false)
+      no_compress: bool # disable compression (default: false)
       remote_host: "string" # Mandatory if not local_backup
       remote_user: "string" # Mandatory if not local_backup
       snapshot_size: "int" # Default: 10; snapshot size in GB
