@@ -52,6 +52,7 @@
   stat:
     path: "/etc/letsencrypt/live/{{ multi[0].name }}/cert.pem"
   register: vhost_reg_le_check_multi
+  tags: [ crypto ]
 
 - name: Present .htsecure if redirect
   copy:
