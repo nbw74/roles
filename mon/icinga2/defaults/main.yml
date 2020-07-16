@@ -6,9 +6,6 @@ icinga2_config_http: []
 
 icinga2_release_rpm: "https://packages.icinga.com/epel/icinga-rpm-release-7-latest.noarch.rpm"
 
-icinga2_pgdg_rpm: "https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm"
-icinga2_postgresql_package: "postgresql96"
-
 icinga2_atomic_rpm: "https://updates.atomicorp.com/channels/atomic/centos/7/x86_64/RPMS/atomic-release-1.0-21.el7.art.noarch.rpm"
 
 icinga2_sendxmpp_jid: "jid@example.com"
@@ -43,4 +40,7 @@ icinga2_known_hosts:
 
 icinga2_env_home: "/home/user"
 icinga2_env_uid: 1000
+
+postgresql_version_raw: "{{ postgresql_version|string }}"
+postgresql_version_norm: "{{ postgresql_version_raw|regex_replace('\\.', '') }}"
 ...
