@@ -155,7 +155,9 @@
     mode: 0755
     force: yes
   notify: restorecon common_sh_mon
-  when: not alien
+  when: >
+    not alien or
+    (alien and alien_ptr_enable)
 
 - meta: flush_handlers
 ...

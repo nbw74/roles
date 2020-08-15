@@ -21,6 +21,10 @@ object Host "{{ ansible_fqdn }}" {
 {% if (common_icinga2_conf.vars|d(dict(la_c='undefined')))['la_c']|d('undefined') == 'undefined' %}
     vars.la_c = "{{ ansible_processor_vcpus * 6 }},{{ ansible_processor_vcpus * 3 }},{{ ansible_processor_vcpus * 1.5 }}"
 {% endif %}
+{% if alien and not alien_ptr_enable %}
+    vars.nopasswd = 1
+    vars.noconntrack = 1
+{% endif %}
 {% if common_icinga2_conf.vars is defined %}
 {% for key, value in common_icinga2_conf.vars|dictsort %}
 {% if value|regex_search('^([Tt]rue|[Ff]alse|\[.*\])$') %}

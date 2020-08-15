@@ -6,8 +6,10 @@ syslocation {{ common_snmp_syslocation|default('Earth') }}
 syscontact {{ common_snmp_syscontact }}
 dontLogTCPWrappersConnects yes
 includeAllDisks 86%
+{% if not alien or ( alien and alien_ptr_enable ) %}
 extend passwd /usr/local/bin/eos -m passwd -c
 extend conntrack /usr/local/bin/eos -m conntrack -f
+{% endif %}
 {% for item in common_snmpd_conf_line %}
 {{ item }}
 {% endfor %}
