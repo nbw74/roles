@@ -137,6 +137,11 @@ vhost:
   nginx_locations:
     - path: string
       directives: { }
+  nginx_options:
+    fastcgi_read_timeout: string  # default: 60s
+    proxy_connect_timeout: string  # default: 60s
+    proxy_read_timeout: string  # default: 90s
+    proxy_send_timeout: string  # default: 90s
   nginx_root_location: bool # default: true
   nginx_server_directives: { }
   nginx_server_snippet: | # insert configuration block into nginx vhost config
