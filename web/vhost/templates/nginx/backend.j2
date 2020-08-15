@@ -29,11 +29,13 @@
 {% elif vhost_backend == 'apache' %}
 {% include "nginx/apache-generic.j2" %}
 {% elif vhost_backend == 'reverse-proxy' %}
+{% if op.nginx_root_location|d(True) %}
 
     location / {
 	proxy_pass			{{ op.proxy_pass }};
 {% include "nginx/proxy.j2" %}
     }
+{% endif %}
 {% elif vhost_backend == 'php-fpm' and op.fpm is not defined %}
     set $root_path	'{{ vhost_basedir }}/{{ op.user|d(op.name) }}/{{ op.webroot|d('www') }}';
     root		$root_path;
