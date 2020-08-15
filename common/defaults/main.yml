@@ -1,6 +1,8 @@
 ---
 alien: False
 alien_ptr_enable: False
+alien_snmp_enable: False
+
 common_add_packages: []
 common_cron_user_tasks: []
 common_etc_hosts: { }

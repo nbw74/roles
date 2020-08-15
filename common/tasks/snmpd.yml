@@ -4,7 +4,9 @@
     src: "snmpd.conf.j2"
     dest: "/etc/snmp/snmpd.conf"
     backup: yes
-  when: not alien
+  when: >
+    not alien or
+    (alien and alien_snmp_enable)
   notify: config restart snmpd
   tags: [ snmp ]
 ...
