@@ -28,6 +28,7 @@ http {
     tcp_nopush          on;
     tcp_nodelay         on;
     keepalive_timeout   65;
+    server_tokens       off;
 {% for key, value in nginx_http_directives.iteritems() %}
     {{ key }} {{ value }};
 {% endfor %}
