@@ -1,9 +1,0 @@
----
-squid_cache_mgr: "admin@localhost"
-
-common_ssh_direct_list:
-  - "127.0.0.0/8"
-
-squid_permit_list:
-  - "127.0.0.0/8"
-...
