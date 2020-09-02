@@ -1,19 +1,9 @@
 ---
 - name: Section 5
   block:
-    - name: Import endpoint repo key
-      rpm_key:
-        key: https://packages.endpoint.com/endpoint-rpmsign-7.pub
-
-    - name: Setup endpoint repo
-      yum_repository:
-        name: End Point repository
-        file: endpoint
-        baseurl: https://packages.endpoint.com/rhel/$releasever/os/$basearch/
-        enabled: no
-        gpgcheck: yes
-        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-endpoint
-        protect: no
+    - name: Import aux/repos/endpoint galaxy role
+      import_role:
+        name: aux/repos/endpoint
 
     - name: Install bacula-fd package (V)
       yum:

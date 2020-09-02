@@ -1,35 +1,36 @@
 ---
 - name: Section 7
   block:
-    - name: Import GPG key for Lux repo
-      rpm_key:
-        key: http://repo.iotti.biz/RPM-GPG-KEY-LUX
-
-    - name: Lux repository
+    - name: Remove dead Lux repository
       yum_repository:
         name: "lux"
         description: "CentOS $releasever - $basearch - Lux"
         baseurl: "http://repo.iotti.biz/CentOS/$releasever"
         enabled: no
         gpgcheck: yes
+        state: absent
+
+    - name: Import aux/repos/endpoint galaxy role
+      import_role:
+        name: aux/repos/endpoint
 
     - name: Get installed git version
       command: >
         rpm -q --queryformat '%{VERSION}' git
       args:
         warn: no
-      register: php_reg_git
+      register: __gitupdate_ver
       changed_when: no
       failed_when: no
 
-    - name: Git from Lux  # noqa 403
+    - name: Git from Endpoint  # noqa 403
       yum:
         name: git
-        enablerepo: lux
+        enablerepo: endpoint
         state: latest
       when: >
-        php_reg_git.stdout is version('2.17.0', '<')
-        or php_reg_git.stdout is search('not installed')
+        __gitupdate_ver.stdout is version('2.17.0', '<')
+        or __gitupdate_ver.stdout is search('not installed')
   when:
     - ansible_distribution_file_variety == "RedHat"
     - ansible_distribution_major_version|int == 7
