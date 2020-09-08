@@ -42,7 +42,7 @@
       setype: httpd_sys_rw_content_t
       target: '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp(/.*)?'
     - name: "CakePHP tmp logs"
-      setype: httpd_log_t
+      setype: httpd_sys_rw_content_t
       target: '/var/www/[-a-zA-Z0-9\.]+/www/app/tmp/logs(/.*)?'
     - name: "Yii framework assets"
       setype: httpd_sys_rw_content_t
