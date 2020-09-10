@@ -189,6 +189,12 @@ vhost:
   webroot: "www/public" # optional; default is "www"
   wikimarkup: bool # optional; default: true; write textile markup in wiki file
 
+vhost_bx_msmtp:
+  host: "string" # default: none :Параметр "host" в msmtprc
+  port: int # default: none :Параметр "port" в msmtprc
+  from: string  # default: no_reply@{{ item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}
+  user: "string" # default: none :Параметр "user" в msmtprc
+  pass: "string" # default: none :Параметр "password" в msmtprc
 ```
 ### fpm['template']
 Nginx website configuration for use with php-fpm PHP backend. Currently supported:

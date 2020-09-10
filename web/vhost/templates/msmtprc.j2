@@ -4,10 +4,11 @@ account default
 logfile /var/log/msmtp.log
 host {{ bx_msmtp_host }}
 port {{ bx_msmtp_port }}
-from no_reply@{{ item.name | regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '') }}
+from {{ bx_msmtp_from|d('no_reply@' ~ item.name|regex_replace('.' ~ vhost_default_ddns_zone ~ '$', '')) }}
 keepbcc on
 auth on
 user {{ bx_msmtp_user }}
 password {{ bx_msmtp_pass }}
 tls on
 tls_certcheck off
+tls_starttls on
