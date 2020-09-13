@@ -24,12 +24,12 @@
         - name: Manage pg_hba
           postgresql_pg_hba:
             dest: "/var/lib/pgsql/{{ postgresql_version_raw }}/data/pg_hba.conf"
-            contype: "{{ item.hba.contype|d('host') }}"
-            users: "{{ item.name }}"
-            source: "{{ item.hba.source }}"
-            databases: "{{ item.hba.databases|d(item.name) }}"
-            state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
-          loop: "{{ postgresql_roles|selectattr('hba', 'defined')|list }}"
+            contype: "{{ item[1].contype|d('host') }}"
+            users: "{{ item[0].name }}"
+            source: "{{ item[1].source }}"
+            databases: "{{ item[1].databases|d(item[0].name) }}"
+            state: "{{ item[0].state|d(True)|ternary('present', 'absent') }}"
+          loop: "{{ postgresql_roles|subelements('hba', skip_missing=True) }}"
           notify: reload postgresql direct
 
         - name: Manage databases
