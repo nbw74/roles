@@ -1,13 +1,23 @@
 ---
-- name: PostgreSQL repo
+- name: PostgreSQL common RPM repository
+  yum_repository:
+    name: pgdg-common
+    description: "PostgreSQL common RPMs for RHEL/CentOS $releasever - $basearch"
+    baseurl: "https://download.postgresql.org/pub/repos/yum/common/redhat/rhel-$releasever-$basearch"
+    file: pgdg-common-centos
+    gpgcheck: yes
+    enabled: yes
+    gpgkey: http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+
+- name: PostgreSQL main RPM repository
   yum_repository:
     name: "pgdg{{ postgresql_version_norm }}"
-    description: "PostgreSQL {{ postgresql_version_raw }} $releasever - $basearch"
+    description: "PostgreSQL {{ postgresql_version_raw }} for RHEL/CentOS $releasever - $basearch"
     baseurl: "https://download.postgresql.org/pub/repos/yum/{{ postgresql_version_raw }}/redhat/rhel-$releasever-$basearch"
     file: "pgdg-{{ postgresql_version_norm }}-centos"
     gpgcheck: yes
     enabled: yes
-    gpgkey: "http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ postgresql_version_norm }}"
+    gpgkey: http://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
 
 - name: PostgreSQL packages
   yum:
