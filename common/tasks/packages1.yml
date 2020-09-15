@@ -12,6 +12,15 @@
     - name: "Install required packages (YUM)"
       yum:
         name: "{{ common_required_base_packages | union(common_centos_specific_packages) }}"
+      register: __common_yum_install_required
+      tags: [ packages, etckeeper ]
+
+    - name: Update epel-release (https://gitlab.w***c.ru/system/mirrors/roles/-/issues/6)
+      yum:
+        name: epel-release
+        state: latest
+        update_cache: yes
+      when: __common_yum_install_required is changed
       tags: [ packages, etckeeper ]
 
     - name: "Install required packages if no ct (YUM)"
