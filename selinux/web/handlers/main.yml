@@ -1,10 +1,7 @@
 ---
 - name: restorecon www
   command: >
-    restorecon -R {{ item }}
+    restorecon -Ri /var/spool/cron /var/www
   async: 1800
   poll: 10
-  with_items:
-    - "/var/www"
-    - "/var/spool/cron"
 ...
