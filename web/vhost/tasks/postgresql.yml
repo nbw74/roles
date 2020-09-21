@@ -125,12 +125,20 @@
     label: "{{ item.name }}"
   tags: [ db ]
 
+- name: Debug length vhost
+  debug:
+    msg: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|list|length }}"
+
+- name: Debug length vhost_pgsql_datadir.results
+  debug:
+    msg: "{{ vhost_pgsql_datadir.results|length }}"
+
 - name: pg_hba entry
   delegate_to: "{{ item[0].db.host }}"
   postgresql_pg_hba:
     dest: "{{ item[1].stdout }}/pg_hba.conf"
     contype: host
-    source: >
+    source: >-
       {% if item[0].db.pgbouncer is defined %}
         {{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}
       {% else %}
