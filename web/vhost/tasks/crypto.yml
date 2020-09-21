@@ -6,12 +6,15 @@
     owner: root
     group: root
     mode: 0644
-  when:
-    - item.crypto|d('none') != 'none'
-    - not item.crypto_le|d()
-    - not item.legacy|d()
-    - not item.crypto_wildcard|d()
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |rejectattr('state', 'sameas', false)
+    |rejectattr('legacy', 'sameas', true)
+    |selectattr('crypto', 'defined')
+    |rejectattr('crypto', 'equalto', 'none')
+    |rejectattr('crypto_le', 'sameas', true)
+    |rejectattr('crypto_wildcard', 'sameas', true)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -24,12 +27,15 @@
     owner: root
     group: root
     mode: 0400
-  when:
-    - item.crypto|d('none') != 'none'
-    - not item.crypto_le|d()
-    - not item.legacy|d()
-    - not item.crypto_wildcard|d()
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |rejectattr('state', 'sameas', false)
+    |rejectattr('legacy', 'sameas', true)
+    |selectattr('crypto', 'defined')
+    |rejectattr('crypto', 'equalto', 'none')
+    |rejectattr('crypto_le', 'sameas', true)
+    |rejectattr('crypto_wildcard', 'sameas', true)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -42,13 +48,17 @@
     owner: root
     group: root
     mode: 0644
-  when:
-    - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
-    - not item.crypto_le|d()
-    - item.mobile|d()
-    - not item.legacy|d()
-    - not item.crypto_wildcard|d()
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |rejectattr('state', 'sameas', false)
+    |rejectattr('legacy', 'sameas', true)
+    |selectattr('crypto', 'defined')
+    |rejectattr('crypto', 'equalto', 'none')
+    |rejectattr('crypto_mobile', 'equalto', 'none')
+    |rejectattr('crypto_le', 'sameas', true)
+    |rejectattr('crypto_wildcard', 'sameas', true)
+    |selectattr('mobile', 'sameas', true)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -61,13 +71,17 @@
     owner: root
     group: root
     mode: 0400
-  when:
-    - item.crypto_mobile|d(item.crypto|d('none')) != 'none'
-    - not item.crypto_le|d()
-    - item.mobile|d()
-    - not item.legacy|d()
-    - not item.crypto_wildcard|d()
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |rejectattr('state', 'sameas', false)
+    |rejectattr('legacy', 'sameas', true)
+    |selectattr('crypto', 'defined')
+    |rejectattr('crypto', 'equalto', 'none')
+    |rejectattr('crypto_mobile', 'equalto', 'none')
+    |rejectattr('crypto_le', 'sameas', true)
+    |rejectattr('crypto_wildcard', 'sameas', true)
+    |selectattr('mobile', 'sameas', true)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -80,12 +94,15 @@
     owner: root
     group: root
     mode: 0644
-  when:
-    - item.crypto|d('none') != 'none'
-    - not item.crypto_le|d()
-    - not item.legacy|d()
-    - item.crypto_wildcard|d()
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |rejectattr('state', 'sameas', false)
+    |rejectattr('legacy', 'sameas', true)
+    |selectattr('crypto', 'defined')
+    |rejectattr('crypto', 'equalto', 'none')
+    |rejectattr('crypto_le', 'sameas', true)
+    |selectattr('crypto_wildcard', 'sameas', true)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
@@ -98,12 +115,15 @@
     owner: root
     group: root
     mode: 0400
-  when:
-    - item.crypto|d('none') != 'none'
-    - not item.crypto_le|d()
-    - not item.legacy|d()
-    - item.crypto_wildcard|d()
-  loop: "{{ vhost|rejectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |rejectattr('state', 'sameas', false)
+    |rejectattr('legacy', 'sameas', true)
+    |selectattr('crypto', 'defined')
+    |rejectattr('crypto', 'equalto', 'none')
+    |rejectattr('crypto_le', 'sameas', true)
+    |selectattr('crypto_wildcard', 'sameas', true)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: validate nginx
