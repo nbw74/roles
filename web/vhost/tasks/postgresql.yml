@@ -138,7 +138,7 @@
   postgresql_pg_hba:
     dest: "{{ item[1].stdout }}/pg_hba.conf"
     contype: host
-    source: >-
+    source: >
       {% if item[0].db.pgbouncer is defined %}
         {{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}
       {%- else %}
