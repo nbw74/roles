@@ -5,7 +5,11 @@
     path: "{{ flags_dir }}/postgresql"
     state: directory
     owner: postgres
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'eq', 'postgresql')
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -69,7 +73,12 @@
     login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.pgsql.pass }}"
     ssl_mode: disable
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|rejectattr('state', 'sameas', False)|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'eq', 'postgresql')
+    |rejectattr('state', 'sameas', False)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -88,7 +97,11 @@
   failed_when:
     - vhost_delete_pgsql_result is failed
     - vhost_delete_pgsql_result.msg is not search('is being accessed by other users')
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'eq', 'postgresql')
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -102,7 +115,12 @@
     port: "{{ item.0.db.port|d('5432') }}"
     login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.pgsql.pass }}"
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list|subelements('db.extensions', skip_missing=True) }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'eq', 'postgresql')
+    |list
+    |subelements('db.extensions', skip_missing=True) }}
   loop_control:
     label: "{{ item.0.name }}"
   tags: [ db ]
@@ -120,7 +138,12 @@
   failed_when:
     - vhost_delete_pgsql_user_result is failed
     - vhost_delete_pgsql_user_result.msg is not search('nable to remove user')
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|selectattr('state', 'sameas', false)|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'eq', 'postgresql')
+    |selectattr('state', 'sameas', false)
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -135,7 +158,13 @@
     users: "{{ item[0].db.name }}"
     state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
   register: vhost_pgsql_hba_line
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|list|zip(vhost_pgsql_datadir.results)|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'equalto', 'postgresql')
+    |list
+    |zip(vhost_pgsql_datadir.results)
+    |list }}
   loop_control:
     label: "{{ item[0].name }}"
   notify: config reload postgresql
@@ -154,7 +183,12 @@
       pool_size={{ item.db.pgbouncer.pool_size|d('40') }}
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   register: vhost_pgsql_ini_line
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'equalto', 'postgresql')
+    |selectattr('db.pgbouncer', 'defined')
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
@@ -169,7 +203,12 @@
     insertafter: EOF
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
   register: vhost_pgsql_txt_line
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'equalto', 'postgresql')
+    |selectattr('db.pgbouncer', 'defined')
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
