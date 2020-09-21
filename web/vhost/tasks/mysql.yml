@@ -54,7 +54,11 @@
     login_port: "{{ item.db.port|d('3306') }}"
     login_user: "{{ vhost_db_admin.mysql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.mysql.pass }}"
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'mysql')|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'equalto', 'mysql')
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
@@ -70,7 +74,11 @@
     login_port: "{{ item.db.port|d('3306') }}"
     login_user: "{{ vhost_db_admin.mysql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.mysql.pass }}"
-  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'mysql')|list }}"
+  loop: >
+    {{ vhost
+    |selectattr('db', 'defined')
+    |selectattr('db.type', 'equalto', 'mysql')
+    |list }}
   loop_control:
     label: "{{ item.name }}"
   tags: [ db ]
