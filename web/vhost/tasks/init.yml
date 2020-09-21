@@ -80,10 +80,7 @@
     |awk '{ match($0, /-D[[:space:]]+[/.a-z0-9]+/); dir=substr($0, RSTART, RLENGTH); sub(/-D[[:space:]]+/, "", dir); sub(/\/$/, "", dir); print dir; exit }'
   register: vhost_pgsql_datadir
   delegate_to: "{{ item.db.host }}"
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|list }}"
   loop_control:
     label: "{{ item.name }}"
   changed_when: no
