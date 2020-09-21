@@ -141,9 +141,9 @@
     source: >-
       {% if item[0].db.pgbouncer is defined %}
         {{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}
-      {% else %}
+      {%- else %}
         0.0.0.0/0
-      {% endif %}
+      {%- endif %}
     databases: "{{ item[0].db.name }}"
     users: "{{ item[0].db.name }}"
     state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
