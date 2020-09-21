@@ -138,12 +138,7 @@
   postgresql_pg_hba:
     dest: "{{ item[1].stdout }}/pg_hba.conf"
     contype: host
-    source: >-
-      {% if item[0].db.pgbouncer is defined %}
-      {{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}
-      {%- else %}
-      0.0.0.0/0
-      {% endif %}
+    source: "{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}"
     databases: "{{ item[0].db.name }}"
     users: "{{ item[0].db.name }}"
     state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
