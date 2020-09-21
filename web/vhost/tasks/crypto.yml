@@ -48,6 +48,7 @@
     owner: root
     group: root
     mode: 0644
+  when: item.crypto_mobile|d('') != 'none'
   loop: >
     {{ vhost
     |rejectattr('state', 'sameas', false)
@@ -55,7 +56,6 @@
     |selectattr('mobile', 'sameas', true)
     |selectattr('crypto', 'defined')
     |rejectattr('crypto', 'equalto', 'none')
-    |rejectattr('crypto_mobile', 'equalto', 'none')
     |rejectattr('crypto_le', 'sameas', true)
     |rejectattr('crypto_wildcard', 'sameas', true)
     |list }}
@@ -71,6 +71,7 @@
     owner: root
     group: root
     mode: 0400
+  when: item.crypto_mobile|d('') != 'none'
   loop: >
     {{ vhost
     |rejectattr('state', 'sameas', false)
@@ -78,7 +79,6 @@
     |selectattr('mobile', 'sameas', true)
     |selectattr('crypto', 'defined')
     |rejectattr('crypto', 'equalto', 'none')
-    |rejectattr('crypto_mobile', 'equalto', 'none')
     |rejectattr('crypto_le', 'sameas', true)
     |rejectattr('crypto_wildcard', 'sameas', true)
     |list }}
