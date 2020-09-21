@@ -1,10 +1,10 @@
 ---
 - name: Check flags dir
+  delegate_to: "{{ item.db.host }}"
   file:
     path: "{{ flags_dir }}/postgresql"
     state: directory
     owner: postgres
-  delegate_to: "{{ item.db.host }}"
   loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list }}"
   loop_control:
     label: "{{ item.name }}"
@@ -102,10 +102,7 @@
     port: "{{ item.0.db.port|d('5432') }}"
     login_user: "{{ vhost_db_admin.pgsql.user|d('ansible') }}"
     login_password: "{{ vhost_db_admin.pgsql.pass }}"
-  when:
-    - item.0.db is defined
-    - item.0.db.type == 'postgresql'
-  loop: "{{ vhost|subelements('db.extensions', skip_missing=True) }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'eq', 'postgresql')|list|subelements('db.extensions', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }}"
   tags: [ db ]
@@ -128,56 +125,51 @@
     label: "{{ item.name }}"
   tags: [ db ]
 
-- name: line in pg_hba
-  lineinfile:
-    path: "{{ item[1].stdout }}/pg_hba.conf"
-    regexp: 'host\s+{{ item[0].db.name }}\s+{{ item[0].db.name }}'
-    line: "host\t{{ item[0].db.name }}\t{{ item[0].db.name }}\t{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}\t\tmd5"  # noqa 204
-    insertbefore: '#+\s*ANSIBLE MANAGED'
-    state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
+- name: pg_hba entry
   delegate_to: "{{ item[0].db.host }}"
+  postgresql_pg_hba:
+    dest: "{{ item[1].stdout }}/pg_hba.conf"
+    contype: host
+    source: "{% if item[0].db.pgbouncer is defined %}{{ item[0].db.pgbouncer.ip|d('127.0.0.1/32') }}{% else %}0.0.0.0/0{% endif %}"
+    databases: "{{ item[0].db.name }}"
+    users: "{{ item[0].db.name }}"
+    state: "{{ item[0].state|d(true)|ternary('present', 'absent') }}"
   register: vhost_pgsql_hba_line
-  when:
-    - item[0].db is defined
-    - item[0].db.type == 'postgresql'
-  loop: "{{ vhost|zip(vhost_pgsql_datadir.results)|list }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|list|zip(vhost_pgsql_datadir.results)|list }}"
   loop_control:
     label: "{{ item[0].name }}"
   notify: config reload postgresql
   tags: [ db ]
 
-- name: line in pgbouncer config
+- name: line in pgbouncer config  # noqa 204
+  delegate_to: "{{ item.db.pgbouncer.host }}"
   lineinfile:
     path: "/etc/pgbouncer/vhost.ini"
     regexp: '{{ item.db.name }}\s+=\s+host'
-    line: "{{ item.db.name }} = host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }} dbname={{ item.db.name }} user={{ item.db.name }} pool_size={{ item.db.pgbouncer.pool_size|d('40') }}"  # noqa 204
+    line: >
+      {{ item.db.name }} =
+      host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }}
+      dbname={{ item.db.name }}
+      user={{ item.db.name }}
+      pool_size={{ item.db.pgbouncer.pool_size|d('40') }}
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
-  delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_ini_line
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
-    - item.db.pgbouncer is defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
   tags: [ db ]
 
 - name: line in userlist.txt
+  delegate_to: "{{ item.db.pgbouncer.host }}"
   lineinfile:
     path: "/etc/pgbouncer/userlist.txt"
     regexp: '^[ "]*{{ item.db.name }}[ "]+'
     line: "\"{{ item.db.name }}\"\t\"{{ item.db.pass }}\""
     insertafter: EOF
     state: "{{ item.state|d(true)|ternary('present', 'absent') }}"
-  delegate_to: "{{ item.db.pgbouncer.host }}"
   register: vhost_pgsql_txt_line
-  when:
-    - item.db is defined
-    - item.db.type == 'postgresql'
-    - item.db.pgbouncer is defined
-  loop: "{{ vhost }}"
+  loop: "{{ vhost|selectattr('db', 'defined')|selectattr('db.type', 'equalto', 'postgresql')|selectattr('db.pgbouncer', 'defined')|list }}"
   loop_control:
     label: "{{ item.name }}"
   notify: config reload pgbouncer
