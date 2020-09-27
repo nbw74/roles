@@ -28,6 +28,8 @@
             users: "{{ item[0].name }}"
             source: "{{ item[1].source }}"
             databases: "{{ item[1].databases|d(item[0].name) }}"
+            method: "{{ item[1].method|d(omit) }}"
+            options: "{{ item[1].options|d(omit) }}"
             state: "{{ item[0].state|d(True)|ternary('present', 'absent') }}"
           loop: "{{ postgresql_roles|subelements('hba', skip_missing=True) }}"
           notify: reload postgresql direct
