@@ -17,5 +17,5 @@ ftpd_config:
   ServerAdmin: string # default: "root@localhost"
   PassivePorts: string # default: "52384 52584"
   TLSRSACertificateFile: string # default: "/etc/pki/tls/certs/proftpd.pem"
-  TLSRSACertificateKeyFile: string # default: "/etc/pki/tls/certs/proftpd.pem"
+  TLSRSACertificateKeyFile: string # default: "/etc/pki/tls/private/proftpd.pem"
 ```

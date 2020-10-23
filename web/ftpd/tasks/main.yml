@@ -2,11 +2,13 @@
 - name: Check if role assigned to host
   assert:
     that:
-      - inventory_hostname in groups['ftpd']
       - ansible_distribution_major_version|int >= 7
 
 - import_tasks: "packages.yml"
   tags: [ packages ]
+
+- name: Import tls
+  import_tasks: tls.yml
 
 - include_tasks: "{{ ftpd_variety }}.yml"
 ...

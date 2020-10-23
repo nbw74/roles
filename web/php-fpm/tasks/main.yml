@@ -1,9 +1,4 @@
 ---
-- name: Check if role assigned to host
-  assert:
-    that:
-      - inventory_hostname in groups['php_fpm']
-
 - import_tasks: packages.yml
 
 - name: "Copy index.php"

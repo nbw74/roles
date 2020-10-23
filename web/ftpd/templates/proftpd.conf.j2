@@ -35,8 +35,8 @@ VRootEngine			on
 # TLS (http://www.castaglia.org/proftpd/modules/mod_tls.html)
 TLSEngine			on
 TLSRequired			on
-TLSRSACertificateFile		{{ ftpd_config['TLSRSACertificateFile']|d('/etc/pki/tls/certs/proftpd.pem') }}
-TLSRSACertificateKeyFile	{{ ftpd_config['TLSRSACertificateKeyFile']|d('/etc/pki/tls/certs/proftpd.pem') }}
+TLSRSACertificateFile		{{ ftpd_config['TLSRSACertificateFile']|d(ftpd_self_signed.cert) }}
+TLSRSACertificateKeyFile	{{ ftpd_config['TLSRSACertificateKeyFile']|d(ftpd_self_signed.key) }}
 TLSCipherSuite			ALL:!ADH:!DES
 TLSOptions			NoCertRequest
 TLSVerifyClient			off

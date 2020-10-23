@@ -1,9 +1,17 @@
 ---
+- name: Check if iptables.service is enabled
+  command: >
+    systemctl is-enabled iptables.service
+  register: __nginx_iptables_enabled
+  changed_when: false
+  failed_when: false
+
 - name: "Copy IPTables config"
   copy:
     src: "{{ item }}"
     dest: "/etc/sysconfig/"
     force: no
+  when: __nginx_iptables_enabled.rc == 0
   with_items:
     - iptables
   notify: config restart iptables
