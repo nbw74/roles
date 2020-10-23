@@ -42,7 +42,7 @@
     }
 
     location ~ ^/_nuxt/(.*)$ {
-	try_files /frontend/.nuxt/dist/client/$1 =404;
+	try_files /frontend/.nuxt/dist/client/$1 /frontend/dist/_nuxt/$1 =404;
 	expires 120d;
 	access_log off;
 	log_not_found off;
