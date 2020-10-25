@@ -27,6 +27,22 @@
   notify: reload php
   with_items: "{{ php_options }}"
 
+- name: Configure custom modules
+  template:
+    src: etc/php.d/10-ansible-php.ini.j2
+    dest: /etc/php.d/10-ansible-php.ini
+    owner: root
+    mode: "0644"
+  when: php_custom_modules|length > 0
+  notify: reload php
+
+- name: Unconfigure custom modules
+  file:
+    path: /etc/php.d/10-ansible-php.ini
+    state: absent
+  when: php_custom_modules|length == 0
+  notify: reload php
+
 - name: Memcached PHP module settings
   lineinfile:
     path: "/etc/php.d/50-memcached.ini"

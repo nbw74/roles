@@ -1,16 +1,14 @@
 ---
 - name: Dir git system-wide hooks
   file:
-    path: "{{ item }}"
+    path: /etc/git/hooks
     state: directory
     mode: 0755
-  with_items:
-    - "{{ php_git_hooks_dir }}"
   tags: [ git ]
 
 - name: System Git config core.hooksPath  # noqa 303
   shell: >
-    git config --system core.hooksPath {{ php_git_hooks_dir }}
+    git config --system core.hooksPath /etc/git/hooks
     && touch {{ flags_dir }}/git.core.hooksPath
   args:
     creates: "{{ flags_dir }}/git.core.hooksPath"
@@ -18,13 +16,14 @@
 
 - name: Template Git post-checkout and post-merge hooks
   template:
-    src: "git-selinux-hook.j2"
-    dest: "{{ php_git_hooks_dir }}/{{ item }}"
+    src: "etc/git/hooks/git-selinux-hook.j2"
+    dest: "/etc/git/hooks/{{ item }}"
     mode: 0775
     backup: yes
-  with_items: [ 'post-checkout', 'post-merge' ]
+  loop:
+    - post-checkout
+    - post-merge
   loop_control:
     label: "{{ item }}"
   tags: [ git ]
-
 ...

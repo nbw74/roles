@@ -1,0 +1,5 @@
+; THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+; Enable custom extension modules
+{% for item in php_custom_modules %}
+extension={{ item }}
+{% endif %}

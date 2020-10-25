@@ -17,7 +17,5 @@ php_remi_packages:
   - php-pecl-crypto
   - php-pecl-zip
 
-php_git_hooks_dir: "/etc/git/hooks"
-
 flags_dir: "/var/lib/flags"
 ...

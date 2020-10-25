@@ -6,6 +6,9 @@ php_remi_version: int #  Версия PHP для установки из реп�
 
 php_add_packages: []
 
+php_custom_modules: []  # List of full paths for custom PHP modules loading
+                        # (e.g. copied with `localfiles` role)
+
 php_memcached_client: bool # default: false :Установить и настроить библиотеку клиента
                            # memcached для PHP
 php_memcached_nubmer_of_replicas: int # default: 1 :Настроить количество серверов memcached;
