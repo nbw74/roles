@@ -17,7 +17,11 @@
             encrypted: yes
             state: present
             role_attr_flags: "{{ item.attrs|d('LOGIN') }}"
-          loop: "{{ postgresql_roles|rejectattr('state', 'sameas', false)|list }}"
+          loop: >
+            {{ postgresql_roles
+            |rejectattr('name', 'equalto', 'all')
+            |rejectattr('state', 'sameas', false)
+            |list }}
           loop_control:
             label: "{{ item.name }}"
 
@@ -31,7 +35,8 @@
             method: "{{ item[1].method|d(omit) }}"
             options: "{{ item[1].options|d(omit) }}"
             state: "{{ item[0].state|d(True)|ternary('present', 'absent') }}"
-          loop: "{{ postgresql_roles|subelements('hba', skip_missing=True) }}"
+          loop: >
+            {{ postgresql_roles|subelements('hba', skip_missing=True) }}
           notify: reload postgresql direct
 
         - name: Manage databases
@@ -39,7 +44,12 @@
             name: "{{ item.name }}"
             owner: "{{ item.owner|d(item.name) }}"
             state: "{{ item.state|d(True)|ternary('present', 'absent') }}"
-          loop: "{{ postgresql_db }}"
+          loop: >
+            {{ postgresql_db
+            |rejectattr('name', 'equalto', 'all')
+            |rejectattr('name', 'equalto', 'sameuser')
+            |rejectattr('name', 'equalto', 'samerole')
+            |list }}
           loop_control:
             label: "{{ item.name }}"
 
@@ -47,8 +57,14 @@
           postgresql_ext:
             name: "{{ item[1] }}"
             db: "{{ item[0].name }}"
-          when: item[0].state|d(True)
-          loop: "{{ postgresql_db|subelements('ext', 'skip_missing=True') }}"
+          loop: >
+            {{ postgresql_db
+            |rejectattr('name', 'equalto', 'all')
+            |rejectattr('name', 'equalto', 'sameuser')
+            |rejectattr('name', 'equalto', 'samerole')
+            |rejectattr('state', 'sameas', false)
+            |list
+            |subelements('ext', 'skip_missing=True') }}
           loop_control:
             label: "{{ item[0].name }}: {{ item[1]|d(null) }}"
 
@@ -56,7 +72,11 @@
           postgresql_user:
             name: "{{ item.name }}"
             state: absent
-          loop: "{{ postgresql_roles|selectattr('state', 'sameas', false)|list }}"
+          loop: >
+            {{ postgresql_roles
+            |rejectattr('name', 'equalto', 'all')
+            |selectattr('state', 'sameas', false)
+            |list }}
           loop_control:
             label: "{{ item.name }}"
           register: postgresql_reg_roles_remove
