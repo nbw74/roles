@@ -114,7 +114,8 @@ common_resolv_conf:
 common_rsyslog_collector: "string" # Хостнейм коллектора логов (rsyslog)
 
 common_selinux_alert_recipients: "string" # Почтовый адрес для отсылки уведомлений SELinux
-common_sha_store_addr: "fqdn|ipv4" # Адрес сервера для скрипта проверки системных файлов
+common_sha_store_http: "fqdn|ipv4" # Адрес сервера для скрипта проверки системных файлов (egress)
+common_sha_store_scp: "fqdn|ipv4" # Адрес сервера для скрипта проверки системных файлов (ingress)
 common_sha_store_user: "string" # Имя пользователя для скрипта проверки системных файлов
 
 common_sudoers_d:

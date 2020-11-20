@@ -10,7 +10,8 @@ bn=$(basename "$0")
 hn=$(hostname -f)
 
 # shellcheck disable=SC1083
-FTPSERVER={{ common_sha_store_addr }}
+FTPSERVER={{ common_sha_store_http }}
+SCPSERVER={{ common_sha_store_scp }}
 # shellcheck disable=SC1083
 FTPUSER={{ common_sha_store_user }}
 WARN_THR=64
@@ -170,7 +171,7 @@ CreateSums() {
         sha256sum ${F[$i]} >> "$HASHFILE" 2> "$OUTFILE"
     done
     # shellcheck disable=SC2086
-    scp -oStrictHostKeyChecking=no "$HASHFILE" ${FTPUSER}@${FTPSERVER}:/usr/share/nginx/html/256/ > $OUTFILE 2>&1
+    scp -oStrictHostKeyChecking=no "$HASHFILE" ${FTPUSER}@${SCPSERVER}:/usr/share/nginx/html/256/ > $OUTFILE 2>&1
     rm -v "$HASHFILE" > "$OUTFILE" 2>&1
     CODE=0; exit
 }
