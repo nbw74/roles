@@ -1,0 +1,24 @@
+---
+- name: Generate privkey for self-signed cert
+  openssl_privatekey:
+    path: "{{ ftpd_self_signed.key }}"
+  notify: reload proftpd
+
+- name: Generate CSR for self-signed cert
+  openssl_csr:
+    path: "{{ ftpd_self_signed.csr }}"
+    privatekey_path: "{{ ftpd_self_signed.key }}"
+    common_name: "{{ ansible_fqdn }}"
+    country_name: RU
+    organization_name: "{{ ftpd_self_signed_csr.org|d('Example Organization') }}"
+    email_address: "{{ ftpd_self_signed_csr.email|d('admin@example.org') }}"
+  notify: reload proftpd
+
+- name: Generate self-signed cert
+  openssl_certificate:
+    path: "{{ ftpd_self_signed.cert }}"
+    privatekey_path: "{{ ftpd_self_signed.key }}"
+    csr_path: "{{ ftpd_self_signed.csr }}"
+    provider: selfsigned
+  notify: reload proftpd
+...

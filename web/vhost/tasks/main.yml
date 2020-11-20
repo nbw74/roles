@@ -95,8 +95,9 @@
       tags: [ repo ]
   when: vhost_backend != 'reverse-proxy'
 
-- name: Import webcheck
-  import_tasks: webcheck.yml
+- name: Include webcheck
+  include_tasks: webcheck.yml
+  when: not alien
 
 - name: Include wiki_print (tail)
   include_tasks: wiki_print.yml

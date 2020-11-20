@@ -1,2 +1,6 @@
 ---
+ftpd_self_signed:
+  cert: /etc/pki/tls/certs/proftpd.pem
+  key: /etc/pki/tls/private/proftpd.pem
+  csr: /etc/pki/tls/private/proftpd.csr
 ...

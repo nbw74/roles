@@ -1,9 +1,4 @@
 ---
-- name: Check if role assigned to host
-  assert:
-    that:
-      - inventory_hostname in groups['nginx']
-
 - name: Import packages
   import_tasks: packages.yml
 
