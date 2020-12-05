@@ -8,13 +8,7 @@ object Host "{{ ansible_fqdn }}" {
 {% endif %}
     address = "{{ common_icinga2_conf['ip_address']|default(common_ipv4_private) }}"
     display_name = "{{ common_icinga2_conf['display_name']|default(ansible_hostname) }}"
-{% set common_icinga2_standard_int_name = 'eth' %}
-{% if ansible_virtualization_type == 'VMware' %}
-{% if ansible_distribution_major_version|int >= 7 %}
-{% set common_icinga2_standard_int_name = 'ens' %}
-{% endif %}
-{% endif %}
-    vars.int_name = "{{ common_icinga2_conf['int_name']|default(common_icinga2_standard_int_name) }}"
+    vars.int_name = "{{ common_icinga2_conf['int_name']|default(ansible_default_ipv4['interface']) }}"
 {% if (common_icinga2_conf.vars|d(dict(la_w='undefined')))['la_w']|d('undefined') == 'undefined' %}
     vars.la_w = "{{ ansible_processor_vcpus * 3 }},{{ ansible_processor_vcpus * 1.5 }},{{ ansible_processor_vcpus * 0.75 }}"
 {% endif %}
