@@ -1,5 +1,11 @@
 # myenv
 Установка персонализированного окружения пользователя (конфигурация оболочки и редактора)
+
+Requirements
+------------
+
+**gather_subset:** `virtual`
+
 ## Variables
 ```yaml
 username: "string" # default: "{{ ansible_user }}" :Имя пользователя на удалённой системе, для

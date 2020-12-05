@@ -14,6 +14,12 @@ Deploy website virtual host configuration:
 + create Git repository
 + create Redmine project
 + create Icinga2 webcheck configuration
+
+Requirements
+------------
+
+**gather_subset:** `network`
+
 ## Common host variables
 ```yaml
 vhost_apache_port: int                  # default: 8888

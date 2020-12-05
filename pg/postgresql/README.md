@@ -3,6 +3,11 @@ postgresql
 
 Роль для развёртывания СУБД PostgreSQL.
 
+Requirements
+------------
+
+**gather_subset:** `[ hardware, network ]`
+
 ## Описание переменных для host_vars:
 
 ```yaml

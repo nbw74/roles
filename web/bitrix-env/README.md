@@ -1,8 +1,12 @@
-<!-- vim: set ft=ansible: -->
 # bitrix-env
 Роль для развёртывания виртуальной машины с пакетом bitrix-env для CMS "Битрикс"
 
 https://www.1c-bitrix.ru/products/env/
+
+Requirements
+------------
+
+**gather_subset:** `network`
 
 ## Variables
 ```yaml

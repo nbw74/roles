@@ -1,5 +1,11 @@
 # memcached
 Роль для развёртывания сервиса memcached
+
+Requirements
+------------
+
+**gather_subset:** `hardware`
+
 ## Variables
 ```yaml
 memcached_service_enable: bool # default: true

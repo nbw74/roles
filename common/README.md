@@ -1,6 +1,11 @@
 # common
 Роль для первичной настройки хоста на CentOS 6|7 (for WM LLC)
 
+Requirements
+------------
+
+**gather_subset:** `[ hardware, network, virtual ]`
+
 ## Variables
 ```yaml
 alien: bool # default: true :Указывает на то, что хост не принадлежит к сети организации

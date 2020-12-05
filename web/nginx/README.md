@@ -1,5 +1,11 @@
 # nginx
 Роль для развёртывания веб-сервера Nginx (как правило, фронтэнд для php-fpm или httpd). Также ставит TLS-сертификаты для хоста по-умолчанию
+
+Requirements
+------------
+
+**gather_subset:** `[ network, virtual ]`
+
 ## Variables
 ```yaml
 nginx_allow_status_list: # Список IP-адресов, с которых позволено читать страницу статуса Nginx
