@@ -8,7 +8,7 @@ object Host "{{ ansible_fqdn }}" {
 {% endif %}
     address = "{{ common_icinga2_conf['ip_address']|default(common_ipv4_private) }}"
     display_name = "{{ common_icinga2_conf['display_name']|default(ansible_hostname) }}"
-    vars.int_name = "{{ common_icinga2_conf['int_name']|default(ansible_default_ipv4['interface']) }}"
+    vars.int_name = "{{ common_icinga2_conf['int_name']|default(ansible_default_ipv4['interface']|regex_replace('^([a-z]+).*$', '\\1')) }}"
 {% if (common_icinga2_conf.vars|d(dict(la_w='undefined')))['la_w']|d('undefined') == 'undefined' %}
     vars.la_w = "{{ ansible_processor_vcpus * 3 }},{{ ansible_processor_vcpus * 1.5 }},{{ ansible_processor_vcpus * 0.75 }}"
 {% endif %}
