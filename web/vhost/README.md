@@ -131,6 +131,8 @@ vhost:
     port2: 11211
   mobile: bool # optional; default is 'no'; enable mobile version config with same site root
   nginx_301_only: "URI" # Configure 301 redirect to address "URI" instead of "normal" backend
+  nginx_add_header:  # optional; add headers in different places; see templates/fpm/..
+    nuxt_1: { }
   nginx_auth_basic: # optional
     string: "string" # default: "Restricted"
     user_file: "path" # default: "/etc/nginx/.htpasswd"

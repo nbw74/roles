@@ -6,6 +6,14 @@
     index		{{ op.index|d('index.php') }};
     charset		utf-8;
 
+{% macro _header_nuxt_1() %}
+{% if op.nginx_add_header.nuxt_1|d({ })|length > 0 %}
+
+{% for key, value in nginx_add_header.nuxt_1|dictsort %}
+	{{ key }}	{{ value }};
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
     location / {
 	proxy_pass			http://node$nodeport;
 {% include "nginx/proxy.j2" %}
@@ -21,11 +29,13 @@
 	auth_basic		"{{ op.nginx_auth_basic.string|d('Restricted') }}";
 	auth_basic_user_file	"{{ op.nginx_auth_basic.user_file|d(vhost_default_htpasswd) }}";
 {% endif %}
+{{ _header_nuxt_1() }}
     }
 
     location ~ ^/(graphql|api|laravel|admin|nova) {
 	root		$root_backend;
 	try_files	$uri $uri/ /{{ op.index|d('index.php') }}?$args;
+{{ _header_nuxt_1() }}
     }
 
     location ~ \.php$ {
@@ -39,6 +49,7 @@
 	fastcgi_buffer_size		16k;
 	fastcgi_buffers			8 16k;
 {% include "nginx/proxy.j2" %}
+{{ _header_nuxt_1() }}
     }
 
     location ~ ^/_nuxt/(.*)$ {
@@ -46,6 +57,7 @@
 	expires 120d;
 	access_log off;
 	log_not_found off;
+{{ _header_nuxt_1() }}
     }
 
 {% if op.nginx_static_location|d(True) %}
