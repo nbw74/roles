@@ -10,9 +10,9 @@
 {% if op.nginx_add_header.nuxt_1|d({ })|length > 0 %}
 
 {% for key, value in nginx_add_header.nuxt_1|dictsort %}
-	{{ key }}	{{ value }};
-{%- endfor %}
-{%- endif %}
+	add_header	{{ key }} "{{ value }}";
+{% endfor %}
+{%- endif -%}
 {%- endmacro %}
     location / {
 	proxy_pass			http://node$nodeport;
