@@ -174,8 +174,8 @@
   delegate_to: "{{ item.db.pgbouncer.host }}"
   lineinfile:
     path: "/etc/pgbouncer/vhost.ini"
-    regexp: '{{ item.db.name }}\s+=\s+host'
-    line: >
+    regexp: '^{{ item.db.name }}\s+=\s+host'
+    line: >-
       {{ item.db.name }} =
       host={{ item.db.pgbouncer.db_host|d('127.0.0.1') }}
       dbname={{ item.db.name }}
