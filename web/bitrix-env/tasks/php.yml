@@ -27,7 +27,6 @@
   with_items:
     - { dest: '/etc/php.d/20-curl.ini', line: 'extension=curl.so' }
     - { dest: '/etc/php.d/20-phar.ini', line: 'extension=phar.so' }
-  when: bx_curl_enable
   notify: reload httpd
   tags: [ php_modules, php ]
 ...

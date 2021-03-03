@@ -1,9 +1,4 @@
 ---
-- name: Check if role assigned to host
-  assert:
-    that:
-      - inventory_hostname in groups['bitrix']
-
 - name: Import selinux
   import_tasks: selinux.yml
 
