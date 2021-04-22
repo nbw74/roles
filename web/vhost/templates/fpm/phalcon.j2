@@ -23,7 +23,7 @@
     }
 {% if op.nginx_static_location|d(True) %}
 
-    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf|webp)$ {
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff|woff2|eot|ttf|webp|avif)$ {
 	try_files	$uri $uri/ /index.php?$args;
 	expires		1y;
 	log_not_found	off;

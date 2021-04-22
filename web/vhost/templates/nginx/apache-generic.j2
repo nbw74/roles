@@ -1,5 +1,5 @@
 
-    location ~* \.(jpg|jpeg|gif|png|css|eot|woff|svg|ttf|js|zip|tgz|gz|rar|bz2|doc|xls|exe|pdf|ppt|tar|wav|bmp|rtf|swf|ico|flv|txt|docx|xlsx)$ {
+    location ~* \.(jpg|jpeg|gif|png|css|eot|woff|svg|ttf|js|zip|tgz|gz|rar|bz2|doc|xls|exe|pdf|ppt|tar|wav|bmp|rtf|swf|ico|flv|txt|docx|xlsx|avif)$ {
         root		{{ vhost_basedir }}/{{ op.user|d(op.name) }}/{{ op.webroot|d('www') }};
         index		{{ op.index|d('index.php') }};
         expires		30d;
