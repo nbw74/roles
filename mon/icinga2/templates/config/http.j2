@@ -9,7 +9,7 @@
         http_url = "{{ item.url }}"
 {% endif %}
 {% if item.notify is defined %}
-        notification_entity = "{{ item.notify }}"
+        notification_entity = [ "{{ item.notify|join('", "') }}" ]
 {% endif %}
     }
 /* EOF */
