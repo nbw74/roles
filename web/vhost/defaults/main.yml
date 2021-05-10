@@ -12,6 +12,7 @@ vhost_apache_port: "8888"
 vhost_logrotate_laravel_enable: False
 vhost_logrotate_cake_enable: False
 vhost_nuxt_enable: False
+vhost_icinga2_allow_reload: "{{ lookup('env', 'ICINGA2_ALLOW_RELOAD')|d(true, true)|bool }}"
 
 selinux_state: enforcing
 ...

@@ -31,6 +31,7 @@
     name: "icinga2.service"
     state: reloaded
   delegate_to: "{{ common_icinga2_master }}"
+  when: vhost_icinga2_allow_reload
 
 - name: config reload postgresql
   delegate_to: "{{ item[0].db.host }}"

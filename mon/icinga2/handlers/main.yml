@@ -11,6 +11,7 @@
   systemd:
     name: icinga2.service
     state: reloaded
+  when: icinga2_allow_reload
 
 - name: restart authd
   systemd:

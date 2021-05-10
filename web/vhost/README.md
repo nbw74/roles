@@ -35,6 +35,7 @@ vhost_frontuser: "string"               # default is "nginx"
 vhost_git_server: "string"              # mandatory if use git
 vhost_git_path: "filesystem_path"       # default is "/var/lib/git"
 vhost_git_group: "string"               # default is "developers"
+vhost_icinga2_allow_reload: bool        # default is a value of the ICINGA2_ALLOW_RELOAD env var or True
 vhost_logbuffer: "intUNIT|none"         # default is "128k"
 vhost_logrotate_cake_enable: bool       # default: False
 vhost_logrotate_laravel_enable: bool    # default: False
@@ -156,7 +157,7 @@ vhost:
     block # ... in the 'server' context (before "backend section")
   nginx_static_location: bool # default: true
   nginx_whitelist:
-    allow: []
+    allow: list
     context: string # server (default) or root (/)
   nuxt: # Create nuxt.js systemd unit file, upstream and other Nginx configuration
     port: uint # start from 5020
@@ -192,7 +193,7 @@ vhost:
     url_mobile: "string" # optional
     fqdn: "string" # optional
     fqdn_mobile: "string" # optional
-    notify: "string" # optional
+    notify: list # optional
     zone: "string" # default is common_icinga2_satellite_zone value
   webroot: "www/public" # optional; default is "www"
   wikimarkup: bool # optional; default: true; write textile markup in wiki file
